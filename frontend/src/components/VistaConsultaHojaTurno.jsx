@@ -438,12 +438,12 @@ export default function VistaConsultaHojaTurno({
   const handleConfirmarCierreConPassword = async () => {
     const passTrim = passwordJefe.trim();
     if (!passTrim) {
-      setErrorPasswordJefe('Ingrese la contraseña del Jefe de Turno.');
+      setErrorPasswordJefe('Ingrese la contraseña.');
       return;
     }
 
     if (passTrim !== '12345' && passTrim !== 'admin') {
-      setErrorPasswordJefe('Contraseña incorrecta de Jefe de Turno. (La contraseña es 12345)');
+      setErrorPasswordJefe('Contraseña incorrecta.');
       return;
     }
 
@@ -1102,14 +1102,14 @@ ${senalesForzadas}
           )}
         </div>
 
-      {/* MODAL VERIFICACIÓN DE CONTRASEÑA JEFE DE TURNO */}
+      {/* MODAL CONFIRMACIÓN DE SEGURIDAD JDT */}
       {mostrarModalPasswordJefe && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative text-left">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
                 <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                <span>CONFIRMACACIÓN DE SEGURIDAD JDT</span>
+                <span>CONFIRMACIÓN DE SEGURIDAD JDT</span>
               </div>
               <button 
                 onClick={() => setMostrarModalPasswordJefe(false)}
@@ -1120,13 +1120,10 @@ ${senalesForzadas}
             </div>
 
             <p className="text-xs text-slate-300">
-              Ingrese la <strong>Contraseña de Jefe de Turno</strong> para autorizar la firma, conversión a PDF y cierre oficial de esta bitácora.
+              Ingrese la <strong>contraseña</strong> para autorizar la firma, conversión a PDF y cierre oficial de esta bitácora.
             </p>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-400">
-                Contraseña de Jefe de Turno (12345):
-              </label>
               <input
                 type="password"
                 value={passwordJefe}
@@ -1134,7 +1131,7 @@ ${senalesForzadas}
                 onKeyDown={(e) => e.key === 'Enter' && handleConfirmarCierreConPassword()}
                 placeholder="••••••••"
                 autoFocus
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono tracking-widest"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono tracking-wider"
               />
             </div>
 
