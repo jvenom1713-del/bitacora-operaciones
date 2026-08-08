@@ -1,0 +1,1587 @@
+import React, { useState, useEffect, useRef } from 'react';
+import LoginPortada from './components/LoginPortada';
+import MenuOperador from './components/MenuOperador';
+import MenuJefeTurno from './components/MenuJefeTurno';
+import AbrirTurnoMenu from './components/AbrirTurnoMenu';
+import CambioPersonalModal from './components/CambioPersonalModal';
+import DashboardIniciarTurno from './components/DashboardIniciarTurno';
+import VistaConsultaHojaTurno from './components/VistaConsultaHojaTurno';
+import VistaConsultaBitacora from './components/VistaConsultaBitacora';
+import VistaPermisosCaliente from './components/VistaPermisosCaliente';
+import { 
+  ShieldCheck, 
+  Key, 
+  Radio, 
+  Activity, 
+  FileText, 
+  PlusCircle, 
+  Lock, 
+  Unlock, 
+  UserCheck, 
+  Zap, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Clock, 
+  RefreshCw,
+  LogOut,
+  Sliders,
+  X,
+  Sun,
+  Moon,
+  Menu,
+  FileSpreadsheet,
+  Download
+} from 'lucide-react';
+
+export default function App() {
+  const [vistaActual, setVistaActual] = useState('PORTADA'); // 'PORTADA', 'MENU_OPERADOR', 'ABRIR_TURNO_MENU', 'BITACORA_DASHBOARD'
+  const [tabInicialDashboard, setTabInicialDashboard] = useState('EQUIPOS');
+  const [modoNocturno, setModoNocturno] = useState(true);
+  const [equipoTurnoSeleccionado, setEquipoTurnoSeleccionado] = useState({
+    rotacion: 'TIGRES',
+    jdt: 'Ariel Torres',
+    osc: 'Jorge Albornoz',
+    ot: 'Matías Cisternas'
+  });
+
+  const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setFechaHoraActual(new Date());
+    }, 1000); // Se actualiza cada 1 segundo
+
+    return () => clearInterval(intervalo);
+  }, []);
+
+  const [usuarios, setUsuarios] = useState([]);
+  const [usuarioActual, setUsuarioActual] = useState(null);
+  const [permisosEfectivos, setPermisosEfectivos] = useState([]);
+  const [versionCache, setVersionCache] = useState(1);
+  const [catalogoPermisos, setCatalogoPermisos] = useState([]);
+  
+  const [turnoActivo, setTurnoActivo] = useState(null);
+  const [turnoActual, setTurnoActual] = useState({ estado: 'ABIERTO', eventos: [] });
+  const [eventos, setEventos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  // Helper para obtener la clave del día operativo actual (Corte de Turno a las 08:00 AM)
+  const getDiaOperativoKey = (dateObj = new Date()) => {
+    const d = new Date(dateObj);
+    if (d.getHours() < 8) {
+      d.setDate(d.getDate() - 1);
+    }
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };  const defaultBop = `FCV094 arreglo provisorio.<br>VTR B indisponible por trabajos en estructura.<br>VTR G Limitado a baja velocidad, por baja aislación.`;
+  const defaultTurbinaVapor = `Virador Falla en sistema de enganche en desaceleración.<br>Fuga de Vapor zona TAP lado Izquierdo, se encuentra encapsulada.<br>Excitación Falla Puente N°1.`;
+
+  const bitacoraVacia = {
+    nuevaRencaDia1: '',
+    nuevaRencaDia2: '',
+    bop: defaultBop,
+    turbinaVapor: defaultTurbinaVapor,
+    losVientosDia1: '',
+    losVientosDia2: '',
+    santaLidiaDia1: '',
+    santaLidiaDia2: '',
+    fragilidadesAdicionales: []
+  };
+
+  const crearResetTurno = (prev) => ({
+    nuevaRencaDia1: '',
+    nuevaRencaDia2: '',
+    bop: (prev && prev.bop) ? prev.bop : defaultBop,
+    turbinaVapor: (prev && prev.turbinaVapor) ? prev.turbinaVapor : defaultTurbinaVapor,
+    losVientosDia1: '',
+    losVientosDia2: '',
+    santaLidiaDia1: '',
+    santaLidiaDia2: '',
+    fragilidadesAdicionales: (prev && prev.fragilidadesAdicionales) ? prev.fragilidadesAdicionales : []
+  });
+
+  const [diaOperativoActivo, setDiaOperativoActivo] = useState(getDiaOperativoKey());
+
+  // ── ESTADO COMPARTIDO: Bitácora Diaria y Matriz de Equipos ──────────────
+  // Se comparte entre DashboardIniciarTurno (OSC edita) y VistaConsultaHojaTurno (JDT revisa/edita)
+  const [textoBitacora, setTextoBitacora] = useState(() => {
+    try {
+      const keyActual = getDiaOperativoKey();
+      const ultimoDia = localStorage.getItem('bitacora_ultimo_dia_operativo');
+
+      // Si es el primer uso o cambió el día operativo, mantener fragilidades y resetear logs de días
+      const saved = localStorage.getItem(`bitacora_texto_${keyActual}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.bop) parsed.bop = defaultBop;
+        if (!parsed.turbinaVapor) parsed.turbinaVapor = defaultTurbinaVapor;
+        if (!parsed.fragilidadesAdicionales) parsed.fragilidadesAdicionales = [];
+        return parsed;
+      }
+
+      // Si el turno cambió (pasaron las 08:00 AM), resetea los eventos de días pero MANTIENE FRAGILIDADES
+      const prevKey = ultimoDia || keyActual;
+      const prevSaved = localStorage.getItem(`bitacora_texto_${prevKey}`);
+      const prevParsed = prevSaved ? JSON.parse(prevSaved) : null;
+      const nuevoObj = crearResetTurno(prevParsed);
+
+      localStorage.setItem('bitacora_ultimo_dia_operativo', keyActual);
+      localStorage.setItem(`bitacora_texto_${keyActual}`, JSON.stringify(nuevoObj));
+      return nuevoObj;
+    } catch {
+      return bitacoraVacia;
+    }
+  });
+
+  // Guardar auto-cambios de textoBitacora en localStorage por día operativo
+  useEffect(() => {
+    try {
+      const keyActual = getDiaOperativoKey();
+      localStorage.setItem('bitacora_ultimo_dia_operativo', keyActual);
+      localStorage.setItem(`bitacora_texto_${keyActual}`, JSON.stringify(textoBitacora));
+    } catch (e) {
+      console.error('Error guardando textoBitacora:', e);
+    }
+  }, [textoBitacora]);
+
+  // Vigilante del reloj de turno: A las 08:00 AM limpia los registros diarios pero CONSERVA LAS FRAGILIDADES OPERACIONALES
+  useEffect(() => {
+    const checkTurnoShift = setInterval(() => {
+      const currentKey = getDiaOperativoKey();
+      if (currentKey !== diaOperativoActivo) {
+        console.log('Cambio de turno a las 08:00 AM -> Manteniendo fragilidades operacionales y limpiando eventos diarios:', currentKey);
+        setDiaOperativoActivo(currentKey);
+        setTextoBitacora(prev => {
+          const nuevoObj = crearResetTurno(prev);
+          localStorage.setItem('bitacora_ultimo_dia_operativo', currentKey);
+          localStorage.setItem(`bitacora_texto_${currentKey}`, JSON.stringify(nuevoObj));
+          return nuevoObj;
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(checkTurnoShift);
+  }, [diaOperativoActivo]);
+
+  const [matrizEquipos, setMatrizEquipos] = useState([
+    { codigo: 'GT11', nombre_equipo: 'Turbina de Gas GT11', estado: 'En servicio' },
+    { codigo: 'TV', nombre_equipo: 'Turbina de Vapor TV', estado: 'En servicio' },
+    { codigo: 'BOP', nombre_equipo: 'Sistemas Auxiliares BOP', estado: 'Operativo con fragilidad' },
+    { codigo: 'VTR_A', nombre_equipo: 'Transformador VTR A', estado: 'En servicio' },
+    { codigo: 'VTR_B', nombre_equipo: 'Transformador VTR B', estado: 'Indisponible' },
+    { codigo: 'VTR_G', nombre_equipo: 'Transformador VTR G', estado: 'Limitado baja velocidad' },
+    { codigo: 'B-101', nombre_equipo: 'Bomba Alimentación B-101', estado: 'En servicio' },
+    { codigo: 'B-102', nombre_equipo: 'Bomba Alimentación B-102', estado: 'En reserva' },
+    { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
+  ]);
+
+  const [parametrosGeneracion, setParametrosGeneracion] = useState({
+    despachoCNR: 'En servicio',
+    sistemaProm: '52.9',
+    potEspera: '5046',
+    fuegosSuplemen: '0',
+    hrsCargaBase: '2',
+    hrsMinTec: '14',
+    hrsFuegosSuplem: '0',
+    milesM3Gas: '0',
+    m3FA: '0',
+    m3Diesel: '0',
+    kgGasGLP: '0',
+    costoMarginal: '40.3'
+  });
+
+  useEffect(() => {
+    fetch('/api/resumen-generacion-diaria')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status !== 'error') {
+          setParametrosGeneracion(prev => ({
+            ...prev,
+            despachoCNR: data.despachoCNR ?? prev.despachoCNR,
+            sistemaProm: data.sistemaProm ?? prev.sistemaProm,
+            potEspera: data.potEspera ?? prev.potEspera,
+            fuegosSuplemen: data.fuegosSuplemen ?? prev.fuegosSuplemen,
+            hrsCargaBase: data.hrsCargaBase ?? prev.hrsCargaBase,
+            hrsMinTec: data.hrsMinTec ?? prev.hrsMinTec,
+            hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev.hrsFuegosSuplem,
+            costoMarginal: data.costoMarginal ?? prev.costoMarginal
+          }));
+        }
+      })
+      .catch(err => console.error("Error al cargar resumen generacion inicial en App:", err));
+  }, []);
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Filtros de Bitácora
+  const [filtroCategoria, setFiltroCategoria] = useState('TODOS');
+  const [filtroPrioridad, setFiltroPrioridad] = useState('TODAS');
+
+  // Modal / Drawer de Permisos (legacy) + vista full-screen
+  const [mostrarDrawerPermisos, setMostrarDrawerPermisos] = useState(false);
+  const [vistaAnteriorPermisos, setVistaAnteriorPermisos] = useState(null);
+  
+  // Formulario Nuevo Evento
+  const [nuevoTitulo, setNuevoTitulo] = useState('');
+  const [nuevaDescripcion, setNuevaDescripcion] = useState('');
+  const [nuevaCategoria, setNuevaCategoria] = useState('OPERATIVO');
+  const [nuevaPrioridad, setNuevaPrioridad] = useState('MEDIA');
+  const [nuevoEquipo, setNuevoEquipo] = useState('');
+  const [guardandoEvento, setGuardandoEvento] = useState(false);
+  const [mensajeEstado, setMensajeEstado] = useState(null);
+
+  // Modal Cierre Turno
+  const [mostrarModalCierre, setMostrarModalCierre] = useState(false);
+  const [resumenCierre, setResumenCierre] = useState('');
+  const [observacionesCierre, setObservacionesCierre] = useState('');
+  const [cerrandoTurno, setCerrandoTurno] = useState(false);
+
+  // Exportar Bitácora y Datos Relevantes a Excel
+  const [exportandoExcel, setExportandoExcel] = useState(false);
+
+  const handleExportarExcel = async () => {
+    try {
+      setExportandoExcel(true);
+      const turnoId = turnoActivo?.id || 'activo';
+      const res = await fetch(`/api/bitacora/exportar-excel/${turnoId}`);
+      
+      if (!res.ok) {
+        throw new Error('Error al descargar el archivo Excel desde el servidor.');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const folioStr = turnoActivo?.folio || 'ACTIVO';
+      a.download = `Bitacora_Turno_${folioStr}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      mostrarNotificacion('Planilla Excel con Datos Relevantes descargada exitosamente.', 'success');
+    } catch (err) {
+      console.error('Error exportando a Excel:', err);
+      mostrarNotificacion(err.message || 'Error exportando la bitácora a Excel', 'danger');
+    } finally {
+      setExportandoExcel(false);
+    }
+  };
+
+  // 1. Cargar Usuarios y Permisos Iniciales
+  useEffect(() => {
+    cargarUsuarios();
+    cargarCatalogoPermisos();
+    cargarTurnoActivo();
+  }, []);
+
+  // 2. Al cambiar el usuario seleccionado, leer permisos efectivos en tiempo real
+  useEffect(() => {
+    if (usuarioActual) {
+      cargarPermisosEfectivos(usuarioActual.id);
+    }
+  }, [usuarioActual]);
+
+  // 3. Sincronización de estado al cambiar a la vista de Operador
+  useEffect(() => {
+    if (vistaActual === 'MENU_OPERADOR') {
+      const consultarResumenDia = async () => {
+        try {
+          const respuesta = await fetch('/api/resumen-dia');
+          const data = await respuesta.json();
+          // Si la API indica que el turno ya fue cerrado o aprobado:
+          if (data.estado === 'CERRADO' || data.estado === 'APROBADO' || (data.data && data.data.length === 0)) {
+            setTurnoActual({ estado: 'CERRADO', eventos: [] });
+          } else if (data.status === 'ok') {
+            setTurnoActual(prev => ({ ...prev, estado: 'ABIERTO' }));
+          }
+        } catch (e) {
+          console.error("Error al consultar /api/resumen-dia:", e);
+        }
+      };
+      consultarResumenDia();
+    }
+  }, [vistaActual]);
+
+
+
+  const cargarUsuarios = async () => {
+    try {
+      const res = await fetch('/api/usuarios');
+      const data = await res.json();
+      setUsuarios(data);
+      if (data.length > 0) {
+        // Seleccionar por defecto a Pedro Flores (Operador) o Juan San Martín
+        setUsuarioActual(data.find(u => u.email.includes('pflores')) || data[0]);
+      }
+    } catch (err) {
+      console.error('Error cargando usuarios:', err);
+    }
+  };
+
+  const cargarCatalogoPermisos = async () => {
+    try {
+      const res = await fetch('/api/permisos/catalogo');
+      const data = await res.json();
+      setCatalogoPermisos(data);
+    } catch (err) {
+      console.error('Error cargando catálogo:', err);
+    }
+  };
+
+  const cargarPermisosEfectivos = async (usuarioId) => {
+    try {
+      const res = await fetch(`/api/permisos/efectivos/${usuarioId}`);
+      const data = await res.json();
+      setPermisosEfectivos(data.permisos || []);
+      setVersionCache(data.version_cache || 1);
+    } catch (err) {
+      console.error('Error cargando permisos efectivos:', err);
+    }
+  };
+
+  const cargarTurnoActivo = async () => {
+    try {
+      setCargando(true);
+      const res = await fetch('/api/turnos/activo');
+      const respuesta = res.ok ? await res.json() : null;
+      const turnoData = respuesta?.turno || respuesta?.data || { estado: 'ABIERTO', eventos: [] };
+      setTurnoActivo(turnoData);
+      setTurnoActual(turnoData);
+      if (turnoData?.id) {
+        cargarEventos(turnoData.id);
+      }
+    } catch (err) {
+      console.error('Error cargando turno:', err);
+      setTurnoActivo({ estado: 'ABIERTO', eventos: [] });
+      setTurnoActual({ estado: 'ABIERTO', eventos: [] });
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const handleAbrirTurno = async (rotacionSeleccionada) => {
+    try {
+      const res = await fetch('/api/turnos/nuevo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario_id: usuarioActual?.id || 1,
+          rotacion: rotacionSeleccionada || 'TIGRES'
+        })
+      });
+      const respuesta = res.ok ? await res.json() : null;
+      const turnoData = respuesta?.data || respuesta?.turno || { estado: 'ABIERTO', eventos: [] };
+      setTurnoActual(turnoData);
+      setTurnoActivo(turnoData);
+      setTabInicialDashboard('EQUIPOS');
+      setVistaActual('BITACORA_DASHBOARD');
+    } catch (e) {
+      console.error(e);
+      setTurnoActual({ estado: 'ABIERTO', eventos: [] });
+      setTurnoActivo({ estado: 'ABIERTO', eventos: [] });
+    }
+  };
+
+  const cargarEventos = async (turnoId) => {
+    try {
+      const res = await fetch(`/api/bitacora/eventos/${turnoId}`);
+      const data = await res.json();
+      setEventos(data);
+    } catch (err) {
+      console.error('Error cargando eventos:', err);
+    }
+  };
+
+  // --- LECTOR DE PERMISOS EN CALIENTE: Comprobación local instantánea ---
+  const tienePermiso = (codigo) => {
+    return permisosEfectivos.includes(codigo);
+  };
+
+  // --- MODIFICADOR DE PERMISOS EN TIEMPO REAL ---
+  const togglePermisoEnCaliente = async (usuarioId, permisoCodigo, estadoActual) => {
+    try {
+      const nuevoEstado = !estadoActual;
+      const res = await fetch('/api/permisos/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario_id: usuarioId,
+          permiso_codigo: permisoCodigo,
+          concedido: nuevoEstado
+        })
+      });
+      const data = await res.json();
+      
+      mostrarNotificacion(data.mensaje, 'success');
+      
+      // Refrescar permisos del usuario actual en caliente
+      if (usuarioActual && usuarioActual.id === usuarioId) {
+        cargarPermisosEfectivos(usuarioId);
+      }
+    } catch (err) {
+      mostrarNotificacion('Error cambiando permiso', 'danger');
+    }
+  };
+
+  // --- CREAR NUEVO EVENTO DE BITÁCORA ---
+  const handleCrearEvento = async (e) => {
+    e.preventDefault();
+    if (!nuevoTitulo.trim() || !nuevaDescripcion.trim()) return;
+
+    if (!tienePermiso('bitacora:crear')) {
+      mostrarNotificacion('Acceso Denegado: No tienes el permiso bitacora:crear en caliente.', 'danger');
+      return;
+    }
+
+    try {
+      setGuardandoEvento(true);
+      const res = await fetch('/api/bitacora/eventos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario_id: usuarioActual.id,
+          turno_id: turnoActivo.id,
+          categoria: nuevaCategoria,
+          prioridad: nuevaPrioridad,
+          titulo: nuevoTitulo,
+          descripcion: nuevaDescripcion,
+          equipo_afectado: nuevoEquipo || null
+        })
+      });
+
+      if (!res.ok) {
+        let errDetail = 'Error al guardar';
+        try {
+          const errorData = await res.json();
+          if (errorData.detail) errDetail = errorData.detail;
+        } catch (_) {}
+        throw new Error(errDetail);
+      }
+
+      mostrarNotificacion('Registro agregado exitosamente a la Bitácora.', 'success');
+      setNuevoTitulo('');
+      setNuevaDescripcion('');
+      setNuevoEquipo('');
+      cargarEventos(turnoActivo.id);
+    } catch (err) {
+      mostrarNotificacion(err.message, 'danger');
+    } finally {
+      setGuardandoEvento(false);
+    }
+  };
+
+  // --- CIERRE DE TURNO ---
+  const handleCerrarTurno = async () => {
+    try {
+      if (!tienePermiso('turno:cerrar')) {
+        mostrarNotificacion('Acceso Denegado: No tienes permiso para cerrar turno en caliente.', 'danger');
+        return;
+      }
+
+      setCerrandoTurno(true);
+      const res = await fetch('/api/turnos/cerrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          turno_id: turnoActivo?.id || turnoActual?.id,
+          usuario_id: usuarioActual?.id,
+          resumen_operativo: resumenCierre || 'Turno operó dentro de parámetros normales.',
+          observaciones: observacionesCierre
+        })
+      });
+
+      if (!res.ok) {
+        let errDetail = 'Error cerrando turno';
+        try {
+          const errData = await res.json();
+          if (errData.detail) errDetail = errData.detail;
+        } catch (_) {}
+        throw new Error(errDetail);
+      }
+
+      mostrarNotificacion('Turno cerrado y firmado correctamente.', 'success');
+      setMostrarModalCierre(false);
+      setTurnoActual({ estado: 'CERRADO', eventos: [] });
+      setTurnoActivo({ estado: 'CERRADO', eventos: [] });
+      cargarTurnoActivo();
+    } catch (error) {
+      console.error(error);
+      alert('Error: El turno ya fue cerrado o no hay datos.');
+      setTurnoActual({ estado: 'CERRADO' });
+      mostrarNotificacion(error.message || 'Error en Cierre', 'danger');
+    } finally {
+      setCerrandoTurno(false);
+    }
+  };
+
+  // --- APROBAR Y CERRAR TURNO (JEFE DE TURNO) ---
+  const handleAprobarBitacora = async (turnoId, datosAprobacion = {}) => {
+    try {
+      const res = await fetch('/api/turnos/aprobar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          turno_id: turnoId || turnoActivo?.id || 1,
+          usuario_id: usuarioActual?.id || 1,
+          ...datosAprobacion
+        })
+      });
+      if (res.ok) {
+        setTurnoActual({ estado: 'CERRADO', eventos: [] });
+        setTurnoActivo({ estado: 'CERRADO', eventos: [] });
+        cargarTurnoActivo();
+      }
+      return res;
+    } catch (e) {
+      console.error("Error al aprobar bitácora:", e);
+      setTurnoActual({ estado: 'CERRADO', eventos: [] });
+      setTurnoActivo({ estado: 'CERRADO', eventos: [] });
+    }
+  };
+
+  // Eventos Filtrados con lectura defensiva opcional
+  const listaEventosActual = turnoActual?.eventos?.length ? turnoActual.eventos : eventos;
+  const eventosFiltrados = (listaEventosActual || []).filter(e => {
+    const coincideCat = filtroCategoria === 'TODOS' || e.categoria === filtroCategoria;
+    const coincidePrio = filtroPrioridad === 'TODAS' || e.prioridad === filtroPrioridad;
+    return coincideCat && coincidePrio;
+  });
+
+
+
+  // ── BARRA DE NAVEGACIÓN RÁPIDA (Modo Demo) ──────────────────────────────────
+  const esVistaOperador = ['MENU_OPERADOR', 'ABRIR_TURNO_MENU', 'BITACORA_DASHBOARD', 'CAMBIO_PERSONAL_MENU'].includes(vistaActual);
+  const demoBarra = (
+    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[8888] flex items-center gap-1 px-2.5 py-2 bg-[#0f172a]/95 backdrop-blur-xl border border-violet-500/30 rounded-2xl shadow-2xl shadow-violet-900/30 select-none">
+      <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-700/80 mr-0.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+        <span className="text-[10px] text-violet-400 font-black uppercase tracking-widest">Demo</span>
+      </div>
+      <button
+        onClick={() => setVistaActual('PORTADA')}
+        title="Portada de Inicio"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+          vistaActual === 'PORTADA'
+            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/40'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+        }`}
+      >
+        🏠 <span>Portada</span>
+      </button>
+      <button
+        onClick={() => setVistaActual('MENU_OPERADOR')}
+        title="Operador de Sala de Control"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+          esVistaOperador
+            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/40'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+        }`}
+      >
+        🖥️ <span>Operador</span>
+      </button>
+      <button
+        onClick={() => setVistaActual('MENU_JEFE')}
+        title="Menú Jefe de Turno"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+          vistaActual === 'MENU_JEFE' || vistaActual === 'CONSULTA_HOJA_TURNO'
+            ? 'bg-amber-500 text-white shadow-md shadow-amber-500/40'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+        }`}
+      >
+        👔 <span>Jefe de Turno</span>
+      </button>
+      <div className="w-px h-4 bg-slate-700/80 mx-0.5" />
+      <button
+        onClick={async () => {
+          try {
+            await fetch('/api/reset-demo', { method: 'POST' });
+            setAprobacionDetectada(false);
+            setMensajeEstado(null);
+            await cargarTurnoActivo();
+            setVistaActual('MENU_OPERADOR');
+          } catch (err) {
+            console.error('[Demo] Error al reiniciar:', err);
+          }
+        }}
+        title="Reiniciar turno a ABIERTO y volver a Operador"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-rose-400 hover:text-white hover:bg-rose-600"
+      >
+        🔄 <span>Reiniciar</span>
+      </button>
+    </div>
+  );
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const handleLogin = (userLogged) => {
+    const u = userLogged || usuarioActual;
+    const emailTrim = u?.email?.toLowerCase() || '';
+    const JEFES_EMAILS = [
+      'jsanmartin@generadora.cl', 
+      'atorres@generadora.cl', 
+      'ngalaz@generadora.cl', 
+      'cvaldivia@generadora.cl', 
+      'admin@generadora.cl'
+    ];
+    const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
+                         (JEFES_EMAILS.includes(emailTrim) && !emailTrim.includes('pflores')) ||
+                         (emailTrim.includes('jefe') && !emailTrim.includes('pflores'));
+
+    if (esJefeOAdmin) {
+      setVistaActual('MENU_JEFE');
+    } else {
+      setVistaActual('MENU_OPERADOR');
+    }
+  };
+
+  const volverMenuGenerico = () => {
+    cargarTurnoActivo();
+    const u = usuarioActual;
+    const emailTrim = u?.email?.toLowerCase() || '';
+    const JEFES_EMAILS = [
+      'jsanmartin@generadora.cl', 
+      'atorres@generadora.cl', 
+      'ngalaz@generadora.cl', 
+      'cvaldivia@generadora.cl', 
+      'admin@generadora.cl'
+    ];
+    const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
+                         (JEFES_EMAILS.includes(emailTrim) && !emailTrim.includes('pflores')) ||
+                         (emailTrim.includes('jefe') && !emailTrim.includes('pflores'));
+    setVistaActual(esJefeOAdmin ? 'MENU_JEFE' : 'MENU_OPERADOR');
+  };
+
+  // Control de Vistas
+  if (vistaActual === 'PORTADA') {
+    return (
+      <>
+        <LoginPortada 
+          usuarios={usuarios}
+          usuarioActual={usuarioActual}
+          setUsuarioActual={setUsuarioActual}
+          onLogin={handleLogin}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'MENU_JEFE') {
+    return (
+      <>
+        <MenuJefeTurno 
+          usuarioActual={usuarioActual}
+          turnoActivo={turnoActivo}
+          onVerBitacoraEnCurso={() => setVistaActual('CONSULTA_HOJA_TURNO')}
+          onBuscarBitacoras={() => setVistaActual('CONSULTA_BITACORA')}
+          onSalir={() => setVistaActual('PORTADA')}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'MENU_OPERADOR') {
+    return (
+      <>
+        <MenuOperador 
+          usuarioActual={usuarioActual}
+          turnoActivo={turnoActivo}
+          turnoActual={turnoActual}
+          onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE'); }}
+          onNavegarBitacora={(accion) => {
+            if (accion === 'ABRIR_TURNO') {
+              setTabInicialDashboard('EQUIPOS');
+              setVistaActual('ABRIR_TURNO_MENU');
+            } else if (accion === 'APROBAR_CIERRE') {
+              setTabInicialDashboard('CIERRE_TURNO');
+              setVistaActual('BITACORA_DASHBOARD');
+            } else if (accion === 'HOJAS_TURNO') {
+              setVistaActual('CONSULTA_HOJA_TURNO');
+            } else if (accion === 'BUSQUEDA') {
+              setVistaActual('CONSULTA_BITACORA');
+            } else if (accion === 'PERMISOS_CALIENTE') {
+              setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE');
+            } else {
+              setTabInicialDashboard('BITACORA_DIARIA');
+              setVistaActual('BITACORA_DASHBOARD');
+            }
+          }}
+          onSalir={() => setVistaActual('PORTADA')}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+        />
+        {mostrarDrawerPermisos && (
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex justify-end">
+            <div className="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-indigo-400" />
+                  <h3 className="font-bold text-base text-slate-100">Permisos en Caliente (Admin)</h3>
+                </div>
+                <button 
+                  onClick={() => setMostrarDrawerPermisos(false)}
+                  className="p-1 text-slate-400 hover:text-slate-200 rounded-lg bg-slate-800"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-400 mb-4">
+                Modifica los permisos de cualquier usuario en tiempo real. Los cambios se guardan en la base de datos SQL e incrementan la versión global para refresco instantáneo en la UI.
+              </p>
+
+              <div className="space-y-6 flex-1">
+                {usuarios.map(u => (
+                  <div key={u.id} className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                      <div>
+                        <div className="font-bold text-xs text-slate-200">{u.nombre}</div>
+                        <div className="text-[10px] text-indigo-400 font-medium">{u.rol_nombre || 'Sin Rol'} • {u.email}</div>
+                      </div>
+                      <span className="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded">ID #{u.id}</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {catalogoPermisos.map(p => {
+                        const tiene = permisosEfectivos.includes(p.codigo) && usuarioActual?.id === u.id;
+                        return (
+                          <div key={p.codigo} className="flex items-center justify-between text-xs py-1">
+                            <div>
+                              <span className="font-mono text-slate-300 font-semibold">{p.codigo}</span>
+                              <span className="block text-[10px] text-slate-500">{p.descripcion}</span>
+                            </div>
+
+                            <button
+                              onClick={() => togglePermisoEnCaliente(u.id, p.codigo, tiene)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                tiene 
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/40' 
+                                  : 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-emerald-500/20 hover:text-emerald-300'
+                              }`}
+                            >
+                              {tiene ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                              {tiene ? 'Concedido' : 'Revocado'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setMostrarDrawerPermisos(false)}
+                className="mt-6 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl"
+              >
+                Cerrar Panel
+              </button>
+            </div>
+          </div>
+        )}
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'CONSULTA_HOJA_TURNO') {
+    const esJefeTurno = Boolean(
+      usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') || 
+      usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
+      usuarioActual?.email?.toLowerCase()?.includes('jefe') ||
+      usuarioActual?.rol_nombre === 'Jefe de Turno' ||
+      usuarioActual?.rol_codigo === 'JEFE_TURNO' ||
+      usuarioActual?.rol_codigo === 'ADMIN' ||
+      tienePermiso('turno:cerrar')
+    );
+    return (
+      <>
+        <VistaConsultaHojaTurno 
+          usuarioActual={usuarioActual}
+          turnoActivo={turnoActivo}
+          equipoTurno={equipoTurnoSeleccionado}
+          modoNocturno={modoNocturno}
+          onVolverMenu={volverMenuGenerico}
+          onAprobarBitacora={handleAprobarBitacora}
+          textoBitacora={textoBitacora}
+          setTextoBitacora={setTextoBitacora}
+          matrizEquipos={matrizEquipos}
+          setMatrizEquipos={setMatrizEquipos}
+          parametrosGeneracion={parametrosGeneracion}
+          setParametrosGeneracion={setParametrosGeneracion}
+          esJefeTurno={esJefeTurno}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'CONSULTA_BITACORA') {
+    return (
+      <>
+        <VistaConsultaBitacora
+          onVolverMenu={volverMenuGenerico}
+          modoNocturno={modoNocturno}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'ABRIR_TURNO_MENU') {
+    return (
+      <>
+        <AbrirTurnoMenu 
+          usuarioActual={usuarioActual}
+          turnoActivo={turnoActivo || turnoActual}
+          onIniciarTurno={handleAbrirTurno}
+          onVolver={() => setVistaActual('MENU_OPERADOR')}
+          onNavegarCambioPersonal={(datosEquipo) => {
+            if (datosEquipo) {
+              setEquipoTurnoSeleccionado(datosEquipo);
+            }
+            setVistaActual('CAMBIO_PERSONAL_MENU');
+          }}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'CAMBIO_PERSONAL_MENU') {
+    return (
+      <>
+        <CambioPersonalModal 
+          isOpen={true}
+          onClose={() => setVistaActual('ABRIR_TURNO_MENU')}
+          usuarioActual={usuarioActual}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+          equipoTurno={equipoTurnoSeleccionado}
+          onConfirmarReemplazo={(nuevoEquipo) => {
+            setEquipoTurnoSeleccionado(prev => ({ ...prev, ...nuevoEquipo }));
+            setVistaActual('ABRIR_TURNO_MENU');
+          }}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'PERMISOS_CALIENTE') {
+    return (
+      <VistaPermisosCaliente
+        usuarioActual={usuarioActual}
+        modoNocturno={modoNocturno}
+        onVolver={() => setVistaActual(vistaAnteriorPermisos || 'MENU_OPERADOR')}
+      />
+    );
+  }
+
+  if (vistaActual === 'BITACORA_DASHBOARD') {
+    return (
+      <>
+        <DashboardIniciarTurno 
+          usuarioActual={usuarioActual}
+          turnoActivo={turnoActivo}
+          onActualizarTurno={cargarTurnoActivo}
+          onAprobarBitacora={handleAprobarBitacora}
+          onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('BITACORA_DASHBOARD'); setVistaActual('PERMISOS_CALIENTE'); }}
+          equipoTurno={equipoTurnoSeleccionado}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+          onVolver={() => setVistaActual('ABRIR_TURNO_MENU')}
+          tabInicial={tabInicialDashboard}
+          textoBitacora={textoBitacora}
+          setTextoBitacora={setTextoBitacora}
+          matrizEquipos={matrizEquipos}
+          setMatrizEquipos={setMatrizEquipos}
+          parametrosGeneracion={parametrosGeneracion}
+          setParametrosGeneracion={setParametrosGeneracion}
+        />
+        {mostrarDrawerPermisos && (
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex justify-end">
+            <div className="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl overflow-y-auto">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-indigo-400" />
+                  <h3 className="font-bold text-base text-slate-100">Permisos en Caliente (Admin)</h3>
+                </div>
+                <button 
+                  onClick={() => setMostrarDrawerPermisos(false)}
+                  className="p-1 text-slate-400 hover:text-slate-200 rounded-lg bg-slate-800"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-400 mb-4">
+                Modifica los permisos de cualquier usuario en tiempo real. Los cambios se guardan en la base de datos SQL e incrementan la versión global para refresco instantáneo en la UI.
+              </p>
+
+              <div className="space-y-6 flex-1">
+                {usuarios.map(u => (
+                  <div key={u.id} className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                      <div>
+                        <div className="font-bold text-xs text-slate-200">{u.nombre}</div>
+                        <div className="text-[10px] text-indigo-400 font-medium">{u.rol_nombre || 'Sin Rol'} • {u.email}</div>
+                      </div>
+                      <span className="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded">ID #{u.id}</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {catalogoPermisos.map(p => {
+                        const tiene = permisosEfectivos.includes(p.codigo) && usuarioActual?.id === u.id;
+                        return (
+                          <div key={p.codigo} className="flex items-center justify-between text-xs py-1">
+                            <div>
+                              <span className="font-mono text-slate-300 font-semibold">{p.codigo}</span>
+                              <span className="block text-[10px] text-slate-500">{p.descripcion}</span>
+                            </div>
+
+                            <button
+                              onClick={() => togglePermisoEnCaliente(u.id, p.codigo, tiene)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                tiene 
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/40' 
+                                  : 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-emerald-500/20 hover:text-emerald-300'
+                              }`}
+                            >
+                              {tiene ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                              {tiene ? 'Concedido' : 'Revocado'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setMostrarDrawerPermisos(false)}
+                className="mt-6 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl"
+              >
+                Cerrar Panel
+              </button>
+            </div>
+          </div>
+        )}
+        {demoBarra}
+      </>
+    );
+  }
+
+  return (
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      modoNocturno ? 'bg-[#0b0f19] text-slate-100' : 'bg-slate-50 text-slate-800'
+    }`}>
+      {/* ------------------------------------------------------------------- */}
+      {/* NAVBAR & BARRA DE PERMISOS EN CALIENTE                             */}
+      {/* ------------------------------------------------------------------- */}
+      <header className={`border-b sticky top-0 z-40 backdrop-blur-md transition-colors ${
+        modoNocturno ? 'border-slate-800 bg-[#0f172a]/80' : 'border-slate-200 bg-white/80'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="font-black text-xl tracking-tight text-orange-500">
+                GMETROPOLITANA
+              </h1>
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <span className="font-semibold text-slate-400">Bitácora de Operaciones GM</span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium text-[11px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  SQL Hot Permission Reader v{versionCache}.0
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Fecha y Hora en Tiempo Real */}
+          <div className="flex items-center gap-2.5 bg-slate-900/90 border border-slate-700/60 px-3.5 py-1.5 rounded-xl font-mono text-xs shadow-inner">
+            <Clock className="w-4 h-4 text-cyan-400 animate-pulse shrink-0" />
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-cyan-300">
+                {fechaHoraActual.toLocaleTimeString('es-CL', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+              <span className="text-slate-600">•</span>
+              <span className="text-slate-300 font-semibold">
+                {fechaHoraActual.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </span>
+            </div>
+          </div>
+
+          {/* Botones de Control de la Barra Superior */}
+          <div className="flex items-center gap-3 flex-wrap">
+            
+            {/* Toggle Modo Nocturno / Diurno */}
+            <button
+              onClick={() => setModoNocturno(!modoNocturno)}
+              title={modoNocturno ? "Cambiar a Modo Diurno" : "Cambiar a Modo Nocturno"}
+              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                modoNocturno
+                  ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700'
+                  : 'bg-slate-100 border-slate-300 text-amber-600 hover:bg-slate-200'
+              }`}
+            >
+              {modoNocturno ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden sm:inline">{modoNocturno ? 'Diurno' : 'Nocturno'}</span>
+            </button>
+
+            {/* Selector de Usuario Simulado */}
+            <div className="flex flex-col items-end">
+              <select 
+                value={usuarioActual?.id || ''} 
+                onChange={(e) => {
+                  const u = usuarios.find(x => x.id === parseInt(e.target.value));
+                  if (u) setUsuarioActual(u);
+                }}
+                className={`text-xs rounded-lg px-2.5 py-1.5 font-semibold focus:outline-none focus:border-blue-500 border ${
+                  modoNocturno 
+                    ? 'bg-slate-800 border-slate-700 text-slate-200' 
+                    : 'bg-slate-100 border-slate-300 text-slate-800'
+                }`}
+              >
+                {usuarios.map(u => (
+                  <option key={u.id} value={u.id}>
+                    {u.nombre} ({u.rol_nombre || 'Sin Rol'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={() => setMostrarDrawerPermisos(true)}
+              className="flex items-center gap-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-[1.02]"
+            >
+              <Sliders className="w-4 h-4" />
+              <span className="hidden sm:inline">Permisos en Caliente</span>
+            </button>
+
+            {/* Botón Volver al Menú del Operador */}
+            <button
+              onClick={() => setVistaActual('MENU_OPERADOR')}
+              title="Volver al Menú Principal del Operador"
+              className="flex items-center gap-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+            >
+              <Menu className="w-4 h-4" />
+              <span className="hidden sm:inline">Menú</span>
+            </button>
+
+            {/* Botón Salir a Portada */}
+            <button
+              onClick={() => setVistaActual('PORTADA')}
+              title="Volver a Portada / Cerrar Sesión"
+              className="flex items-center gap-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Badges de Permisos Efectivos del Usuario Actual */}
+        <div className="bg-slate-900/60 border-t border-slate-800/80 px-4 py-2 text-xs">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span className="text-slate-400 font-semibold">Permisos Efectivos en Vivo:</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {catalogoPermisos.map(p => {
+                const activo = tienePermiso(p.codigo);
+                return (
+                  <span 
+                    key={p.codigo}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-medium transition-all flex items-center gap-1 ${
+                      activo 
+                        ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm' 
+                        : 'bg-slate-800/60 text-slate-500 border border-slate-700/40 opacity-50 line-through'
+                    }`}
+                  >
+                    {activo ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Lock className="w-3 h-3 text-slate-500" />}
+                    {p.codigo}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Banner Notificación */}
+      {mensajeEstado && (
+        <div className={`p-3 text-center text-xs font-bold transition-all ${
+          mensajeEstado.tipo === 'success' ? 'bg-emerald-600/20 text-emerald-300 border-b border-emerald-500/30' : 'bg-red-600/20 text-red-300 border-b border-red-500/30'
+        }`}>
+          {mensajeEstado.texto}
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* PANEL PRINCIPAL: BITÁCORA Y TURNOS                                  */}
+      {/* ------------------------------------------------------------------- */}
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* COLUMNA IZQUIERDA: TURNO ACTIVO & AGREGAR EVENTO */}
+        <div className="space-y-6">
+          
+          {/* Card Turno Activo */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Radio className="w-24 h-24 text-blue-400" />
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
+                Turno en Curso
+              </span>
+              <span className="text-xs text-slate-400 font-mono">{turnoActivo?.fecha || 'Hoy'}</span>
+            </div>
+
+            {turnoActual?.estado || turnoActivo?.estado || turnoActivo ? (
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs text-slate-400">Estado del Turno:</div>
+                  <div className="text-xs font-bold text-emerald-400 uppercase">{turnoActual?.estado || turnoActivo?.estado || 'ABIERTO'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400">Folio Operativo:</div>
+                  <div className="text-xl font-black text-slate-100 font-mono">{turnoActual?.folio || turnoActivo?.folio || 'N/A'}</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                  <div>
+                    <span className="text-slate-400 block">Jefe de Turno:</span>
+                    <span className="font-bold text-slate-200">{turnoActual?.jefe_turno_nombre || turnoActivo?.jefe_turno_nombre || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block">Operador Sala:</span>
+                    <span className="font-bold text-slate-200">{turnoActual?.operador_nombre || turnoActivo?.operador_nombre || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {/* Botón Abrir Turno: Muestra siempre que turnoActual?.estado !== 'ABIERTO' */}
+                {turnoActual?.estado !== 'ABIERTO' && (
+                  <button
+                    onClick={() => {
+                      setTabInicialDashboard('EQUIPOS');
+                      setVistaActual('ABRIR_TURNO_MENU');
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Abrir Turno
+                  </button>
+                )}
+
+                {/* Botón Cierre de Turno y Resumen Operativo: Muestra únicamente cuando turnoActual?.estado === 'ABIERTO' */}
+                {turnoActual?.estado === 'ABIERTO' && (
+                  <button
+                    onClick={() => {
+                      try {
+                        if (tienePermiso('turno:cerrar')) {
+                          setMostrarModalCierre(true);
+                        } else {
+                          mostrarNotificacion('Acceso Denegado: No posees el permiso turno:cerrar.', 'danger');
+                        }
+                      } catch (error) {
+                        console.error(error);
+                        alert('Error: El turno ya fue cerrado o no hay datos.');
+                        setTurnoActual({ estado: 'CERRADO' });
+                      }
+                    }}
+                    disabled={!tienePermiso('turno:cerrar')}
+                    className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+                      tienePermiso('turno:cerrar')
+                        ? 'bg-gradient-to-r from-amber-600 to-red-600 hover:from-amber-500 hover:to-red-500 text-white shadow-lg shadow-amber-900/20 cursor-pointer'
+                        : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                    }`}
+                  >
+                    {tienePermiso('turno:cerrar') ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    {tienePermiso('turno:cerrar') ? 'Cierre de Turno' : 'Cierre Inhabilitado (Sin Permiso)'}
+                  </button>
+                )}
+
+                {/* Botón Exportar a Excel */}
+                <button
+                  onClick={handleExportarExcel}
+                  disabled={exportandoExcel}
+                  className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.01]"
+                  title="Exportar la Bitácora y Datos Relevantes a un archivo Excel (.xlsx)"
+                >
+                  <FileSpreadsheet className={`w-4 h-4 text-emerald-400 ${exportandoExcel ? 'animate-bounce' : ''}`} />
+                  {exportandoExcel ? 'Generando Excel...' : 'Exportar a Excel (Datos Relevantes)'}
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-slate-500 text-xs">No hay un turno abierto actualmente.</div>
+            )}
+          </div>
+
+          {/* Formulario Agregar Registro */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-sm text-slate-200 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-blue-400" />
+                Nuevo Registro de Bitácora
+              </h3>
+              {!tienePermiso('bitacora:crear') && (
+                <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Sin Permiso
+                </span>
+              )}
+            </div>
+
+            <form onSubmit={handleCrearEvento} className="space-y-3.5">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Título del Evento:</label>
+                <input 
+                  type="text" 
+                  value={nuevoTitulo} 
+                  onChange={(e) => setNuevoTitulo(e.target.value)}
+                  placeholder="Ej: Cambio de Bomba B-101 / Despacho CEN"
+                  disabled={!tienePermiso('bitacora:crear')}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Categoría:</label>
+                  <select 
+                    value={nuevaCategoria} 
+                    onChange={(e) => setNuevaCategoria(e.target.value)}
+                    disabled={!tienePermiso('bitacora:crear')}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                  >
+                    <option value="OPERATIVO">OPERATIVO</option>
+                    <option value="NOVEDAD">NOVEDAD</option>
+                    <option value="ALARMA">ALARMA</option>
+                    <option value="INSTRUCCION_CEN">INSTRUCCIÓN CEN</option>
+                    <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Prioridad:</label>
+                  <select 
+                    value={nuevaPrioridad} 
+                    onChange={(e) => setNuevaPrioridad(e.target.value)}
+                    disabled={!tienePermiso('bitacora:crear')}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                  >
+                    <option value="BAJA">BAJA</option>
+                    <option value="MEDIA">MEDIA</option>
+                    <option value="ALTA">ALTA</option>
+                    <option value="CRITICA">CRÍTICA</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Equipo Afectado (Opcional):</label>
+                <input 
+                  type="text" 
+                  value={nuevoEquipo} 
+                  onChange={(e) => setNuevoEquipo(e.target.value)}
+                  placeholder="Ej: Turbina GT-1, Bomba B-101"
+                  disabled={!tienePermiso('bitacora:crear')}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Detalle de la Operación:</label>
+                <textarea 
+                  value={nuevaDescripcion} 
+                  onChange={(e) => setNuevaDescripcion(e.target.value)}
+                  rows="3"
+                  placeholder="Escriba las observaciones operativas..."
+                  disabled={!tienePermiso('bitacora:crear')}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!tienePermiso('bitacora:crear') || guardandoEvento}
+                className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+                  tienePermiso('bitacora:crear')
+                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 cursor-pointer'
+                    : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                }`}
+              >
+                <PlusCircle className="w-4 h-4" />
+                {guardandoEvento ? 'Guardando en BBDD...' : 'Agregar Evento a Bitácora'}
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+        {/* COLUMNA DERECHA: TIMELINE DE EVENTOS DE BITÁCORA */}
+        <div className="lg:col-span-2 space-y-4">
+          
+          {/* Header de Filtros */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" />
+              <h2 className="font-bold text-sm text-slate-100">Eventos de Bitácora ({eventosFiltrados.length})</h2>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <select 
+                value={filtroCategoria} 
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                className="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none"
+              >
+                <option value="TODOS">Todas las Categorías</option>
+                <option value="OPERATIVO">OPERATIVO</option>
+                <option value="NOVEDAD">NOVEDAD</option>
+                <option value="ALARMA">ALARMA</option>
+                <option value="INSTRUCCION_CEN">INSTRUCCIÓN CEN</option>
+              </select>
+
+              <select 
+                value={filtroPrioridad} 
+                onChange={(e) => setFiltroPrioridad(e.target.value)}
+                className="bg-slate-800 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none"
+              >
+                <option value="TODAS">Todas las Prioridades</option>
+                <option value="CRITICA">CRÍTICA</option>
+                <option value="ALTA">ALTA</option>
+                <option value="MEDIA">MEDIA</option>
+                <option value="BAJA">BAJA</option>
+              </select>
+
+              {/* Botón Exportar a Excel */}
+              <button
+                onClick={handleExportarExcel}
+                disabled={exportandoExcel}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer hover:scale-[1.02]"
+                title="Exportar Bitácora y Datos Relevantes a Excel"
+              >
+                <FileSpreadsheet className={`w-4 h-4 text-emerald-400 ${exportandoExcel ? 'animate-bounce' : ''}`} />
+                <span>{exportandoExcel ? 'Generando...' : 'Exportar a Excel'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Lista de Eventos (Timeline) con mapeo seguro defensivo */}
+          <div className="space-y-3">
+            {(turnoActual?.eventos || []).length > 0 ? (
+              (turnoActual?.eventos || []).map((evento, index) => {
+                const esCritica = evento.prioridad === 'CRITICA';
+                const esAlta = evento.prioridad === 'ALTA';
+                return (
+                  <div 
+                    key={evento.id || index}
+                    className={`bg-slate-900/90 border rounded-2xl p-4.5 transition-all hover:border-slate-700 ${
+                      esCritica 
+                        ? 'border-red-500/40 bg-red-950/10' 
+                        : esAlta 
+                          ? 'border-amber-500/40 bg-amber-950/10' 
+                          : 'border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${
+                          esCritica 
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                            : esAlta 
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                              : 'bg-blue-500/15 text-blue-400 border border-blue-500/20'
+                        }`}>
+                          {evento.prioridad || 'NORMAL'}
+                        </span>
+                        {evento.categoria && (
+                          <span className="text-xs font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                            {evento.categoria}
+                          </span>
+                        )}
+                        {evento.equipo_afectado && (
+                          <span className="text-xs font-mono text-indigo-300 bg-indigo-950/40 border border-indigo-800/40 px-2 py-0.5 rounded">
+                            ⚙️ {evento.equipo_afectado}
+                          </span>
+                        )}
+                      </div>
+
+                      {evento.fecha_hora && (
+                        <span className="text-xs text-slate-400 font-mono flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-slate-500" />
+                          {evento.fecha_hora}
+                        </span>
+                      )}
+                    </div>
+
+                    {evento.titulo && <h4 className="font-bold text-sm text-slate-100 mb-1">{evento.titulo}</h4>}
+                    <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line mb-3">{evento.descripcion}</p>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-800/60">
+                      <span className="flex items-center gap-1 text-slate-400 font-medium">
+                        <UserCheck className="w-3.5 h-3.5 text-blue-400" /> Registrado por: <strong className="text-slate-200">{evento.registrado_por || 'Sistema'}</strong>
+                      </span>
+                      <span className="font-mono text-slate-600">ID #{evento.id || index + 1}</span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center text-slate-500 text-xs">
+                No hay eventos registrados en este turno.
+              </div>
+            )}
+          </div>
+
+        </div>
+
+      </main>
+
+      {/* ------------------------------------------------------------------- */}
+      {/* MODAL / DRAWER: EDITAR PERMISOS EN CALIENTE                         */}
+      {/* ------------------------------------------------------------------- */}
+      {mostrarDrawerPermisos && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex justify-end">
+          <div className="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl overflow-y-auto">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-indigo-400" />
+                <h3 className="font-bold text-base text-slate-100">Permisos en Caliente (Admin)</h3>
+              </div>
+              <button 
+                onClick={() => setMostrarDrawerPermisos(false)}
+                className="p-1 text-slate-400 hover:text-slate-200 rounded-lg bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 mb-4">
+              Modifica los permisos de cualquier usuario en tiempo real. Los cambios se guardan en la base de datos SQL e incrementan la versión global para refresco instantáneo en la UI.
+            </p>
+
+            <div className="space-y-6 flex-1">
+              {usuarios.map(u => (
+                <div key={u.id} className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                    <div>
+                      <div className="font-bold text-xs text-slate-200">{u.nombre}</div>
+                      <div className="text-[10px] text-indigo-400 font-medium">{u.rol_nombre || 'Sin Rol'} • {u.email}</div>
+                    </div>
+                    <span className="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded">ID #{u.id}</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {catalogoPermisos.map(p => {
+                      // Comprobar si este usuario tiene este permiso
+                      const tiene = permisosEfectivos.includes(p.codigo) && usuarioActual?.id === u.id;
+                      return (
+                        <div key={p.codigo} className="flex items-center justify-between text-xs py-1">
+                          <div>
+                            <span className="font-mono text-slate-300 font-semibold">{p.codigo}</span>
+                            <span className="block text-[10px] text-slate-500">{p.descripcion}</span>
+                          </div>
+
+                          <button
+                            onClick={() => togglePermisoEnCaliente(u.id, p.codigo, tiene)}
+                            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                              tiene 
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/40' 
+                                : 'bg-slate-800 text-slate-500 border border-slate-700 hover:bg-emerald-500/20 hover:text-emerald-300'
+                            }`}
+                          >
+                            {tiene ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                            {tiene ? 'Concedido' : 'Revocado'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setMostrarDrawerPermisos(false)}
+              className="mt-6 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl"
+            >
+              Cerrar Panel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* MODAL: CIERRE DE TURNO                                              */}
+      {/* ------------------------------------------------------------------- */}
+      {mostrarModalCierre && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 className="font-extrabold text-lg text-slate-100 flex items-center gap-2">
+              <Unlock className="w-5 h-5 text-amber-400" />
+              Entrega y Cierre del Turno #{turnoActivo?.folio}
+            </h3>
+
+            <p className="text-xs text-slate-400">
+              Confirme el resumen de la operación antes de cerrar el turno. Esta acción cambiará el estado del turno a CERRADO en la base de datos SQL.
+            </p>
+
+            <div>
+              <label className="text-xs text-slate-300 mb-1 block">Resumen Operativo de la Entrega:</label>
+              <textarea 
+                value={resumenCierre}
+                onChange={(e) => setResumenCierre(e.target.value)}
+                rows="3"
+                placeholder="Resumen de generación, novedades relevantes..."
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-slate-300 mb-1 block">Observaciones para el Siguiente Turno:</label>
+              <input 
+                type="text"
+                value={observacionesCierre}
+                onChange={(e) => setObservacionesCierre(e.target.value)}
+                placeholder="Ej: Mantener atención en bomba B-101"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={handleCerrarTurno}
+                disabled={cerrandoTurno}
+                className="flex-1 py-2.5 bg-gradient-to-r from-amber-600 to-red-600 hover:from-amber-500 hover:to-red-500 text-white font-bold text-xs rounded-xl shadow-lg"
+              >
+                {cerrandoTurno ? 'Cerrando...' : 'Confirmar Cierre de Turno'}
+              </button>
+              <button
+                onClick={() => setMostrarModalCierre(false)}
+                className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {demoBarra}
+    </div>
+  );
+}
