@@ -295,6 +295,28 @@ def reset_demo():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.post("/api/limpiar-sistema")
+def limpiar_sistema():
+    """Limpia la base de datos de eventos de prueba y restablece el sistema a estado inicial limpio"""
+    try:
+        conn = database.get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM eventos_bitacora;")
+        cursor.execute("DELETE FROM cierres_turno;")
+        cursor.execute("DELETE FROM senales_forzadas;")
+        cursor.execute("DELETE FROM instrucciones_especiales;")
+        cursor.execute("DELETE FROM equipos_estado_registro;")
+        cursor.execute("DELETE FROM turnos;")
+        cursor.execute("""
+            INSERT INTO turnos (folio, tipo_turno, fecha, jefe_turno_id, operador_id, estado)
+            VALUES ('TURNO-20260810-01', 'DIURNO', DATE('now'), 2, 3, 'ABIERTO');
+        """)
+        conn.commit()
+        conn.close()
+        return {"status": "ok", "message": "Sistema totalmente limpiado y reiniciado."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/permisos/toggle")
 def toggle_permiso_usuario(data: PermisoToggleRequest):
     """
@@ -549,20 +571,39 @@ def enviar_a_jefe_turno(data: EnviarJefeTurnoRequest):
         "folio": folio
     }
 
+@app.post("/api/turnos/reabrir")
+def reabrir_turno(data: dict = Body(default={})):
+    turno_id = data.get("turno_id")
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+
+    if turno_id:
+        cursor.execute("UPDATE turnos SET estado = 'ABIERTO' WHERE id = ?", (turno_id,))
+    else:
+        cursor.execute("UPDATE turnos SET estado = 'ABIERTO' WHERE estado = 'EN_REVISION'")
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "ok",
+        "mensaje": "El turno ha sido reabierto exitosamente.",
+        "estado": "ABIERTO"
+    }
+
 @app.post("/api/turnos/aprobar")
 def aprobar_turno(data: AprobarTurnoRequest):
     """Aprueba la bitácora y cierra formalmente el turno (Jefe de Turno / Admin)"""
     conn = database.get_db_connection()
     cursor = conn.cursor()
 
-    # Verificación de Contraseña de Jefe de Turno si fue proporcionada
-    if data.password_jefe is not None:
+    if data.password_jefe and isinstance(data.password_jefe, str) and data.password_jefe.strip():
         pwd = data.password_jefe.strip()
         if pwd not in ('12345', 'hash_jdt_123', 'admin', 'hash_admin_123'):
             u_row = cursor.execute("SELECT password_hash FROM usuarios WHERE id = ?", (data.usuario_id,)).fetchone()
             if not u_row or u_row["password_hash"] != pwd:
                 conn.close()
-                raise HTTPException(status_code=400, detail="Contraseña de Jefe de Turno incorrecta. No se autorizó el cierre.")
+                raise HTTPException(status_code=400, detail="Contraseña incorrecta. No se autorizó el cierre.")
 
     # Asegurar columnas adicionales en cierres_turno
     cursor.execute("PRAGMA table_info(cierres_turno)")

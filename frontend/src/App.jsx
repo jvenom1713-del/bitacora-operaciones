@@ -8,6 +8,7 @@ import DashboardIniciarTurno from './components/DashboardIniciarTurno';
 import VistaConsultaHojaTurno from './components/VistaConsultaHojaTurno';
 import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
+import { getApiUrl, formatearEventosParaBitacora } from './apiConfig';
 import { 
   ShieldCheck, 
   Key, 
@@ -169,9 +170,9 @@ export default function App() {
     { codigo: 'GT11', nombre_equipo: 'Turbina de Gas GT11', estado: 'En servicio' },
     { codigo: 'TV', nombre_equipo: 'Turbina de Vapor TV', estado: 'En servicio' },
     { codigo: 'BOP', nombre_equipo: 'Sistemas Auxiliares BOP', estado: 'Operativo con fragilidad' },
-    { codigo: 'VTR_A', nombre_equipo: 'Transformador VTR A', estado: 'En servicio' },
-    { codigo: 'VTR_B', nombre_equipo: 'Transformador VTR B', estado: 'Indisponible' },
-    { codigo: 'VTR_G', nombre_equipo: 'Transformador VTR G', estado: 'Limitado baja velocidad' },
+    { codigo: 'VTR_A', nombre_equipo: 'Ventilador VTR A', estado: 'En servicio' },
+    { codigo: 'VTR_B', nombre_equipo: 'Ventilador VTR B', estado: 'Indisponible' },
+    { codigo: 'VTR_G', nombre_equipo: 'Ventilador VTR G', estado: 'Limitado baja velocidad' },
     { codigo: 'B-101', nombre_equipo: 'Bomba Alimentación B-101', estado: 'En servicio' },
     { codigo: 'B-102', nombre_equipo: 'Bomba Alimentación B-102', estado: 'En reserva' },
     { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
@@ -193,7 +194,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    fetch('/api/resumen-generacion-diaria')
+    fetch(getApiUrl('/api/resumen-generacion-diaria'))
       .then(res => res.json())
       .then(data => {
         if (data && data.status !== 'error') {
@@ -211,6 +212,122 @@ export default function App() {
         }
       })
       .catch(err => console.error("Error al cargar resumen generacion inicial en App:", err));
+  }, []);
+
+  // ── ESTADO COMPARTIDO: Instrucciones Operacionales ──────────────────────
+  // Compartido entre DashboardIniciarTurno (edita OSC) y VistaConsultaHojaTurno (lee JDT)
+  const [instruccionesOperacionales, setInstruccionesOperacionales] = useState([
+    { id: 1, hora: '08:00', descripcion: 'Coordinar con CEN cambio de combustible a Gas Natural', estado: 'Activa' },
+    { id: 2, hora: '09:30', descripcion: 'Revisión y purga de condensado en bombas de alimentación ACBPM1/ACBPM2', estado: 'Pendiente' },
+    { id: 3, hora: '11:15', descripcion: 'Verificación de presión de hidrógeno en TG1 y niveles de estanque H2', estado: 'Activa' },
+    { id: 4, hora: '14:00', descripcion: 'Bloqueo LOTO de ventilador VTRC para mantenimiento preventivo estructural', estado: 'Pendiente' },
+    { id: 5, hora: '16:45', descripcion: 'Inspección visual de sistema de agua desmineralizada DEMI 2595', estado: 'Inactiva' }
+  ]);
+
+  // ── ESTADO COMPARTIDO: Señales Forzadas y/o Manual ───────────────────────
+  const normalizarListaSenales = (lista) => {
+    if (!Array.isArray(lista) || lista.length === 0) return [];
+    const idsUsados = new Set();
+    const individualizadas = [];
+
+    lista.forEach((item, idx) => {
+      const campos = [];
+      if (item.ctg !== undefined && item.ctg !== null && item.ctg !== '—') campos.push({ campo: 'ctg', val: item.ctg });
+      if (item.stg !== undefined && item.stg !== null && item.stg !== '—') campos.push({ campo: 'stg', val: item.stg });
+      if (item.bop1 !== undefined && item.bop1 !== null && item.bop1 !== '—') campos.push({ campo: 'bop1', val: item.bop1 });
+
+      if (campos.length > 0) {
+        campos.forEach(({ campo, val }) => {
+          let baseId = item.id ? String(item.id) : `${idx}_${Math.random().toString(36).substr(2, 6)}`;
+          let uniqueId = baseId.startsWith(`${campo}_`) ? baseId : `${campo}_${baseId}`;
+          if (idsUsados.has(uniqueId)) {
+            uniqueId = `${campo}_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 6)}`;
+          }
+          idsUsados.add(uniqueId);
+          individualizadas.push({ id: uniqueId, [campo]: val });
+        });
+      }
+    });
+    return individualizadas;
+  };
+
+  const [senalesForzadas, setSenalesForzadas] = useState(() => {
+    try {
+      const stored = localStorage.getItem('senales_forzadas_turno');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const normalizadas = normalizarListaSenales(parsed);
+          localStorage.setItem('senales_forzadas_turno', JSON.stringify(normalizadas));
+          return normalizadas;
+        }
+      }
+    } catch (e) {}
+    const iniciales = [
+      { id: 'ctg_1', ctg: 'Forzado Lube Oil Temp Low Trip bypass' },
+      { id: 'ctg_2', ctg: 'Override Presión H2 TG1' },
+      { id: 'stg_1', stg: 'Normal' },
+      { id: 'stg_2', stg: 'Forzado Nivel Condensador' },
+      { id: 'stg_3', stg: 'Bypass Enclave Cierre Válvula' },
+      { id: 'bop_1', bop1: 'Bomba Demin 1 en Manual' },
+      { id: 'bop_2', bop1: 'Compresor de Aire 2 en Manual' },
+      { id: 'bop_3', bop1: 'Bomba SCI 1 en Manual' }
+    ];
+    localStorage.setItem('senales_forzadas_turno', JSON.stringify(iniciales));
+    return iniciales;
+  });
+
+  useEffect(() => {
+    const syncSenales = () => {
+      try {
+        const stored = localStorage.getItem('senales_forzadas_turno');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const normalizadas = normalizarListaSenales(parsed);
+            setSenalesForzadas(normalizadas);
+          }
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('senales_actualizadas', syncSenales);
+    window.addEventListener('storage', syncSenales);
+    return () => {
+      window.removeEventListener('senales_actualizadas', syncSenales);
+      window.removeEventListener('storage', syncSenales);
+    };
+  }, []);
+
+  // ── ESTADO COMPARTIDO: Instrucciones Operacionales ──────────────────────
+  const [instruccionesEspeciales, setInstruccionesEspeciales] = useState(() => {
+    try {
+      const stored = localStorage.getItem('instrucciones_especiales_turno');
+      if (stored !== null) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  useEffect(() => {
+    const syncInstrucciones = () => {
+      try {
+        const stored = localStorage.getItem('instrucciones_especiales_turno');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setInstruccionesEspeciales(parsed);
+          }
+        }
+      } catch (e) {}
+    };
+    window.addEventListener('instrucciones_actualizadas', syncInstrucciones);
+    window.addEventListener('storage', syncInstrucciones);
+    return () => {
+      window.removeEventListener('instrucciones_actualizadas', syncInstrucciones);
+      window.removeEventListener('storage', syncInstrucciones);
+    };
   }, []);
   // ────────────────────────────────────────────────────────────────────────
 
@@ -289,7 +406,7 @@ export default function App() {
     if (vistaActual === 'MENU_OPERADOR') {
       const consultarResumenDia = async () => {
         try {
-          const respuesta = await fetch('/api/resumen-dia');
+          const respuesta = await fetch(getApiUrl('/api/resumen-dia'));
           const data = await respuesta.json();
           // Si la API indica que el turno ya fue cerrado o aprobado:
           if (data.estado === 'CERRADO' || data.estado === 'APROBADO' || (data.data && data.data.length === 0)) {
@@ -309,7 +426,7 @@ export default function App() {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await fetch('/api/usuarios');
+      const res = await fetch(getApiUrl('/api/usuarios'));
       const data = await res.json();
       setUsuarios(data);
       if (data.length > 0) {
@@ -323,7 +440,7 @@ export default function App() {
 
   const cargarCatalogoPermisos = async () => {
     try {
-      const res = await fetch('/api/permisos/catalogo');
+      const res = await fetch(getApiUrl('/api/permisos/catalogo'));
       const data = await res.json();
       setCatalogoPermisos(data);
     } catch (err) {
@@ -333,7 +450,7 @@ export default function App() {
 
   const cargarPermisosEfectivos = async (usuarioId) => {
     try {
-      const res = await fetch(`/api/permisos/efectivos/${usuarioId}`);
+      const res = await fetch(getApiUrl(`/api/permisos/efectivos/${usuarioId}`));
       const data = await res.json();
       setPermisosEfectivos(data.permisos || []);
       setVersionCache(data.version_cache || 1);
@@ -345,11 +462,14 @@ export default function App() {
   const cargarTurnoActivo = async () => {
     try {
       setCargando(true);
-      const res = await fetch('/api/turnos/activo');
+      const res = await fetch(getApiUrl('/api/turnos/activo'));
       const respuesta = res.ok ? await res.json() : null;
       const turnoData = respuesta?.turno || respuesta?.data || { estado: 'ABIERTO', eventos: [] };
       setTurnoActivo(turnoData);
       setTurnoActual(turnoData);
+      if ((turnoData?.estado === 'CERRADO' || turnoData?.estado === 'APROBADO') && vistaActual === 'BITACORA_DASHBOARD') {
+        setVistaActual('MENU_OPERADOR');
+      }
       if (turnoData?.id) {
         cargarEventos(turnoData.id);
       }
@@ -364,7 +484,7 @@ export default function App() {
 
   const handleAbrirTurno = async (rotacionSeleccionada) => {
     try {
-      const res = await fetch('/api/turnos/nuevo', {
+      const res = await fetch(getApiUrl('/api/turnos/nuevo'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -374,8 +494,19 @@ export default function App() {
       });
       const respuesta = res.ok ? await res.json() : null;
       const turnoData = respuesta?.data || respuesta?.turno || { estado: 'ABIERTO', eventos: [] };
+
+      const keyActual = getDiaOperativoKey();
+      const resetObj = crearResetTurno(textoBitacora);
+      setTextoBitacora(resetObj);
+      localStorage.setItem(`bitacora_texto_${keyActual}`, JSON.stringify(resetObj));
+
       setTurnoActual(turnoData);
       setTurnoActivo(turnoData);
+      try {
+        localStorage.setItem('estado_turno_activo', 'ABIERTO');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (err) {}
+      setEventos([]);
       setTabInicialDashboard('EQUIPOS');
       setVistaActual('BITACORA_DASHBOARD');
     } catch (e) {
@@ -387,9 +518,18 @@ export default function App() {
 
   const cargarEventos = async (turnoId) => {
     try {
-      const res = await fetch(`/api/bitacora/eventos/${turnoId}`);
+      const res = await fetch(getApiUrl(`/api/bitacora/eventos/${turnoId}`));
       const data = await res.json();
       setEventos(data);
+      if (Array.isArray(data) && data.length > 0) {
+        const textoFormateado = formatearEventosParaBitacora(data);
+        setTextoBitacora(prev => {
+          if (!prev.nuevaRencaDia1 || prev.nuevaRencaDia1 === 'Operación normal según consigna del Coordinador Eléctrico Nacional (CEN).') {
+            return { ...prev, nuevaRencaDia1: textoFormateado };
+          }
+          return prev;
+        });
+      }
     } catch (err) {
       console.error('Error cargando eventos:', err);
     }
@@ -404,7 +544,7 @@ export default function App() {
   const togglePermisoEnCaliente = async (usuarioId, permisoCodigo, estadoActual) => {
     try {
       const nuevoEstado = !estadoActual;
-      const res = await fetch('/api/permisos/toggle', {
+      const res = await fetch(getApiUrl('/api/permisos/toggle'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -438,7 +578,7 @@ export default function App() {
 
     try {
       setGuardandoEvento(true);
-      const res = await fetch('/api/bitacora/eventos', {
+      const res = await fetch(getApiUrl('/api/bitacora/eventos'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -482,7 +622,7 @@ export default function App() {
       }
 
       setCerrandoTurno(true);
-      const res = await fetch('/api/turnos/cerrar', {
+      const res = await fetch(getApiUrl('/api/turnos/cerrar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -520,7 +660,7 @@ export default function App() {
   // --- APROBAR Y CERRAR TURNO (JEFE DE TURNO) ---
   const handleAprobarBitacora = async (turnoId, datosAprobacion = {}) => {
     try {
-      const res = await fetch('/api/turnos/aprobar', {
+      const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -552,67 +692,8 @@ export default function App() {
 
 
 
-  // ── BARRA DE NAVEGACIÓN RÁPIDA (Modo Demo) ──────────────────────────────────
-  const esVistaOperador = ['MENU_OPERADOR', 'ABRIR_TURNO_MENU', 'BITACORA_DASHBOARD', 'CAMBIO_PERSONAL_MENU'].includes(vistaActual);
-  const demoBarra = (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[8888] flex items-center gap-1 px-2.5 py-2 bg-[#0f172a]/95 backdrop-blur-xl border border-violet-500/30 rounded-2xl shadow-2xl shadow-violet-900/30 select-none">
-      <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-700/80 mr-0.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-        <span className="text-[10px] text-violet-400 font-black uppercase tracking-widest">Demo</span>
-      </div>
-      <button
-        onClick={() => setVistaActual('PORTADA')}
-        title="Portada de Inicio"
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-          vistaActual === 'PORTADA'
-            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/40'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-        }`}
-      >
-        🏠 <span>Portada</span>
-      </button>
-      <button
-        onClick={() => setVistaActual('MENU_OPERADOR')}
-        title="Operador de Sala de Control"
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-          esVistaOperador
-            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/40'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-        }`}
-      >
-        🖥️ <span>Operador</span>
-      </button>
-      <button
-        onClick={() => setVistaActual('MENU_JEFE')}
-        title="Menú Jefe de Turno"
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-          vistaActual === 'MENU_JEFE' || vistaActual === 'CONSULTA_HOJA_TURNO'
-            ? 'bg-amber-500 text-white shadow-md shadow-amber-500/40'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-        }`}
-      >
-        👔 <span>Jefe de Turno</span>
-      </button>
-      <div className="w-px h-4 bg-slate-700/80 mx-0.5" />
-      <button
-        onClick={async () => {
-          try {
-            await fetch('/api/reset-demo', { method: 'POST' });
-            setAprobacionDetectada(false);
-            setMensajeEstado(null);
-            await cargarTurnoActivo();
-            setVistaActual('MENU_OPERADOR');
-          } catch (err) {
-            console.error('[Demo] Error al reiniciar:', err);
-          }
-        }}
-        title="Reiniciar turno a ABIERTO y volver a Operador"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all text-rose-400 hover:text-white hover:bg-rose-600"
-      >
-        🔄 <span>Reiniciar</span>
-      </button>
-    </div>
-  );
+  // ── MODO DEMO: DESACTIVADO PARA PRODUCCIÓN / NORMALIZACIÓN ─────────────────
+  const demoBarra = null;
   // ────────────────────────────────────────────────────────────────────────────
 
   const handleLogin = (userLogged) => {
@@ -620,14 +701,15 @@ export default function App() {
     const emailTrim = u?.email?.toLowerCase() || '';
     const JEFES_EMAILS = [
       'jsanmartin@generadora.cl', 
+      'pflores@generadora.cl', 
       'atorres@generadora.cl', 
       'ngalaz@generadora.cl', 
       'cvaldivia@generadora.cl', 
       'admin@generadora.cl'
     ];
     const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
-                         (JEFES_EMAILS.includes(emailTrim) && !emailTrim.includes('pflores')) ||
-                         (emailTrim.includes('jefe') && !emailTrim.includes('pflores'));
+                         JEFES_EMAILS.includes(emailTrim) ||
+                         emailTrim.includes('jefe');
 
     if (esJefeOAdmin) {
       setVistaActual('MENU_JEFE');
@@ -642,14 +724,15 @@ export default function App() {
     const emailTrim = u?.email?.toLowerCase() || '';
     const JEFES_EMAILS = [
       'jsanmartin@generadora.cl', 
+      'pflores@generadora.cl', 
       'atorres@generadora.cl', 
       'ngalaz@generadora.cl', 
       'cvaldivia@generadora.cl', 
       'admin@generadora.cl'
     ];
     const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
-                         (JEFES_EMAILS.includes(emailTrim) && !emailTrim.includes('pflores')) ||
-                         (emailTrim.includes('jefe') && !emailTrim.includes('pflores'));
+                         JEFES_EMAILS.includes(emailTrim) ||
+                         emailTrim.includes('jefe');
     setVistaActual(esJefeOAdmin ? 'MENU_JEFE' : 'MENU_OPERADOR');
   };
 
@@ -696,7 +779,9 @@ export default function App() {
           turnoActual={turnoActual}
           onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE'); }}
           onNavegarBitacora={(accion) => {
-            if (accion === 'ABRIR_TURNO') {
+            if (accion === 'MENU_JEFE') {
+              setVistaActual('MENU_JEFE');
+            } else if (accion === 'ABRIR_TURNO') {
               setTabInicialDashboard('EQUIPOS');
               setVistaActual('ABRIR_TURNO_MENU');
             } else if (accion === 'APROBAR_CIERRE') {
@@ -792,6 +877,16 @@ export default function App() {
   }
 
   if (vistaActual === 'CONSULTA_HOJA_TURNO') {
+    const emailTrim = usuarioActual?.email?.toLowerCase() || '';
+    const JEFES_EMAILS = [
+      'jsanmartin@generadora.cl', 
+      'pflores@generadora.cl', 
+      'atorres@generadora.cl', 
+      'ngalaz@generadora.cl', 
+      'cvaldivia@generadora.cl', 
+      'admin@generadora.cl'
+    ];
+
     const esJefeTurno = Boolean(
       usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') || 
       usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
@@ -799,6 +894,7 @@ export default function App() {
       usuarioActual?.rol_nombre === 'Jefe de Turno' ||
       usuarioActual?.rol_codigo === 'JEFE_TURNO' ||
       usuarioActual?.rol_codigo === 'ADMIN' ||
+      JEFES_EMAILS.includes(emailTrim) ||
       tienePermiso('turno:cerrar')
     );
     return (
@@ -817,6 +913,15 @@ export default function App() {
           parametrosGeneracion={parametrosGeneracion}
           setParametrosGeneracion={setParametrosGeneracion}
           esJefeTurno={esJefeTurno}
+          rolActivo={esJefeTurno ? 'Jefe de Turno' : 'Operador'}
+          eventos={eventos}
+          onAbrirTurno={handleAbrirTurno}
+          instruccionesOperacionales={instruccionesOperacionales}
+          setInstruccionesOperacionales={setInstruccionesOperacionales}
+          senalesForzadas={senalesForzadas}
+          setSenalesForzadas={setSenalesForzadas}
+          instruccionesEspeciales={instruccionesEspeciales}
+          setInstruccionesEspeciales={setInstruccionesEspeciales}
         />
         {demoBarra}
       </>
@@ -899,7 +1004,7 @@ export default function App() {
           equipoTurno={equipoTurnoSeleccionado}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
-          onVolver={() => setVistaActual('ABRIR_TURNO_MENU')}
+          onVolver={volverMenuGenerico}
           tabInicial={tabInicialDashboard}
           textoBitacora={textoBitacora}
           setTextoBitacora={setTextoBitacora}
@@ -907,6 +1012,15 @@ export default function App() {
           setMatrizEquipos={setMatrizEquipos}
           parametrosGeneracion={parametrosGeneracion}
           setParametrosGeneracion={setParametrosGeneracion}
+          onAbrirTurno={handleAbrirTurno}
+          rolActivo={(usuarioActual?.rol_codigo === 'JEFE_TURNO' || usuarioActual?.rol_codigo === 'ADMIN' || usuarioActual?.email?.includes('jefe') || ['jsanmartin@generadora.cl', 'pflores@generadora.cl', 'atorres@generadora.cl', 'ngalaz@generadora.cl', 'cvaldivia@generadora.cl', 'admin@generadora.cl'].includes(usuarioActual?.email?.toLowerCase())) ? 'Jefe de Turno' : 'Operador'}
+          eventos={eventos}
+          instruccionesOperacionales={instruccionesOperacionales}
+          setInstruccionesOperacionales={setInstruccionesOperacionales}
+          senalesForzadas={senalesForzadas}
+          setSenalesForzadas={setSenalesForzadas}
+          instruccionesEspeciales={instruccionesEspeciales}
+          setInstruccionesEspeciales={setInstruccionesEspeciales}
         />
         {mostrarDrawerPermisos && (
           <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex justify-end">
@@ -996,7 +1110,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <div>
               <h1 className="font-black text-xl tracking-tight text-orange-500">
-                GMETROPOLITANA
+                <span className="text-white">G</span>METROPOLITANA
               </h1>
               <div className="flex items-center gap-2 text-xs text-slate-400">
                 <span className="font-semibold text-slate-400">Bitácora de Operaciones GM</span>

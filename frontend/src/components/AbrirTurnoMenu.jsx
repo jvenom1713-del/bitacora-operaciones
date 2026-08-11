@@ -126,7 +126,7 @@ export default function AbrirTurnoMenu({
         {/* Encabezado Interno */}
         <div className="flex items-center justify-between pb-4 mb-4">
           <h1 className="text-2xl font-black tracking-tight text-orange-500 leading-none">
-            GMETROPOLITANA
+            <span className="text-white">G</span>METROPOLITANA
           </h1>
           <span className="text-base sm:text-lg font-black tracking-wider text-blue-300 font-mono">
             Fecha: 29-07-2026

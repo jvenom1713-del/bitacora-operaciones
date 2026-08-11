@@ -182,7 +182,7 @@ export default function CambioPersonalModal({
           modoNocturno ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-50'
         }`}>
           <div className="p-3 border-r border-b md:border-b-0 flex items-center gap-2">
-            <span className="font-black text-xl text-orange-500 tracking-tight">GMETROPOLITANA</span>
+            <span className="font-black text-xl text-orange-500 tracking-tight"><span className="text-white">G</span>METROPOLITANA</span>
           </div>
           <div className="p-3 border-r border-b md:border-b-0 flex items-center">
             <span>Usuario: {usuarioActual?.nombre || 'Jorge Albornoz'}</span>

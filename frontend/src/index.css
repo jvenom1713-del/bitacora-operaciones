@@ -88,3 +88,16 @@
     margin: 1px 0 !important;
   }
 }
+
+/* Carrusel tenue en la capa de fondo */
+div[style*="power_plant_bg.png"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/centrales_-nueva-renca.jpg') center/cover no-repeat;
+  animation: bgCarouselFade 12s ease-in-out infinite alternate;
+}
+@keyframes bgCarouselFade {
+  0%, 35% { opacity: 0; }
+  65%, 100% { opacity: 1; }
+}

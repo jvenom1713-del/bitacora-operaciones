@@ -132,7 +132,7 @@ export default function LoginPortada({
             {/* BRAND LOGO - GMETROPOLITANA EN MAYÚSCULAS EN NARANJA */}
             <div className="mb-6">
               <h1 className="text-3xl font-black tracking-tight text-orange-500 leading-none">
-                GMETROPOLITANA
+                <span className="text-white">G</span>METROPOLITANA
               </h1>
             </div>
 

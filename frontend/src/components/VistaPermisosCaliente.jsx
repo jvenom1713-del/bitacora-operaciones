@@ -11,15 +11,15 @@ const ESTADOS = [
 ];
 
 const COLUMNAS = [
-  { key: 'numero',           label: 'N° Permiso',            width: 'w-20  min-w-[80px]'  },
-  { key: 'ubicacion',        label: 'Ubicación Técnica',     width: 'w-48  min-w-[192px]' },
-  { key: 'solicitado_por',   label: 'Solicitado Por',         width: 'w-40  min-w-[160px]' },
-  { key: 'autorizado_por',   label: 'Autorizado Por',         width: 'w-40  min-w-[160px]' },
-  { key: 'fecha_apertura',   label: 'Fecha de Apertura',      width: 'w-32  min-w-[128px]' },
-  { key: 'fecha_hora_cierre',label: 'Fecha y Hora de Cierre', width: 'w-40  min-w-[160px]' },
-  { key: 'cancelado_por',    label: 'Cancelado Por',          width: 'w-36  min-w-[144px]' },
-  { key: 'recepcionado_por', label: 'Recepcionado Por',       width: 'w-40  min-w-[160px]' },
-  { key: 'estado',           label: 'Estado',                 width: 'w-28  min-w-[112px]' },
+  { key: 'numero',           label: 'N° Permiso',            width: 'w-32  min-w-[120px]', align: 'text-center' },
+  { key: 'ubicacion',        label: 'Ubicación Técnica',     width: 'w-48  min-w-[192px]', align: 'text-left' },
+  { key: 'solicitado_por',   label: 'Solicitado Por',         width: 'w-40  min-w-[160px]', align: 'text-left' },
+  { key: 'autorizado_por',   label: 'Autorizado Por',         width: 'w-40  min-w-[160px]', align: 'text-left' },
+  { key: 'fecha_apertura',   label: 'Fecha de Apertura',      width: 'w-32  min-w-[128px]', align: 'text-left' },
+  { key: 'fecha_hora_cierre',label: 'Fecha y Hora de Cierre', width: 'w-40  min-w-[160px]', align: 'text-left' },
+  { key: 'cancelado_por',    label: 'Cancelado Por',          width: 'w-36  min-w-[144px]', align: 'text-left' },
+  { key: 'recepcionado_por', label: 'Recepcionado Por',       width: 'w-40  min-w-[160px]', align: 'text-left' },
+  { key: 'estado',           label: 'Estado',                 width: 'w-28  min-w-[112px]', align: 'text-left' },
 ];
 
 const PERMISO_VACIO = {
@@ -31,8 +31,8 @@ const PERMISO_VACIO = {
 const anioActual = new Date().getFullYear();
 
 const DATA_EJEMPLO = [
-  { id: 1, numero: 'P-001', ubicacion: 'Caldera Unidad 1 - Zona Quemadores',  solicitado_por: 'Carlos Muñoz / TECLAB',      autorizado_por: 'Norman Galaz',   fecha_apertura: '2026-08-01', fecha_hora_cierre: '2026-08-01 12:00', cancelado_por: '',             recepcionado_por: 'Pedro Rojas',    estado: 'CERRADO'  },
-  { id: 2, numero: 'P-002', ubicacion: 'Turbina Vapor - Cámara de Paletas',   solicitado_por: 'Roberto Silva / Mant.',     autorizado_por: 'Jorge Albornoz', fecha_apertura: '2026-08-05', fecha_hora_cierre: '',                cancelado_por: '',             recepcionado_por: '',               estado: 'ABIERTO'  },
+  { id: 1, numero: 'P-001', ubicacion: 'Caldera Unidad 1 - Zona Quemadores',  solicitado_por: 'Carlos Muñoz / TECLAB',      autorizado_por: 'Norman Galaz',   fecha_apertura: '2026-08-01', fecha_hora_cierre: '2026-08-01 12:00', cancelado_por: '',             recepcionado_por: 'Humberto Barra', estado: 'CERRADO'  },
+  { id: 2, numero: 'P-002', ubicacion: 'Turbina Vapor - Cámara de Paletas',   solicitado_por: 'Roberto Silva / Mant.',     autorizado_por: 'Javier San Martín', fecha_apertura: '2026-08-05', fecha_hora_cierre: '',                cancelado_por: '',             recepcionado_por: '',               estado: 'ABIERTO'  },
   { id: 3, numero: 'P-003', ubicacion: 'Sala Transformadores - Patio 33 kV',  solicitado_por: 'Luis Pérez / ELECTRUM',     autorizado_por: 'Norman Galaz',   fecha_apertura: '2026-08-08', fecha_hora_cierre: '',                cancelado_por: 'Norman Galaz', recepcionado_por: '',               estado: 'ABIERTO'  },
 ];
 
@@ -62,6 +62,22 @@ const calcularSiguienteNumero = (lista = []) => {
   return `P-${String(max + 1).padStart(3, '0')}`;
 };
 
+const JEFES_DE_TURNO = [
+  'Norman Galaz',
+  'Javier San Martín',
+  'Pablo Flores Vásquez',
+  'Ariel Torres',
+  'Cristián Valdivia'
+];
+
+const OPERADORES_SALA = [
+  'Jorge Albornoz',
+  'Humberto Barra',
+  'Luis Morales',
+  'Eduardo Armijo',
+  'Arístides Toledo'
+];
+
 /* ─── Modal Nuevo / Editar Permiso ─── */
 function ModalPermiso({ permiso, siguienteNumero, onGuardar, onCerrar, modoNocturno }) {
   const [form, setForm] = useState(() => ({
@@ -71,6 +87,9 @@ function ModalPermiso({ permiso, siguienteNumero, onGuardar, onCerrar, modoNoctu
     ...(permiso || {})
   }));
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const jefesLista = Array.from(new Set([...JEFES_DE_TURNO, form.autorizado_por].filter(Boolean)));
+  const opsLista = Array.from(new Set([...OPERADORES_SALA, form.recepcionado_por].filter(Boolean)));
 
   // Auto-cambio de estado: ABIERTO al crear, CERRADO cuando se recibe (recepcionado_por lleno)
   useEffect(() => {
@@ -109,17 +128,18 @@ function ModalPermiso({ permiso, siguienteNumero, onGuardar, onCerrar, modoNoctu
 
         {/* Campos */}
         <div className="p-6 grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
-          <div>
-            <label className={lbl}>
-              N° Permiso <span className="text-[9px] text-orange-400 font-normal lowercase ml-1">(automático)</span>
+          <div className="col-span-2 flex flex-col items-center justify-center text-center pb-2 border-b border-orange-500/20 mb-1">
+            <label className={`${lbl} text-xs font-black text-orange-500 text-center uppercase tracking-widest`}>
+              N° Permiso en Caliente <span className="text-[10px] text-orange-400 font-normal lowercase ml-1">(automático / editable)</span>
             </label>
-            <input className={`${inp} font-mono font-bold text-orange-400`} value={form.numero} onChange={e => set('numero', e.target.value)} placeholder="Ej. P-004" />
-          </div>
-          <div>
-            <label className={lbl}>Estado</label>
-            <select className={inp} value={form.estado} onChange={e => set('estado', e.target.value)}>
-              {ESTADOS.map(e => <option key={e.valor} value={e.valor}>{e.label}</option>)}
-            </select>
+            <div className="w-full max-w-xs mx-auto">
+              <input
+                className={`${inp} font-mono font-black text-xl text-orange-400 py-2 px-4 text-center rounded-xl border-2 border-orange-500/60 bg-orange-950/30 shadow-lg tracking-widest focus:ring-2 focus:ring-orange-500`}
+                value={form.numero}
+                onChange={e => set('numero', e.target.value)}
+                placeholder="Ej. P-004"
+              />
+            </div>
           </div>
           <div className="col-span-2">
             <label className={lbl}>Ubicación Técnica</label>
@@ -131,7 +151,12 @@ function ModalPermiso({ permiso, siguienteNumero, onGuardar, onCerrar, modoNoctu
           </div>
           <div>
             <label className={lbl}>Autorizado Por</label>
-            <input className={inp} value={form.autorizado_por} onChange={e => set('autorizado_por', e.target.value)} placeholder="Jefe de Turno / Supervisor" />
+            <select className={inp} value={form.autorizado_por} onChange={e => set('autorizado_por', e.target.value)}>
+              <option value="">-- Seleccione Jefe de Turno --</option>
+              {jefesLista.map(name => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className={lbl}>Fecha de Apertura</label>
@@ -147,7 +172,12 @@ function ModalPermiso({ permiso, siguienteNumero, onGuardar, onCerrar, modoNoctu
           </div>
           <div>
             <label className={lbl}>Recepcionado Por</label>
-            <input className={inp} value={form.recepcionado_por} onChange={e => set('recepcionado_por', e.target.value)} placeholder="Nombre quien recepciona" />
+            <select className={inp} value={form.recepcionado_por} onChange={e => set('recepcionado_por', e.target.value)}>
+              <option value="">-- Seleccione Operador Sala --</option>
+              {opsLista.map(name => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -167,28 +197,51 @@ function ModalPermiso({ permiso, siguienteNumero, onGuardar, onCerrar, modoNoctu
 
 /* ─── Vista Principal ─── */
 export default function VistaPermisosCaliente({ onVolver, modoNocturno, usuarioActual }) {
-  const [permisos, setPermisos]           = useState(DATA_EJEMPLO);
+  const [permisos, setPermisos]           = useState(() => {
+    try {
+      const saved = localStorage.getItem('permisos_caliente_turno');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    localStorage.setItem('permisos_caliente_turno', JSON.stringify(DATA_EJEMPLO));
+    return DATA_EJEMPLO;
+  });
   const [modalAbierto, setModalAbierto]   = useState(false);
   const [permisoEditando, setPermisoEdit] = useState(null);
   const [filtroEstado, setFiltroEstado]   = useState('TODOS');
   const [busqueda, setBusqueda]           = useState('');
 
+  const notificarYGuardar = (nuevaLista) => {
+    setPermisos(nuevaLista);
+    try {
+      localStorage.setItem('permisos_caliente_turno', JSON.stringify(nuevaLista));
+      window.dispatchEvent(new Event('permisos_actualizados'));
+    } catch (e) {
+      console.error("Error guardando permisos en localStorage:", e);
+    }
+  };
+
   const nextId = () => Math.max(0, ...permisos.map(p => p.id)) + 1;
 
   const guardarPermiso = (form) => {
+    let nuevaLista = [];
     if (form.id) {
-      setPermisos(p => p.map(x => x.id === form.id ? form : x));
+      nuevaLista = permisos.map(x => x.id === form.id ? form : x);
     } else {
       const numAuto = form.numero || calcularSiguienteNumero(permisos);
-      setPermisos(p => [...p, { ...form, id: nextId(), numero: numAuto }]);
+      nuevaLista = [...permisos, { ...form, id: nextId(), numero: numAuto }];
     }
+    notificarYGuardar(nuevaLista);
     setModalAbierto(false);
     setPermisoEdit(null);
   };
 
   const eliminarPermiso = (id) => {
     if (window.confirm('¿Eliminar este permiso?')) {
-      setPermisos(p => p.filter(x => x.id !== id));
+      const nuevaLista = permisos.filter(x => x.id !== id);
+      notificarYGuardar(nuevaLista);
     }
   };
 
@@ -336,7 +389,7 @@ export default function VistaPermisosCaliente({ onVolver, modoNocturno, usuarioA
               <thead>
                 <tr>
                   {COLUMNAS.map(col => (
-                    <th key={col.key} className={`${col.width} px-3 py-2.5 text-left font-bold text-[11px] uppercase tracking-wider border-r last:border-r-0 whitespace-nowrap ${thCls}`}>
+                    <th key={col.key} className={`${col.width} px-3 py-2.5 ${col.align || 'text-left'} font-bold text-[11px] uppercase tracking-wider border-r last:border-r-0 whitespace-nowrap ${thCls}`}>
                       {col.label}
                     </th>
                   ))}
@@ -355,7 +408,7 @@ export default function VistaPermisosCaliente({ onVolver, modoNocturno, usuarioA
 
                 {permisosFiltrados.map((p, idx) => (
                   <tr key={p.id} className={`border-b last:border-b-0 group hover:brightness-110 transition-all ${idx % 2 === 0 ? trEven : trOdd}`}>
-                    <td className={`px-3 py-2 border-r font-mono font-bold text-orange-400 whitespace-nowrap ${tdCls}`}>{p.numero || `#${idx + 1}`}</td>
+                    <td className={`px-3 py-2 border-r font-mono font-black text-sm text-orange-400 text-center tracking-wider whitespace-nowrap ${tdCls}`}>{p.numero || `#${idx + 1}`}</td>
                     <td className={`px-3 py-2 border-r ${tdCls}`}>
                       <span className="flex items-start gap-1">
                         <MapPin className="w-3 h-3 mt-0.5 flex-none opacity-50" />

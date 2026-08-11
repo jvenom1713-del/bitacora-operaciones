@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
-import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock } from 'lucide-react';
+import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
+import { getApiUrl, formatearEventosParaBitacora, formatearSenalesParaTexto } from '../apiConfig';
 
 // Componente de Edición de Texto Enriquecido
 function RichTextEditorField({ value, onChange, placeholder, className, style }) {
@@ -47,6 +48,7 @@ export default function VistaConsultaHojaTurno({
   equipoTurno = {}, 
   modoNocturno, 
   onVolverMenu,
+  onAprobarBitacora,
   // Props compartidas con DashboardIniciarTurno
   textoBitacora = {},
   setTextoBitacora,
@@ -54,10 +56,60 @@ export default function VistaConsultaHojaTurno({
   setMatrizEquipos,
   parametrosGeneracion,
   setParametrosGeneracion,
-  esJefeTurno = false
+  esJefeTurno = false,
+  rolActivo,
+  eventos = [],
+  onAbrirTurno,
+  // ── Props de estado compartido (instrucciones y señales) ──────────────────
+  instruccionesOperacionales: instruccionesOperacionalesProp,
+  setInstruccionesOperacionales,
+  senalesForzadas: senalesForzadasProp,
+  setSenalesForzadas,
+  instruccionesEspeciales: instruccionesEspecialesProp,
+  setInstruccionesEspeciales
 }) {
   const folioStr = turnoActivo?.folio || '2428-A';
   const fechaStr = turnoActivo?.fecha || '29-07-2026';
+
+  const emailTrim = usuarioActual?.email?.toLowerCase() || '';
+  const JEFES_EMAILS = [
+    'jsanmartin@generadora.cl', 
+    'pflores@generadora.cl', 
+    'atorres@generadora.cl', 
+    'ngalaz@generadora.cl', 
+    'cvaldivia@generadora.cl', 
+    'admin@generadora.cl'
+  ];
+
+  const esJefeTurnoEfectivo = Boolean(
+    esJefeTurno ||
+    rolActivo === 'Jefe de Turno' ||
+    usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') || 
+    usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
+    usuarioActual?.email?.toLowerCase()?.includes('jefe') ||
+    usuarioActual?.rol_nombre === 'Jefe de Turno' ||
+    usuarioActual?.rol_codigo === 'JEFE_TURNO' ||
+    usuarioActual?.rol_codigo === 'ADMIN' ||
+    JEFES_EMAILS.includes(emailTrim)
+  );
+
+  const [eventosTurno, setEventosTurno] = useState(eventos || []);
+
+  useEffect(() => {
+    if (eventos && eventos.length > 0) {
+      setEventosTurno(eventos);
+    } else {
+      const tId = turnoActivo?.id || 1;
+      fetch(getApiUrl(`/api/bitacora/eventos/${tId}`))
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setEventosTurno(data);
+          }
+        })
+        .catch(err => console.error("Error cargando eventos relevantes en consulta:", err));
+    }
+  }, [turnoActivo, eventos]);
 
   // Estado de edición activa por sección (solo JDT)
   const [editandoBitacora, setEditandoBitacora] = useState(false);
@@ -75,19 +127,169 @@ export default function VistaConsultaHojaTurno({
   // Copia local temporal para edición (se confirma al guardar)
   const [borradorBitacora, setBorradorBitacora] = useState({});
   const [borradorEquipos, setBorradorEquipos] = useState([]);
-  const [instrucciones, setInstrucciones] = useState(
-    '• Mantener presión en colector secundario por encima de 4.2 bar.\n• Verificar aislamiento en VTR G tras cada ciclo de arranque.\n• Coordinación constante con CEN ante variaciones de frecuencia en barra 220 kV.'
-  );
-  const [senalesForzadas, setSenalesForzadas] = useState(
-    '• FCV094: Señal manual forzada por arreglo provisorio en actuador neumático.\n• VTR B: Interlock de disparo omitido por mantención de estructura.'
-  );
+  // ── Instrucciones y Señales: se prioriza el prop global de App.jsx ─────────
+  // instruccionesOperacionales y instruccionesEspeciales son arrays estructurados
+  // senalesForzadas es un array estructurado (comparte misma referencia que DashboardIniciarTurno)
+  const instruccionesOperacionales = instruccionesOperacionalesProp ?? [];
+  const instruccionesEspeciales = instruccionesEspecialesProp ?? [];
+  // Estado local legacy para el textarea simple de instrucciones de texto libre
+  const [instrucciones, setInstrucciones] = useState('Sin instrucciones operacionales registradas.');
+  const senalesForzadasGlobal = senalesForzadasProp;
+  const [senalesForzadasTexto, setSenalesForzadasTexto] = useState('');
+  const [senalesEstructuradas, setSenalesEstructuradas] = useState([]);
+
+  const cargarSenalesLocales = () => {
+    try {
+      const stored = localStorage.getItem('senales_forzadas_turno');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSenalesEstructuradas(parsed);
+          setSenalesForzadasTexto(formatearSenalesParaTexto(parsed));
+          return;
+        }
+      }
+    } catch (_) {}
+    if (Array.isArray(senalesForzadasProp) && senalesForzadasProp.length > 0) {
+      setSenalesEstructuradas(senalesForzadasProp);
+      setSenalesForzadasTexto(formatearSenalesParaTexto(senalesForzadasProp));
+    } else {
+      setSenalesEstructuradas([]);
+      setSenalesForzadasTexto('• FCV094: Señal manual forzada por arreglo provisorio en actuador neumático.\n• VTR B: Interlock de disparo omitido por mantención de estructura.');
+    }
+  };
+
+  const [equiposPrincipalesLocales, setEquiposPrincipalesLocales] = useState([]);
+
+  const cargarEquiposPrincipalesLocales = () => {
+    try {
+      const stored = localStorage.getItem('bitacora_equipos');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setEquiposPrincipalesLocales(parsed.map(item => ({
+            id: typeof item === 'string' ? item : (item.id || item.codigo || ''),
+            estado: typeof item === 'string' ? 'En servicio' : (typeof item.estado === 'string' ? item.estado : 'En servicio')
+          })));
+          return;
+        } else if (parsed && typeof parsed === 'object') {
+          const lista = Object.keys(parsed).map(k => ({
+            id: k,
+            estado: typeof parsed[k] === 'string' ? parsed[k] : (typeof parsed[k]?.estado === 'string' ? parsed[k].estado : 'En servicio')
+          }));
+          setEquiposPrincipalesLocales(lista);
+          return;
+        }
+      }
+    } catch (_) {}
+    setEquiposPrincipalesLocales([]);
+  };
+
+  useEffect(() => {
+    cargarEquiposPrincipalesLocales();
+    window.addEventListener('equipos_actualizados', cargarEquiposPrincipalesLocales);
+    window.addEventListener('storage', cargarEquiposPrincipalesLocales);
+    return () => {
+      window.removeEventListener('equipos_actualizados', cargarEquiposPrincipalesLocales);
+      window.removeEventListener('storage', cargarEquiposPrincipalesLocales);
+    };
+  }, []);
+
+  const [listaInstruccionesLocales, setListaInstruccionesLocales] = useState([]);
+
+  const cargarInstruccionesLocales = () => {
+    try {
+      const stored = localStorage.getItem('instrucciones_especiales_turno');
+      if (stored !== null) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setListaInstruccionesLocales(parsed);
+          return;
+        }
+      }
+    } catch (_) {}
+    if (Array.isArray(instruccionesEspecialesProp)) {
+      setListaInstruccionesLocales(instruccionesEspecialesProp);
+    } else {
+      setListaInstruccionesLocales([]);
+    }
+  };
+
+  useEffect(() => {
+    cargarInstruccionesLocales();
+    window.addEventListener('instrucciones_actualizadas', cargarInstruccionesLocales);
+    window.addEventListener('storage', cargarInstruccionesLocales);
+    return () => {
+      window.removeEventListener('instrucciones_actualizadas', cargarInstruccionesLocales);
+      window.removeEventListener('storage', cargarInstruccionesLocales);
+    };
+  }, [instruccionesEspecialesProp]);
+
+  useEffect(() => {
+    cargarSenalesLocales();
+    window.addEventListener('senales_actualizadas', cargarSenalesLocales);
+    window.addEventListener('storage', cargarSenalesLocales);
+    return () => {
+      window.removeEventListener('senales_actualizadas', cargarSenalesLocales);
+      window.removeEventListener('storage', cargarSenalesLocales);
+    };
+  }, [senalesForzadasProp]);
   const [guardado, setGuardado] = useState(false);
 
   const [observacionesJefe, setObservacionesJefe] = useState('');
   const [enviandoCierre, setEnviandoCierre] = useState(false);
   const [estadoTurnoCierre, setEstadoTurnoCierre] = useState(turnoActivo?.estado || 'ABIERTO');
+  const [cerradoPorNombre, setCerradoPorNombre] = useState(turnoActivo?.cerrado_por_nombre || '-');
   const [mensajeCierre, setMensajeCierre] = useState(null);
   const [mostrarModalResumenOperativo, setMostrarModalResumenOperativo] = useState(false);
+
+  // ── Permisos en Caliente: cargamos desde localStorage o datos del turno ─────
+  const [permisosTurno, setPermisosTurno] = useState([]);
+
+  const cargarPermisosLocales = () => {
+    try {
+      const stored = localStorage.getItem('permisos_caliente_turno');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setPermisosTurno(parsed);
+          return;
+        }
+      }
+    } catch (_) {}
+    setPermisosTurno([
+      { id: 2, numero: 'P-002', ubicacion: 'Turbina Vapor - Cámara de Paletas',  solicitado_por: 'Roberto Silva / Mant.', autorizado_por: 'Javier San Martín', fecha_apertura: '2026-08-05', estado: 'ABIERTO' },
+      { id: 3, numero: 'P-003', ubicacion: 'Sala Transformadores - Patio 33 kV', solicitado_por: 'Luis Pérez / ELECTRUM',  autorizado_por: 'Norman Galaz',       fecha_apertura: '2026-08-08', estado: 'ABIERTO' },
+    ]);
+  };
+
+  useEffect(() => {
+    cargarPermisosLocales();
+    window.addEventListener('permisos_actualizados', cargarPermisosLocales);
+    window.addEventListener('storage', cargarPermisosLocales);
+    return () => {
+      window.removeEventListener('permisos_actualizados', cargarPermisosLocales);
+      window.removeEventListener('storage', cargarPermisosLocales);
+    };
+  }, [turnoActivo]);
+
+  const permisosAbiertos = permisosTurno.filter(p => p.estado === 'ABIERTO');
+
+  // Auto-scroll a la Sección 6 (Aprobación y Firma) cuando el turno está EN REVISIÓN
+  useEffect(() => {
+    if (estadoTurnoCierre === 'EN_REVISION') {
+      const timer = setTimeout(() => {
+        const el = document.getElementById('seccion-6-aprobacion');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [estadoTurnoCierre]);
+
+
+
 
   const [datosGenLocal, setDatosGenLocal] = useState({
     costoMarginal: '40.3',
@@ -102,7 +304,7 @@ export default function VistaConsultaHojaTurno({
     : datosGenLocal;
 
   useEffect(() => {
-    fetch('/api/resumen-generacion-diaria')
+    fetch(getApiUrl('/api/resumen-generacion-diaria'))
       .then(res => res.json())
       .then(data => {
         if (data && data.status !== 'error') {
@@ -143,9 +345,9 @@ export default function VistaConsultaHojaTurno({
     { codigo: 'GT11', nombre_equipo: 'Turbina de Gas GT11', estado: 'En servicio' },
     { codigo: 'TV', nombre_equipo: 'Turbina de Vapor TV', estado: 'En servicio' },
     { codigo: 'BOP', nombre_equipo: 'Sistemas Auxiliares BOP', estado: 'Operativo con fragilidad' },
-    { codigo: 'VTR_A', nombre_equipo: 'Transformador VTR A', estado: 'En servicio' },
-    { codigo: 'VTR_B', nombre_equipo: 'Transformador VTR B', estado: 'Indisponible' },
-    { codigo: 'VTR_G', nombre_equipo: 'Transformador VTR G', estado: 'Limitado baja velocidad' },
+    { codigo: 'VTR_A', nombre_equipo: 'Ventilador VTR A', estado: 'En servicio' },
+    { codigo: 'VTR_B', nombre_equipo: 'Ventilador VTR B', estado: 'Indisponible' },
+    { codigo: 'VTR_G', nombre_equipo: 'Ventilador VTR G', estado: 'Limitado baja velocidad' },
     { codigo: 'B-101', nombre_equipo: 'Bomba Alimentación B-101', estado: 'En servicio' },
     { codigo: 'B-102', nombre_equipo: 'Bomba Alimentación B-102', estado: 'En reserva' },
     { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
@@ -429,6 +631,33 @@ export default function VistaConsultaHojaTurno({
   const [passwordJefe, setPasswordJefe] = useState('');
   const [errorPasswordJefe, setErrorPasswordJefe] = useState(null);
 
+  const handleSolicitarCierreOperador = async () => {
+    try {
+      setEnviandoCierre(true);
+      setMensajeCierre(null);
+      const res = await fetch(getApiUrl('/api/turnos/enviar-jefe-turno'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          turno_id: turnoActivo?.id || 1, 
+          usuario_id: usuarioActual?.id || 3,
+          tipo_envio: 'NORMAL',
+          observaciones: 'Solicitud de cierre enviada por el operador.'
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.detail || 'Error al solicitar el cierre de turno');
+      }
+      setEstadoTurnoCierre('EN_REVISION');
+      setMensajeCierre({ texto: 'Solicitud de cierre enviada exitosamente. La bitácora se encuentra en revisión por el Jefe de Turno.', tipo: 'success' });
+    } catch (err) {
+      setMensajeCierre({ texto: err.message, tipo: 'error' });
+    } finally {
+      setEnviandoCierre(false);
+    }
+  };
+
   const handleAbrirModalPassword = () => {
     setPasswordJefe('');
     setErrorPasswordJefe(null);
@@ -442,14 +671,31 @@ export default function VistaConsultaHojaTurno({
       return;
     }
 
-    if (passTrim !== '12345' && passTrim !== 'admin') {
-      setErrorPasswordJefe('Contraseña incorrecta.');
-      return;
-    }
-
     setErrorPasswordJefe(null);
     setMostrarModalPasswordJefe(false);
     await handleAprobarYCerrarHoja(passTrim);
+  };
+
+  const handleReabrirTurno = async () => {
+    try {
+      setEnviandoCierre(true);
+      setMensajeCierre(null);
+      const res = await fetch(getApiUrl('/api/turnos/reabrir'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turno_id: turnoActivo?.id || 1, usuario_id: usuarioActual?.id })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.detail || 'Error al reabrir el turno');
+      }
+      setEstadoTurnoCierre('ABIERTO');
+      setMensajeCierre({ texto: 'El turno ha sido reabierto exitosamente. El estado ahora es ABIERTO.', tipo: 'success' });
+    } catch (err) {
+      setMensajeCierre({ texto: err.message, tipo: 'error' });
+    } finally {
+      setEnviandoCierre(false);
+    }
   };
 
   const handleAprobarYCerrarHoja = async (claveConfirmada) => {
@@ -475,26 +721,27 @@ export default function VistaConsultaHojaTurno({
         }
       }
 
+      const textos = textoBitacora || {};
       const contenidoTexto = `
 Central Nueva Renca - Hoja de Turno Consolidada
 Folio: ${folioStr} | Fecha: ${fechaStr} | Turno: ${turnoBitacora}
 
 1. RESUMEN DE GENERACIÓN DIARIA:
-- Día 1: ${textos.nuevaRencaDia1}
-- Día 2: ${textos.nuevaRencaDia2}
+- Día 1: ${textos.nuevaRencaDia1 || '-'}
+- Día 2: ${textos.nuevaRencaDia2 || '-'}
 
 2. FRAGILIDADES OPERACIONALES:
-BOP: ${textos.bop}
-Turbina Vapor: ${textos.turbinaVapor}
+BOP: ${textos.bop || '-'}
+Turbina Vapor: ${textos.turbinaVapor || '-'}
 
-3. INSTRUCCIONES OPERACIONALES ESPECIALES:
+3. INSTRUCCIONES OPERACIONALES:
 ${instrucciones}
 
 4. SEÑALES FORZADAS:
-${senalesForzadas}
+${senalesForzadasTexto}
 `;
 
-      const res = await fetch('/api/turnos/aprobar', {
+      const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -511,12 +758,27 @@ ${senalesForzadas}
         })
       });
 
-      const data = await res.json();
+      let data = {};
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const textErr = await res.text().catch(() => '');
+        if (!res.ok) {
+          throw new Error(`Error en el servidor (${res.status}). Verifique la conexión con el servidor backend.`);
+        }
+      }
+
       if (!res.ok) {
-        throw new Error(data.detail || 'Error al aprobar la bitácora');
+        throw new Error(data.detail || data.mensaje || 'Error al aprobar la bitácora');
       }
 
       setEstadoTurnoCierre('CERRADO');
+      try {
+        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (e) {}
+      if (onAprobarBitacora) onAprobarBitacora(turnoActivo?.id);
       setMensajeCierre({ texto: data.mensaje || 'Bitácora aprobada y PDF guardado correctamente. Redirigiendo al Menú...', tipo: 'success' });
       setTimeout(() => {
         onVolverMenu();
@@ -591,11 +853,13 @@ ${senalesForzadas}
   };
 
   const badgeEstado = (estado) => {
-    if (!estado) return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+    if (!estado || typeof estado !== 'string') return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+    if (estado.includes('LOTO') || estado.includes('Bloqueo')) return 'bg-purple-600/30 text-purple-300 border-purple-500/60 font-black';
+    if (estado.includes('Estructural') || estado.includes('estructural')) return 'bg-sky-600/30 text-sky-300 border-sky-500/60 font-black';
     if (estado.includes('Indisponible')) return 'bg-red-500/20 text-red-300 border-red-500/30';
     if (estado.includes('Limitado') || estado.includes('fragilidad')) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-    if (estado.includes('mantención') || estado.includes('Fuera')) return 'bg-red-600/20 text-red-400 border-red-600/30';
-    if (estado.includes('reserva')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+    if (estado.includes('mantención') || estado.includes('Fuera') || estado.includes('F/S')) return 'bg-red-600/20 text-red-400 border-red-600/30';
+    if (estado.includes('reserva') || estado.includes('Standby') || estado.includes('STB')) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
     return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
   };
 
@@ -612,7 +876,7 @@ ${senalesForzadas}
           <div className="flex items-center gap-3">
             <FileText className="w-8 h-8 text-orange-500 shrink-0" />
             <div>
-              <h1 className="text-xl font-black text-orange-500 tracking-tight">GMETROPOLITANA</h1>
+              <h1 className="text-xl font-black text-orange-500 tracking-tight"><span className="text-white">G</span>METROPOLITANA</h1>
               <p className="text-xs text-slate-400 font-medium mt-0.5">
                 Hoja de Turno Consolidada • Fecha: {fechaStr}
               </p>
@@ -634,9 +898,13 @@ ${senalesForzadas}
                 <span>BITÁCORA CERRADA</span>
               </span>
             ) : estadoTurnoCierre === 'EN_REVISION' ? (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/30 text-red-300 border border-red-500/60 text-xs font-black shadow-md animate-pulse">
-                <Lock className="w-4 h-4 text-red-500 shrink-0" />
-                <span>EL JEFE DE TURNO ESTÁ EN REVISIÓN</span>
+              <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black shadow-md animate-pulse ${
+                esJefeTurnoEfectivo
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50'
+                  : 'bg-red-600/30 text-red-300 border border-red-500/60'
+              }`}>
+                <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>{esJefeTurnoEfectivo ? 'EN REVISIÓN JDT — PENDIENTE DE APROBACIÓN' : 'EN REVISIÓN POR JEFE DE TURNO'}</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black shadow-md">
@@ -725,7 +993,7 @@ ${senalesForzadas}
           <div className="bg-gradient-to-r from-blue-900 via-blue-950 to-blue-900 px-4 py-3 border-b border-blue-800 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
             <span className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-amber-400" />
-              2. BITÁCORA DIARIA DEL TURNO OPERATIVO — NOVEDADES Y EVENTOS
+              2. BITÁCORA DIARIA DEL TURNO OPERATIVO
             </span>
             <div className="flex items-center gap-2">
               {esJefeTurno && !editandoBitacora && (
@@ -767,7 +1035,7 @@ ${senalesForzadas}
                   className={`font-sans leading-relaxed text-sm sm:text-base pt-1 font-normal whitespace-pre-line ${
                     modoNocturno ? 'text-slate-100 [&_b]:font-black [&_b]:text-amber-400 [&_div]:my-1' : 'text-slate-900 [&_b]:font-black [&_b]:text-blue-900 [&_div]:my-1'
                   }`}
-                  dangerouslySetInnerHTML={{ __html: (textos.nuevaRencaDia1 || 'Sin novedades registradas para el turno operativo.').replace(/\n/g, '<br/>') }}
+                  dangerouslySetInnerHTML={{ __html: ((textos.nuevaRencaDia1 && textos.nuevaRencaDia1 !== 'Operación normal según consigna del Coordinador Eléctrico Nacional (CEN).') ? textos.nuevaRencaDia1 : (formatearEventosParaBitacora(eventosTurno) || textos.nuevaRencaDia1 || 'Sin novedades registradas para el turno operativo.')).replace(/\n/g, '<br/>') }}
                 />
               )}
             </div>
@@ -850,7 +1118,7 @@ ${senalesForzadas}
           <div className="bg-slate-800/90 px-4 py-3 border-b border-slate-700 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-400" />
-              4. INSTRUCCIONES OPERACIONALES ESPECIALES Y SEÑALES FORZADAS
+              4. INSTRUCCIONES OPERACIONALES Y SEÑALES FORZADAS
             </span>
             <div className="flex items-center gap-2">
               {esJefeTurno && !editandoInstrucciones && (
@@ -875,10 +1143,70 @@ ${senalesForzadas}
           </div>
 
           <div className={`p-5 space-y-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+            {/* BLOQUE 1 (ARRIBA): SEÑALES FORZADAS Y/O MANUALES EN PLANTA */}
+            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-amber-200 shadow-sm'}`}>
+              <strong className={`block text-xs uppercase pb-1.5 flex items-center gap-2 border-b ${modoNocturno ? 'text-amber-400 border-slate-800' : 'text-amber-900 border-amber-200 font-extrabold'}`}>
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                Señales Forzadas y/o Manuales en Planta
+              </strong>
+              {editandoInstrucciones ? (
+                <RichTextEditorField
+                  value={senalesForzadasTexto}
+                  onChange={val => setSenalesForzadasTexto(val)}
+                  placeholder="Escriba aquí señales forzadas..."
+                  className={modoNocturno ? 'border-amber-700/60 text-amber-200 bg-slate-950/80' : 'border-slate-300 text-slate-900 bg-white'}
+                />
+              ) : senalesEstructuradas && senalesEstructuradas.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                  {/* MKVI CTG */}
+                  <div className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-[#040d1a] border-blue-900/60' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b pb-1 mb-1.5 tracking-wider">MKVI CTG</div>
+                    {senalesEstructuradas.filter(s => s.ctg && s.ctg !== '—' && String(s.ctg).trim() !== '').length === 0 ? (
+                      <span className="italic opacity-50 text-[11px]">Sin registros</span>
+                    ) : (
+                      senalesEstructuradas.filter(s => s.ctg && s.ctg !== '—' && String(s.ctg).trim() !== '').map((s, i) => (
+                        <div key={i} className="py-0.5 text-[11px] font-normal leading-tight">• {s.ctg}</div>
+                      ))
+                    )}
+                  </div>
+                  {/* MKVI STG */}
+                  <div className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-[#040d1a] border-blue-900/60' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b pb-1 mb-1 tracking-wider">MKVI STG</div>
+                    {senalesEstructuradas.filter(s => s.stg && s.stg !== '—' && String(s.stg).trim() !== '').length === 0 ? (
+                      <span className="italic opacity-50 text-[11px]">Sin registros</span>
+                    ) : (
+                      senalesEstructuradas.filter(s => s.stg && s.stg !== '—' && String(s.stg).trim() !== '').map((s, i) => (
+                        <div key={i} className="py-0.5 text-[11px] font-normal leading-tight">• {s.stg}</div>
+                      ))
+                    )}
+                  </div>
+                  {/* BOP */}
+                  <div className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-[#040d1a] border-blue-900/60' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b pb-1 mb-1 tracking-wider">BOP</div>
+                    {senalesEstructuradas.filter(s => s.bop1 && s.bop1 !== '—' && String(s.bop1).trim() !== '').length === 0 ? (
+                      <span className="italic opacity-50 text-[11px]">Sin registros</span>
+                    ) : (
+                      senalesEstructuradas.filter(s => s.bop1 && s.bop1 !== '—' && String(s.bop1).trim() !== '').map((s, i) => (
+                        <div key={i} className="py-0.5 text-[11px] font-normal leading-tight">• {s.bop1}</div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`space-y-1.5 font-sans text-sm leading-relaxed pt-1 font-normal whitespace-pre-line ${
+                    modoNocturno ? 'text-amber-200 [&_b]:font-black [&_b]:text-amber-300 [&_div]:my-1' : 'text-slate-900 [&_b]:font-black [&_b]:text-amber-800 [&_div]:my-1'
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: (senalesForzadasTexto || 'Sin señales.').replace(/\n/g, '<br/>') }}
+                />
+              )}
+            </div>
+
+            {/* BLOQUE 2 (ABAJO): INSTRUCCIONES OPERACIONALES */}
             <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-blue-200 shadow-sm'}`}>
               <strong className={`block text-xs uppercase pb-1.5 flex items-center gap-2 border-b ${modoNocturno ? 'text-cyan-400 border-slate-800' : 'text-blue-900 border-blue-200 font-extrabold'}`}>
                 <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                Instrucciones Operacionales Especiales
+                Instrucciones Operacionales
               </strong>
               {editandoInstrucciones ? (
                 <RichTextEditorField
@@ -887,34 +1215,26 @@ ${senalesForzadas}
                   placeholder="Escriba aquí instrucciones operacionales..."
                   className={modoNocturno ? 'border-blue-700/60 text-slate-100 bg-slate-950/80' : 'border-slate-300 text-slate-900 bg-white'}
                 />
+              ) : (listaInstruccionesLocales && listaInstruccionesLocales.length > 0) ? (
+                /* Vista estructurada desde el estado global/local compartido con Dashboard */
+                <div className="space-y-1.5 pt-1">
+                  {listaInstruccionesLocales.map((inst, idx) => (
+                    <div key={inst.id || idx} className={`flex items-start gap-2 text-sm font-normal ${ modoNocturno ? 'text-slate-200' : 'text-slate-800'}`}>
+                      <span className={`shrink-0 mt-0.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black border ${
+                        inst.estado === 'Activa'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          : inst.estado === 'Pendiente'
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                          : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
+                      }`}>{inst.estado}</span>
+                      <span className="flex-1">{inst.fecha && <span className="font-mono text-xs opacity-60 mr-1">[{inst.fecha}]</span>}{inst.descripcion}</span>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div
-                  className={`space-y-1.5 font-sans text-sm leading-relaxed pt-1 font-normal whitespace-pre-line ${
-                    modoNocturno ? 'text-slate-100 [&_b]:font-black [&_b]:text-cyan-300 [&_div]:my-1' : 'text-slate-900 [&_b]:font-black [&_b]:text-blue-900 [&_div]:my-1'
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: (instrucciones || 'Sin instrucciones.').replace(/\n/g, '<br/>') }}
-                />
-              )}
-            </div>
-            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-amber-200 shadow-sm'}`}>
-              <strong className={`block text-xs uppercase pb-1.5 flex items-center gap-2 border-b ${modoNocturno ? 'text-amber-400 border-slate-800' : 'text-amber-900 border-amber-200 font-extrabold'}`}>
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                Señales Forzadas y/o Manuales en Planta
-              </strong>
-              {editandoInstrucciones ? (
-                <RichTextEditorField
-                  value={senalesForzadas}
-                  onChange={val => setSenalesForzadas(val)}
-                  placeholder="Escriba aquí señales forzadas..."
-                  className={modoNocturno ? 'border-amber-700/60 text-amber-200 bg-slate-950/80' : 'border-slate-300 text-slate-900 bg-white'}
-                />
-              ) : (
-                <div
-                  className={`space-y-1.5 font-sans text-sm leading-relaxed pt-1 font-normal whitespace-pre-line ${
-                    modoNocturno ? 'text-amber-200 [&_b]:font-black [&_b]:text-amber-300 [&_div]:my-1' : 'text-slate-900 [&_b]:font-black [&_b]:text-amber-800 [&_div]:my-1'
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: (senalesForzadas || 'Sin señales.').replace(/\n/g, '<br/>') }}
-                />
+                <div className={`italic text-xs font-semibold py-2 ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
+                  No hay instrucciones operacionales registradas.
+                </div>
               )}
             </div>
           </div>
@@ -975,10 +1295,54 @@ ${senalesForzadas}
                 ))}
               </div>
             ) : (
-              /* Modo Vista — solo equipos con alguna indisponibilidad */
+              /* Modo Vista — solo equipos principales de la sección Operador de Sala en LOTO o Trabajos Estructurales */
               (() => {
-                const ESTADOS_NORMALES = ['En servicio', 'En reserva'];
-                const equiposConProblema = equipos.filter(eq => !ESTADOS_NORMALES.includes(eq.estado));
+                const nombresFormateados = {
+                  tg1: "Turbina de Gas TG1",
+                  tg2: "Turbina de Gas TG2",
+                  tv: "Turbina de Vapor TV",
+                  cc: "Condensador Central CC",
+                  ct: "Torre de Enfriamiento CT",
+                  bfpA: "Bomba Alimentación BFP-A",
+                  bfpB: "Bomba Alimentación BFP-B",
+                  bfpC: "Bomba Alimentación BFP-C",
+                  cwpA: "Bomba Circulación CWP-A",
+                  cwpB: "Bomba Circulación CWP-B",
+                  cwpC: "Bomba Circulación CWP-C",
+                  vtrA: "Ventilador TTRR VTR-A",
+                  vtrB: "Ventilador TTRR VTR-B",
+                  vtrC: "Ventilador TTRR VTR-C",
+                  vtrD: "Ventilador TTRR VTR-D",
+                  vtrE: "Ventilador TTRR VTR-E",
+                  vtrF: "Ventilador TTRR VTR-F",
+                  vtrG: "Ventilador TTRR VTR-G",
+                  vtrH: "Ventilador TTRR VTR-H",
+                  vtrI: "Ventilador TTRR VTR-I",
+                  vtrJ: "Ventilador TTRR VTR-J",
+                  bopA: "BOP Sistema Auxiliar A",
+                  bopB: "BOP Sistema Auxiliar B"
+                };
+
+                const equiposConProblema = (equiposPrincipalesLocales || [])
+                  .filter(eq => {
+                    if (!eq || !eq.estado) return false;
+                    const estStr = typeof eq.estado === 'string' ? eq.estado : String(eq.estado);
+                    return (
+                      estStr.includes('LOTO') || 
+                      estStr.includes('Bloqueo') || 
+                      estStr.includes('Estructural') || 
+                      estStr.includes('estructural')
+                    );
+                  })
+                  .map(eq => {
+                    const idStr = String(eq.id || '').trim();
+                    const estStr = typeof eq.estado === 'string' ? eq.estado : String(eq.estado || 'En servicio');
+                    return {
+                      codigo: idStr ? idStr.toUpperCase() : 'EQP',
+                      nombre_equipo: nombresFormateados[idStr] || `Equipo Principal ${idStr ? idStr.toUpperCase() : ''}`,
+                      estado: estStr
+                    };
+                  });
                 return equiposConProblema.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
                     <CheckCircle2 className="w-12 h-12 text-emerald-500 opacity-80" />
@@ -1012,8 +1376,102 @@ ${senalesForzadas}
           </div>
         </div>
 
+        {/* ─── SECCIÓN 5.5: PERMISOS EN CALIENTE SIN CERRAR ─────────────────── */}
+        <div className={`rounded-2xl shadow-xl border overflow-hidden ${modoNocturno ? 'bg-slate-900/90 border-orange-900/60' : 'bg-white border-orange-300'}`}>
+          {/* Header */}
+          <div className={`flex items-center justify-between px-6 py-4 border-b ${modoNocturno ? 'bg-orange-950/60 border-orange-900/40' : 'bg-orange-50 border-orange-200'}`}>
+            <span className={`font-bold text-sm flex items-center gap-2 ${modoNocturno ? 'text-orange-300' : 'text-orange-800'}`}>
+              <Flame className="w-5 h-5 text-orange-500" />
+              5.5. PERMISOS DE TRABAJO EN CALIENTE — SIN CERRAR AL CIERRE DE TURNO
+            </span>
+            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${
+              permisosAbiertos.length === 0
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                : 'bg-orange-500/20 text-orange-300 border-orange-500/50 animate-pulse'
+            }`}>
+              {permisosAbiertos.length === 0 ? (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              ) : (
+                <AlertTriangle className="w-3.5 h-3.5" />
+              )}
+              {permisosAbiertos.length === 0 ? 'Todos cerrados' : `${permisosAbiertos.length} ABIERTO(S)`}
+            </span>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {permisosAbiertos.length === 0 ? (
+              /* Sin permisos abiertos */
+              <div className={`flex items-center gap-3 p-4 rounded-xl border ${modoNocturno ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+                <span className="text-sm font-semibold">No hay permisos de trabajo en caliente activos sin cerrar. Turno en orden.</span>
+              </div>
+            ) : (
+              <>
+                {/* Alerta de advertencia */}
+                <div className={`flex items-center gap-3 p-3 rounded-xl border mb-4 ${modoNocturno ? 'bg-orange-950/50 border-orange-700/50 text-orange-200' : 'bg-orange-50 border-orange-300 text-orange-800'}`}>
+                  <AlertTriangle className="w-5 h-5 text-orange-400 shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wide">
+                    Atención: existen {permisosAbiertos.length} permiso(s) de trabajo en caliente sin cierre formal al momento del término del turno. Verificar y gestionar con el equipo entrante.
+                  </span>
+                </div>
+
+                {/* Tabla de permisos abiertos */}
+                <div className="overflow-x-auto rounded-xl border border-orange-500/30">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className={`text-left ${modoNocturno ? 'bg-orange-950/70 text-orange-300' : 'bg-orange-100 text-orange-800'}`}>
+                        <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">N° Permiso</th>
+                        <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Ubicación Técnica</th>
+                        <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Solicitado Por</th>
+                        <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Autorizado Por</th>
+                        <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Fecha Apertura</th>
+                        <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap text-center">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {permisosAbiertos.map((p, idx) => (
+                        <tr
+                          key={p.id || idx}
+                          className={`border-t ${modoNocturno ? 'border-slate-800 odd:bg-orange-950/20 even:bg-slate-900/40' : 'border-orange-100 odd:bg-orange-50/60 even:bg-white'}`}
+                        >
+                          <td className="px-4 py-3">
+                            <span className={`font-black text-sm ${modoNocturno ? 'text-orange-300' : 'text-orange-700'}`}>{p.numero || '—'}</span>
+                          </td>
+                          <td className={`px-4 py-3 font-medium ${modoNocturno ? 'text-slate-200' : 'text-slate-800'}`}>
+                            {p.ubicacion || '—'}
+                          </td>
+                          <td className={`px-4 py-3 ${modoNocturno ? 'text-slate-300' : 'text-slate-700'}`}>
+                            {p.solicitado_por || '—'}
+                          </td>
+                          <td className={`px-4 py-3 ${modoNocturno ? 'text-slate-300' : 'text-slate-700'}`}>
+                            {p.autorizado_por || '—'}
+                          </td>
+                          <td className={`px-4 py-3 font-mono ${modoNocturno ? 'text-slate-400' : 'text-slate-600'}`}>
+                            {p.fecha_apertura || '—'}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black border bg-orange-500/20 text-orange-300 border-orange-500/50">
+                              <Flame className="w-3 h-3" />
+                              ABIERTO
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Nota al pie */}
+                <p className={`text-[11px] mt-3 italic ${modoNocturno ? 'text-slate-500' : 'text-slate-400'}`}>
+                  * Esta sección se genera automáticamente a partir del registro de permisos de trabajo en caliente del turno. Los permisos abiertos deben quedar formalmente traspasados al operador entrante.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* SECCIÓN 6: CIERRE DE TURNO Y RESUMEN OPERATIVO */}
-        <div className={`rounded-2xl p-6 shadow-xl space-y-6 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-300'}`}>
+        <div id="seccion-6-aprobacion" className={`rounded-2xl p-6 shadow-xl space-y-6 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-300'}`}>
           <div className={`flex items-center justify-between border-b pb-4 ${modoNocturno ? 'border-slate-800' : 'border-slate-200'}`}>
             <span className={`font-bold text-sm flex items-center gap-2 ${modoNocturno ? 'text-emerald-400' : 'text-emerald-800'}`}>
               <ShieldCheck className="w-5 h-5 text-emerald-500" />
@@ -1028,9 +1486,9 @@ ${senalesForzadas}
                   <span>BITÁCORA CERRADA</span>
                 </span>
               ) : estadoTurnoCierre === 'EN_REVISION' ? (
-                <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/30 text-red-300 border border-red-500/60 text-xs font-black shadow-md animate-pulse">
-                  <Lock className="w-4 h-4 text-red-500 shrink-0" />
-                  <span>EL JEFE DE TURNO ESTÁ EN REVISIÓN</span>
+                <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-xs font-black shadow-md animate-pulse">
+                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>EN REVISIÓN POR JEFE DE TURNO</span>
                 </span>
               ) : (
                 <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black shadow-md">
@@ -1041,65 +1499,100 @@ ${senalesForzadas}
             </div>
           </div>
 
-          {/* BOTÓN PRINCIPAL EN CIERRE DE TURNO */}
-          <div className="grid grid-cols-1 gap-4">
-            {/* BOTÓN 1: Cierre de Turno */}
-            <button
-              onClick={handleAbrirModalPassword}
-              disabled={enviandoCierre || estadoTurnoCierre === 'CERRADO' || estadoTurnoCierre === 'EN_REVISION'}
-              className={`p-5 rounded-xl border transition-all shadow-xl flex items-center justify-center gap-3 ${
-                estadoTurnoCierre === 'CERRADO'
-                  ? 'bg-slate-800 text-emerald-400 border-emerald-700/60 cursor-not-allowed'
-                  : estadoTurnoCierre === 'EN_REVISION'
-                    ? 'bg-amber-950/80 text-amber-300 border-amber-500/80 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-emerald-400/50 shadow-emerald-900/30 font-black cursor-pointer transform hover:scale-[1.02] active:scale-95'
-              }`}
-            >
-              {estadoTurnoCierre === 'CERRADO' ? (
-                <Lock className="w-5 h-5 text-emerald-400" />
-              ) : estadoTurnoCierre === 'EN_REVISION' ? (
-                <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
-              ) : (
-                <Send className="w-5 h-5 text-white" />
-              )}
-              <div className="text-left">
-                <span className="block font-black text-sm uppercase">
-                  {estadoTurnoCierre === 'CERRADO' ? '1. Bitácora Cerrada' : '1. Cierre de Turno'}
-                </span>
-                <span className="text-[11px] font-normal opacity-90">
-                  {estadoTurnoCierre === 'CERRADO'
-                    ? 'Bitácora aprobada y cerrada oficialmente'
-                    : estadoTurnoCierre === 'EN_REVISION'
-                      ? 'En revisión por el Jefe de Turno'
-                      : 'Autorizar firma JDT y cerrar turno'}
-                </span>
-              </div>
-            </button>
-          </div>
-
-          {estadoTurnoCierre === 'CERRADO' ? (
-            <div className="bg-emerald-950/60 border border-emerald-700/50 p-4 rounded-xl text-emerald-200 text-xs font-bold flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <span>BITÁCORA APROBADA Y CERRADA — El documento oficial en PDF ha sido almacenado correctamente.</span>
+          {/* PASO 1: ESTADO ABIERTO */}
+          {estadoTurnoCierre === 'ABIERTO' && (
+            <div className="grid grid-cols-1 gap-4">
+              <button
+                onClick={handleSolicitarCierreOperador}
+                disabled={enviandoCierre}
+                className="p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                <Send className="w-5 h-5 text-cyan-300" />
+                <div className="text-left">
+                  <span className="block font-black text-sm uppercase">Enviar a Revisión de Jefe de Turno</span>
+                  <span className="text-[11px] font-normal opacity-90">Completar bitácora y enviar a revisión del Jefe de Turno para su autorización y firma.</span>
+                </div>
+              </button>
             </div>
-          ) : (
-            <div className="space-y-4 pt-2">
-              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-semibold">Cerrado por (Jefe de Turno Autorizante):</span>
-                <span className="font-bold text-emerald-400 font-mono">{usuarioActual?.nombre || equipoTurno?.jdt || 'Norman Galaz (Jefe de Turno)'}</span>
-              </div>
+          )}
 
-              {mensajeCierre && (
-                <div className={`p-3 rounded-xl text-xs font-bold border ${
-                  mensajeCierre.tipo === 'success' 
-                    ? 'bg-emerald-950/80 border-emerald-600/50 text-emerald-200' 
-                    : 'bg-rose-950/80 border-rose-600/50 text-rose-200'
-                }`}>
-                  {mensajeCierre.texto}
+          {/* PASO 2: ESTADO EN_REVISION */}
+          {estadoTurnoCierre === 'EN_REVISION' && (
+            <div>
+              {esJefeTurnoEfectivo ? (
+                /* Botón Único: Aprobar Bitácora (JDT) */
+                <button
+                  onClick={handleAbrirModalPassword}
+                  disabled={enviandoCierre}
+                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                  <div className="text-left">
+                    <span className="block font-black text-sm uppercase">APROBAR Y FIRMAR BITÁCORA JDT</span>
+                    <span className="text-[11px] font-normal opacity-90">Ingresar clave JDT para autorizar firma y cierre oficial del turno.</span>
+                  </div>
+                </button>
+              ) : (
+                /* Alerta Informativa Operador de Sala en REVISION */
+                <div className="p-5 rounded-xl border border-amber-500/60 bg-amber-950/60 text-amber-200 flex items-center gap-4 shadow-xl">
+                  <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
+                    <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="block font-black text-sm uppercase text-amber-300">Esperando aprobación del Jefe de Turno</span>
+                    <span className="text-xs text-amber-200/90 font-medium">La bitácora ha sido enviada a revisión y se encuentra bloqueada para edición en espera de la firma de jefatura.</span>
+                  </div>
                 </div>
               )}
             </div>
           )}
+
+          {/* PASO 3 & 4: ESTADO CERRADO / APROBADO / FINALIZADO */}
+          {(estadoTurnoCierre === 'CERRADO' || estadoTurnoCierre === 'APROBADO' || estadoTurnoCierre === 'FINALIZADO') && (
+            <div className="space-y-4">
+              <div className="bg-emerald-950/60 border border-emerald-700/50 p-4 rounded-xl text-emerald-200 text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>✅ TURNO CERRADO Y FIRMADO CON ÉXITO — El documento oficial en PDF ha sido almacenado correctamente.</span>
+              </div>
+
+              {/* BOTÓN DESTACADO VOLVER AL MENÚ PRINCIPAL */}
+              <button
+                onClick={() => {
+                  if (onVolverMenu) {
+                    onVolverMenu();
+                  } else if (onAbrirTurno) {
+                    onAbrirTurno();
+                  }
+                }}
+                className="w-full p-5 rounded-xl border border-emerald-400/60 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white shadow-2xl flex items-center justify-center gap-3 font-black text-base uppercase tracking-wider cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all"
+              >
+                <Home className="w-6 h-6 text-cyan-300" />
+                <span>🏠 Volver al Menú Principal</span>
+              </button>
+            </div>
+          )}
+
+          {/* INFORMACIÓN DE AUTORIZANTE */}
+          <div className="space-y-4 pt-2">
+            <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-semibold">Cerrado por (Jefe de Turno Autorizante):</span>
+              <span className="font-bold text-emerald-400 font-mono">
+                {estadoTurnoCierre === 'CERRADO' 
+                  ? (cerradoPorNombre && cerradoPorNombre !== '-' ? cerradoPorNombre : (usuarioActual?.nombre || equipoTurno?.jdt || 'Norman Galaz (Jefe de Turno)'))
+                  : '-'}
+              </span>
+            </div>
+
+            {mensajeCierre && (
+              <div className={`p-3 rounded-xl text-xs font-bold border ${
+                mensajeCierre.tipo === 'success' 
+                  ? 'bg-emerald-950/80 border-emerald-600/50 text-emerald-200' 
+                  : 'bg-rose-950/80 border-rose-600/50 text-rose-200'
+              }`}>
+                {mensajeCierre.texto}
+              </div>
+            )}
+          </div>
         </div>
 
       {/* MODAL CONFIRMACIÓN DE SEGURIDAD JDT */}
@@ -1368,7 +1861,6 @@ ${senalesForzadas}
                   </div>
                 </div>
               </div>
-
             </div>
 
             {/* Footer del Modal */}

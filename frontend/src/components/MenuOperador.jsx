@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, LogOut, Lock, Clock, AlertCircle, X, FileText, FileCheck, ShieldAlert } from 'lucide-react';
+import { Sun, Moon, LogOut, Lock, Clock, AlertCircle, X, FileText, FileCheck, ShieldAlert, Flame } from 'lucide-react';
 
 export default function MenuOperador({ 
   usuarioActual, 
@@ -11,14 +11,33 @@ export default function MenuOperador({
   modoNocturno, 
   setModoNocturno 
 }) {
-  const [mostrarModalConsultaCerrada, setMostrarModalConsultaCerrada] = useState(false);
   const esTurnoCerrado = turnoActivo?.estado === 'CERRADO';
   const emailUsuario = usuarioActual?.email || 'jalbornoz@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Operador Sala de Control';
-  const folioTurno = turnoActivo?.folio || '2428 - A';
+  const folioTurno = turnoActivo?.folio || '2428-A';
 
-  // Reloj y fecha en vivo (24 Horas es-CL)
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
+  const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
+    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || turnoActual?.estado || 'ABIERTO';
+  });
+
+  useEffect(() => {
+    const syncEstado = () => {
+      const stored = localStorage.getItem('estado_turno_activo');
+      if (stored) {
+        setEstadoTurnoLocal(stored);
+      } else if (turnoActivo?.estado || turnoActual?.estado) {
+        setEstadoTurnoLocal(turnoActivo?.estado || turnoActual?.estado);
+      }
+    };
+    syncEstado();
+    window.addEventListener('turno_actualizado', syncEstado);
+    window.addEventListener('storage', syncEstado);
+    return () => {
+      window.removeEventListener('turno_actualizado', syncEstado);
+      window.removeEventListener('storage', syncEstado);
+    };
+  }, [turnoActivo, turnoActual]);
 
   useEffect(() => {
     const intervalo = setInterval(() => {
@@ -104,7 +123,7 @@ export default function MenuOperador({
         <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-700/40">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-orange-500 leading-none">
-              GMETROPOLITANA
+              <span className="text-white">G</span>METROPOLITANA
             </h1>
           </div>
           <button
@@ -159,47 +178,32 @@ export default function MenuOperador({
             Horario Actual: <span className="text-amber-400 font-black">{infoTurno.nombre}</span> ({infoTurno.horario})
           </div>
 
-          {/* Muestra el botón 'Abrir Turno' siempre que turnoActual?.estado !== 'ABIERTO' */}
-          {turnoActual?.estado !== 'ABIERTO' && (
-            <button
-              onClick={() => onNavegarBitacora('ABRIR_TURNO')}
-              className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all duration-200 transform hover:scale-[1.01] cursor-pointer"
-            >
-              Abrir Turno
-            </button>
-          )}
+          {/* Botón Principal Naranja Dinámico */}
+          {(() => {
+            const estadoEval = (turnoActivo?.estado || turnoActual?.estado || estadoTurnoLocal || 'ABIERTO').toUpperCase();
+            const estaCerradoOAprobado = estadoEval === 'CERRADO' || estadoEval === 'APROBADO';
 
-          {/* Si turnoActual?.estado === 'ABIERTO': Muestra el botón 'Cierre de Turno y Resumen Operativo' */}
-          {turnoActual?.estado === 'ABIERTO' && (
-            <button
-              onClick={() => onNavegarBitacora('APROBAR_CIERRE')}
-              className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
-            >
-              <FileCheck className="w-5 h-5 text-amber-200" />
-              <span>Cierre de Turno</span>
-            </button>
-          )}
-
-
-          {/* Botón 2 Principal: Consulta Hojas de Turno */}
-          <button
-            onClick={() => {
-              if (esTurnoCerrado) {
-                setMostrarModalConsultaCerrada(true);
-                return;
-              }
-              onNavegarBitacora('HOJAS_TURNO');
-            }}
-            className={`w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2 ${
-              esTurnoCerrado
-                ? 'bg-slate-800/90 text-slate-400 border border-slate-700/80 cursor-pointer hover:bg-slate-800'
-                : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-blue-600/30 transform hover:scale-[1.01]'
-            }`}
-          >
-            {esTurnoCerrado && <Lock className="w-4 h-4 text-amber-400" />}
-            <span>{esTurnoCerrado ? 'Consulta Hojas de Turno (Hoja Cerrada)' : 'Consulta Hojas de Turno'}</span>
-          </button>
-
+            if (estaCerradoOAprobado) {
+              return (
+                <button
+                  onClick={() => onNavegarBitacora('ABRIR_TURNO')}
+                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
+                >
+                  <span>🚀 Abrir Siguiente Turno</span>
+                </button>
+              );
+            } else {
+              return (
+                <button
+                  onClick={() => onNavegarBitacora('APROBAR_CIERRE')}
+                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
+                >
+                  <FileCheck className="w-5 h-5 text-amber-200" />
+                  <span>📄 Cierre de Turno</span>
+                </button>
+              );
+            }
+          })()}
           {/* Botón 3 Principal: Consulta Bitácoras por Fecha y Texto */}
           <button
             onClick={() => onNavegarBitacora('BUSQUEDA')}
@@ -211,22 +215,6 @@ export default function MenuOperador({
           >
             Consulta Bitácoras por Fecha y Texto
           </button>
-
-          {/* Botón 4: Permiso en Caliente */}
-          <button
-            onClick={() => {
-              if (onAbrirPermisosCaliente) {
-                onAbrirPermisosCaliente();
-              } else {
-                onNavegarBitacora('PERMISOS_CALIENTE');
-              }
-            }}
-            className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white shadow-purple-900/40 border border-purple-500/30"
-          >
-            <ShieldAlert className="w-5 h-5 text-purple-300" />
-            <span>Permiso en Caliente</span>
-          </button>
-
         </div>
 
         {/* Pie de Página Interno del Menú */}
@@ -236,65 +224,6 @@ export default function MenuOperador({
         </div>
 
       </div>
-
-      {/* MODAL INFORMATIVO: HOJA DE TURNO CERRADA */}
-      {mostrarModalConsultaCerrada && (
-        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-blue-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-center relative overflow-hidden">
-            <div className="absolute top-3 right-3">
-              <button 
-                onClick={() => setMostrarModalConsultaCerrada(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="w-14 h-14 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-              <FileText className="w-7 h-7" />
-            </div>
-
-            <div>
-              <h3 className="text-base font-black text-white tracking-wide">
-                BITÁCORA APROBADA Y CERRADA
-              </h3>
-              <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                La Hoja de Turno actual ya fue <strong>Aprobada y Cerrada</strong> por el Jefe de Turno. No es posible editar ni ingresar a la vista activa.
-              </p>
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 font-mono text-left space-y-1">
-              <div className="flex justify-between">
-                <span>Estado:</span>
-                <span className="font-bold text-emerald-400 uppercase">CERRADO Y ARCHIVADO</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Acceso Disponible:</span>
-                <span className="font-bold text-blue-400 uppercase">CONSULTA BITÁCORAS PDF</span>
-              </div>
-            </div>
-
-            <div className="pt-2 space-y-2">
-              <button
-                onClick={() => {
-                  setMostrarModalConsultaCerrada(false);
-                  onNavegarBitacora('BUSQUEDA');
-                }}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all cursor-pointer"
-              >
-                Ir a Consulta de Bitácoras por Fecha y Texto
-              </button>
-              <button
-                onClick={() => setMostrarModalConsultaCerrada(false)}
-                className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
-              >
-                Entendido / Regresar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

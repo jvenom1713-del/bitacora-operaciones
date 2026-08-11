@@ -4,6 +4,7 @@ import {
   Search, Calendar, Filter, FileText, Download, ArrowLeft, 
   Sun, Moon, ShieldCheck, RefreshCw, Eye, X, ChevronRight, FileDown
 } from 'lucide-react';
+import { getApiUrl } from '../apiConfig';
 
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
   const [fechaInicio, setFechaInicio] = useState('');
@@ -24,7 +25,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
       if (fechaFin) params.append('fecha_fin', fechaFin);
       if (textoBusqueda) params.append('texto', textoBusqueda);
 
-      const res = await fetch(`/api/bitacoras/buscar?${params.toString()}`);
+      const res = await fetch(getApiUrl(`/api/bitacoras/buscar?${params.toString()}`));
       if (res.ok) {
         const data = await res.json();
         setBitacoras(data);
@@ -67,7 +68,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             <tr>
               <td>
                 <div style="font-size: 9px; font-weight: 800; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px;">
-                  GMETROPOLITANA — HOJA DE TURNO CERRADA
+                  <span style="color: #ffffff;">G</span>METROPOLITANA — HOJA DE TURNO CERRADA
                 </div>
                 <div style="font-size: 16px; font-weight: 900; color: #ffffff; text-transform: uppercase; margin: 2px 0;">
                   CENTRAL NUEVA RENCA

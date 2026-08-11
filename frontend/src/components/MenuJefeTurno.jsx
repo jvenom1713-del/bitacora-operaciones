@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon, LogOut, FileText, Search } from 'lucide-react';
+import { getApiUrl } from '../apiConfig';
 
 export default function MenuJefeTurno({ 
   usuarioActual, 
@@ -12,9 +13,42 @@ export default function MenuJefeTurno({
 }) {
   const emailUsuario = usuarioActual?.email || 'jsanmartin@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Jefe de Turno';
-  const folioTurno = turnoActivo?.folio || '2428 - A';
+  const folioTurno = turnoActivo?.folio || '2428-A';
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
+  const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
+    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || 'ABIERTO';
+  });
+
+  useEffect(() => {
+    const syncEstado = async () => {
+      try {
+        const res = await fetch(getApiUrl('/api/turnos/activo'));
+        if (res.ok) {
+          const data = await res.json();
+          const st = data.turno?.estado || data.data?.estado;
+          if (st) {
+            setEstadoTurnoLocal(st);
+            localStorage.setItem('estado_turno_activo', st);
+            return;
+          }
+        }
+      } catch (_) {}
+      const stored = localStorage.getItem('estado_turno_activo');
+      if (stored) {
+        setEstadoTurnoLocal(stored);
+      } else if (turnoActivo?.estado) {
+        setEstadoTurnoLocal(turnoActivo.estado);
+      }
+    };
+    syncEstado();
+    window.addEventListener('turno_actualizado', syncEstado);
+    window.addEventListener('storage', syncEstado);
+    return () => {
+      window.removeEventListener('turno_actualizado', syncEstado);
+      window.removeEventListener('storage', syncEstado);
+    };
+  }, [turnoActivo]);
 
   useEffect(() => {
     const intervalo = setInterval(() => {
@@ -83,7 +117,7 @@ export default function MenuJefeTurno({
         <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-700/40">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-orange-500 leading-none">
-              GMETROPOLITANA
+              <span className="text-white">G</span>METROPOLITANA
             </h1>
             <p className="text-xs text-blue-300 font-semibold mt-1">
               Plataforma del Jefe de Turno
@@ -122,26 +156,50 @@ export default function MenuJefeTurno({
 
         {/* 2 BOTONES PRINCIPALES PARA EL JEFE DE TURNO */}
         {(() => {
-          const esCerrada = turnoActivo?.estado === 'CERRADO';
+          const estadoEfectivo = turnoActivo?.estado || estadoTurnoLocal || 'ABIERTO';
+          const estaEnRevision = estadoEfectivo === 'EN_REVISION';
+          const estaAbierta = estadoEfectivo === 'ABIERTO' || estadoEfectivo === 'ABIERTA';
+          const estaCerrada = estadoEfectivo === 'CERRADO';
+          // El botón DEBE ESTAR ACTIVO si el estado es EN_REVISION o ABIERTA / ABIERTO
+          const esDeshabilitado = estaCerrada;
+
           return (
             <div className="space-y-4">
               {/* Botón 1: Ver Bitácora en Curso */}
               <button
                 onClick={onVerBitacoraEnCurso}
-                disabled={esCerrada}
-                title={esCerrada ? "Bitácora aprobada. Desactivado hasta que el operador de sala envíe nuevamente cierre de turno" : "Ver Bitácora en Curso"}
+                disabled={esDeshabilitado}
+                title={
+                  estaEnRevision 
+                    ? "Pendiente de revisión y firma del Jefe de Turno" 
+                    : estaCerrada 
+                    ? "Bitácora aprobada y cerrada." 
+                    : "En edición por el Operador de Sala"
+                }
                 className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 ${
-                  esCerrada
+                  esDeshabilitado
                     ? 'bg-slate-800/60 text-slate-500 border-slate-700/60 cursor-not-allowed opacity-60 shadow-none'
+                    : estaEnRevision
+                    ? 'text-white bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-[0.99] shadow-lg shadow-emerald-600/30 border-emerald-500/50 cursor-pointer'
                     : 'text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 active:scale-[0.99] shadow-lg shadow-blue-600/30 border-blue-500/40 cursor-pointer'
                 }`}
               >
-                <FileText className={`w-6 h-6 ${esCerrada ? 'text-slate-600' : 'text-amber-400'}`} />
+                <FileText className={`w-6 h-6 ${esDeshabilitado ? 'text-slate-600' : 'text-amber-400'}`} />
                 <div className="text-left">
                   <span className="block font-bold">Ver Bitácora en Curso</span>
-                  {esCerrada && (
-                    <span className="text-[11px] font-normal text-amber-400/90 block">
-                      Bitácora Aprobada — En espera de nuevo envío del operador
+                  {estaEnRevision && (
+                    <span className="text-[11px] font-bold text-emerald-200 block">
+                      ⚠️ Pendiente de revisión y firma del Jefe de Turno
+                    </span>
+                  )}
+                  {estaAbierta && (
+                    <span className="text-[11px] font-normal text-amber-300/90 block">
+                      En edición por el Operador de Sala
+                    </span>
+                  )}
+                  {estaCerrada && (
+                    <span className="text-[11px] font-normal text-slate-400 block">
+                      Bitácora aprobada y cerrada
                     </span>
                   )}
                 </div>
