@@ -9,6 +9,8 @@ import VistaConsultaHojaTurno from './components/VistaConsultaHojaTurno';
 import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
 import { getApiUrl, formatearEventosParaBitacora } from './apiConfig';
+import { supabase } from './supabaseClient';
+
 import { 
   ShieldCheck, 
   Key, 
@@ -622,7 +624,24 @@ export default function App() {
       }
 
       setCerrandoTurno(true);
+
+      // Insertar bitácora en Supabase directamente
+      try {
+        await supabase.from('bitacoras').insert([{
+          folio: turnoActivo?.folio || '2428-01',
+          fecha: new Date().toISOString().slice(0, 10),
+          turno: turnoActivo?.tipo_turno || 'DIURNO',
+          operador: usuarioActual?.nombre || 'Operador',
+          jefe_turno: 'Jefe de Turno',
+          estado: 'CERRADO',
+          contenido: resumenCierre || observacionesCierre || 'Turno operó dentro de parámetros normales.'
+        }]);
+      } catch (supErr) {
+        console.warn("Advertencia al guardar en Supabase:", supErr);
+      }
+
       const res = await fetch(getApiUrl('/api/turnos/cerrar'), {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
 import { getApiUrl, formatearEventosParaBitacora, formatearSenalesParaTexto } from '../apiConfig';
+import { supabase } from '../supabaseClient';
+
 
 // Componente de Edición de Texto Enriquecido
 function RichTextEditorField({ value, onChange, placeholder, className, style }) {
@@ -741,7 +743,23 @@ ${instrucciones}
 ${senalesForzadasTexto}
 `;
 
+      // Insertar bitácora en Supabase directamente
+      try {
+        await supabase.from('bitacoras').insert([{
+          folio: folioStr || '2428-01',
+          fecha: fechaStr || new Date().toISOString().slice(0, 10),
+          turno: turnoBitacora || 'DIURNO',
+          operador: equipoTurno?.operador || 'Operador',
+          jefe_turno: usuarioActual?.nombre || equipoTurno?.jdt || 'Norman Galaz (Jefe de Turno)',
+          estado: 'CERRADO',
+          contenido: contenidoTexto || observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.'
+        }]);
+      } catch (supErr) {
+        console.warn("Advertencia al guardar en Supabase:", supErr);
+      }
+
       const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

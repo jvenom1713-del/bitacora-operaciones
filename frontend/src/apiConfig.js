@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient';
+
 export const isHttp = typeof window !== 'undefined' && window.location.protocol.startsWith('http');
 export const API_BASE = isHttp ? '' : 'http://127.0.0.1:5000';
 
@@ -8,6 +10,28 @@ export function getApiUrl(path) {
   }
   return cleanPath;
 }
+
+export async function guardarBitacoraSupabase({ folio, fecha, turno, operador, jefe_turno, estado, contenido }) {
+  const { data, error } = await supabase
+    .from('bitacoras')
+    .insert([ { folio, fecha, turno, operador, jefe_turno, estado, contenido } ]);
+  if (error) {
+    console.error("Error al guardar bitácora en Supabase:", error);
+  }
+  return { data, error };
+}
+
+export async function consultarBitacorasSupabase() {
+  const { data, error } = await supabase
+    .from('bitacoras')
+    .select('*')
+    .order('id', { ascending: false });
+  if (error) {
+    console.error("Error al consultar bitácoras en Supabase:", error);
+  }
+  return { data, error };
+}
+
 
 export function formatearEventosParaBitacora(eventosLista) {
   if (!eventosLista || !Array.isArray(eventosLista) || eventosLista.length === 0) {

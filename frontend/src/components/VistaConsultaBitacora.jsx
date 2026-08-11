@@ -5,6 +5,7 @@ import {
   Sun, Moon, ShieldCheck, RefreshCw, Eye, X, ChevronRight, FileDown
 } from 'lucide-react';
 import { getApiUrl } from '../apiConfig';
+import { supabase } from '../supabaseClient';
 
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
   const [fechaInicio, setFechaInicio] = useState('');
@@ -20,17 +21,37 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
   const cargarBitacoras = async () => {
     setCargando(true);
     try {
-      const params = new URLSearchParams();
-      if (fechaInicio) params.append('fecha_inicio', fechaInicio);
-      if (fechaFin) params.append('fecha_fin', fechaFin);
-      if (textoBusqueda) params.append('texto', textoBusqueda);
-
-      const res = await fetch(getApiUrl(`/api/bitacoras/buscar?${params.toString()}`));
-      if (res.ok) {
-        const data = await res.json();
-        setBitacoras(data);
+      // 1. Consulta directa a Supabase
+      const { data, error } = await supabase.from('bitacoras').select('*').order('id', { ascending: false });
+      
+      if (!error && data && data.length > 0) {
+        const adaptadas = data.map(item => ({
+          ...item,
+          id: item.id,
+          folio: item.folio || `TRN-${item.id}`,
+          fecha_turno: item.fecha || item.fecha_turno,
+          tipo_turno: item.turno || item.tipo_turno,
+          cerrado_por_nombre: item.jefe_turno || item.cerrado_por_nombre,
+          operador_nombre: item.operador || item.operador_nombre,
+          estado: item.estado || 'CERRADO',
+          resumen_operativo: item.contenido || item.resumen_operativo,
+          contenido_texto: item.contenido || item.contenido_texto
+        }));
+        setBitacoras(adaptadas);
       } else {
-        console.error("Error al cargar bitácoras");
+        // Fallback a API local
+        const params = new URLSearchParams();
+        if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+        if (fechaFin) params.append('fecha_fin', fechaFin);
+        if (textoBusqueda) params.append('texto', textoBusqueda);
+
+        const res = await fetch(getApiUrl(`/api/bitacoras/buscar?${params.toString()}`));
+        if (res.ok) {
+          const apiData = await res.json();
+          setBitacoras(apiData);
+        } else {
+          setBitacoras([]);
+        }
       }
     } catch (err) {
       console.error("Error de conexión al cargar bitácoras", err);
@@ -38,6 +59,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
       setCargando(false);
     }
   };
+
 
   useEffect(() => {
     cargarBitacoras();
