@@ -192,7 +192,7 @@ export default function CambioPersonalModal({
           </div>
           <div className="p-3 flex items-center justify-between font-mono text-[11px]">
             <span>Fecha: 29/07/2026</span>
-            <span className="bg-slate-800 text-white px-2 py-0.5 rounded border border-slate-700 font-bold">2428-B</span>
+            <span className="bg-slate-800 text-white px-2 py-0.5 rounded border border-slate-700 font-bold">{folio || '01'}</span>
           </div>
         </div>
 

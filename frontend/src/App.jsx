@@ -628,7 +628,7 @@ export default function App() {
       // Insertar bitácora en Supabase directamente
       try {
         await supabase.from('bitacoras').insert([{
-          folio: turnoActivo?.folio || '2428-01',
+          folio: turnoActivo?.folio || turnoActual?.folio || '01',
           fecha: new Date().toISOString().slice(0, 10),
           turno: turnoActivo?.tipo_turno || 'DIURNO',
           operador: usuarioActual?.nombre || 'Operador',
@@ -679,25 +679,24 @@ export default function App() {
   // --- APROBAR Y CERRAR TURNO (JEFE DE TURNO) ---
   const handleAprobarBitacora = async (turnoId, datosAprobacion = {}) => {
     try {
-      const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          turno_id: turnoId || turnoActivo?.id || 1,
-          usuario_id: usuarioActual?.id || 1,
-          ...datosAprobacion
-        })
-      });
-      if (res.ok) {
-        setTurnoActual({ estado: 'CERRADO', eventos: [] });
-        setTurnoActivo({ estado: 'CERRADO', eventos: [] });
-        cargarTurnoActivo();
+      if (!datosAprobacion?.skipApi) {
+        const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            turno_id: turnoId || turnoActivo?.id || 1,
+            usuario_id: usuarioActual?.id || 1,
+            ...datosAprobacion
+          })
+        });
+        if (!res.ok) {
+          console.warn("Respuesta al aprobar turno:", res.status);
+        }
       }
-      return res;
+      await cargarTurnoActivo();
     } catch (e) {
       console.error("Error al aprobar bitácora:", e);
-      setTurnoActual({ estado: 'CERRADO', eventos: [] });
-      setTurnoActivo({ estado: 'CERRADO', eventos: [] });
+      await cargarTurnoActivo();
     }
   };
 
@@ -1292,7 +1291,7 @@ export default function App() {
                 </div>
                 <div>
                   <div className="text-xs text-slate-400">Folio Operativo:</div>
-                  <div className="text-xl font-black text-slate-100 font-mono">{turnoActual?.folio || turnoActivo?.folio || 'N/A'}</div>
+                  <div className="text-xl font-black text-slate-100 font-mono">{turnoActual?.folio || turnoActivo?.folio || '01'}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">

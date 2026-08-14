@@ -200,9 +200,9 @@ export default function VistaPermisosCaliente({ onVolver, modoNocturno, usuarioA
   const [permisos, setPermisos]           = useState(() => {
     try {
       const saved = localStorage.getItem('permisos_caliente_turno');
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {}
     localStorage.setItem('permisos_caliente_turno', JSON.stringify(DATA_EJEMPLO));

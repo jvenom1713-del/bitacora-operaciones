@@ -142,7 +142,7 @@ export default function AbrirTurnoMenu({
             <div className="w-full bg-[#1e40af] text-white font-bold rounded-xl shadow-md mb-6 tracking-wide flex flex-row items-center justify-between divide-x divide-blue-400/50 text-center overflow-hidden">
               <div className="w-1/2 py-2.5 px-4 text-xs sm:text-sm flex flex-wrap items-center justify-center gap-2">
                 <span className="opacity-90 font-medium">Folio:</span>
-                <span className="bg-orange-600 text-white px-2.5 py-0.5 rounded font-black text-xs sm:text-sm shadow-md">2428-A</span>
+                <span className="bg-orange-600 text-white px-2.5 py-0.5 rounded font-black text-xs sm:text-sm shadow-md">{turnoActivo?.folio || '01'}</span>
                 <span className="bg-amber-500/30 text-amber-200 border border-amber-400/40 px-2 py-0.5 rounded text-[11px] font-bold">{turnoTxt}</span>
               </div>
               <div className="w-1/2 py-2.5 px-4 flex items-center justify-center gap-2 text-cyan-200 font-mono font-black text-xs sm:text-sm tracking-widest drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">
@@ -322,7 +322,7 @@ export default function AbrirTurnoMenu({
                 APROBACIÓN DE JEFE DE TURNO REQUERIDA
               </h3>
               <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                No es posible abrir un nuevo turno. La bitácora del turno actual (Folio <strong className="text-amber-400">{turnoActivo?.folio || '2428-A'}</strong>) aún no ha sido <strong>Aprobada y Cerrada</strong> por el Jefe de Turno.
+                No es posible abrir un nuevo turno. La bitácora del turno actual (Folio <strong className="text-amber-400">{turnoActivo?.folio || '01'}</strong>) aún no ha sido <strong>Aprobada y Cerrada</strong> por el Jefe de Turno.
               </p>
             </div>
 

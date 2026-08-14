@@ -70,7 +70,7 @@ export default function VistaConsultaHojaTurno({
   instruccionesEspeciales: instruccionesEspecialesProp,
   setInstruccionesEspeciales
 }) {
-  const folioStr = turnoActivo?.folio || '2428-A';
+  const folioStr = turnoActivo?.folio || turnoActual?.folio || '01';
   const fechaStr = turnoActivo?.fecha || '29-07-2026';
 
   const emailTrim = usuarioActual?.email?.toLowerCase() || '';
@@ -746,7 +746,7 @@ ${senalesForzadasTexto}
       // Insertar bitácora en Supabase directamente
       try {
         await supabase.from('bitacoras').insert([{
-          folio: folioStr || '2428-01',
+          folio: folioStr || '01',
           fecha: fechaStr || new Date().toISOString().slice(0, 10),
           turno: turnoBitacora || 'DIURNO',
           operador: equipoTurno?.operador || 'Operador',
@@ -796,7 +796,7 @@ ${senalesForzadasTexto}
         localStorage.setItem('estado_turno_activo', 'CERRADO');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
-      if (onAprobarBitacora) onAprobarBitacora(turnoActivo?.id);
+      if (onAprobarBitacora) onAprobarBitacora(turnoActivo?.id, { skipApi: true });
       setMensajeCierre({ texto: data.mensaje || 'Bitácora aprobada y PDF guardado correctamente. Redirigiendo al Menú...', tipo: 'success' });
       setTimeout(() => {
         onVolverMenu();
@@ -992,11 +992,11 @@ ${senalesForzadasTexto}
           </div>
           <div className={`p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
             {[
-              { label: 'Costo Marginal CEN', value: `${datosGen.costoMarginal} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
-              { label: 'Potencia Esperada', value: `${datosGen.potEspera} MW`, color: modoNocturno ? 'text-emerald-400' : 'text-emerald-800' },
-              { label: 'Fuegos Suplementarios', value: `${datosGen.fuegosSuplemen} MW`, color: modoNocturno ? 'text-amber-400' : 'text-amber-800' },
-              { label: 'Horas Carga Base', value: `${datosGen.hrsCargaBase} hrs`, color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
-              { label: 'Mínimo Técnico', value: `${datosGen.hrsMinTec} hrs`, color: modoNocturno ? 'text-purple-300' : 'text-purple-900' },
+              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '40.3'} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
+              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '5046'} MW`, color: modoNocturno ? 'text-emerald-400' : 'text-emerald-800' },
+              { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: modoNocturno ? 'text-amber-400' : 'text-amber-800' },
+              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '2'} hrs`, color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
+              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '14'} hrs`, color: modoNocturno ? 'text-purple-300' : 'text-purple-900' },
             ].map((item, i) => (
               <div key={i} className={`p-3.5 rounded-xl border text-center ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
                 <span className={`${modoNocturno ? 'text-slate-400' : 'text-slate-500'} block mb-1`}>{item.label}:</span>
@@ -1859,23 +1859,23 @@ ${senalesForzadasTexto}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Costo Marginal CEN</span>
-                    <strong className="text-cyan-300 text-sm font-mono font-bold">{datosGen.costoMarginal} USD/MWh</strong>
+                    <strong className="text-cyan-300 text-sm font-mono font-bold">{datosGen?.costoMarginal || '40.3'} USD/MWh</strong>
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Potencia Esperada</span>
-                    <strong className="text-emerald-400 text-sm font-mono font-bold">{datosGen.potEspera} MW</strong>
+                    <strong className="text-emerald-400 text-sm font-mono font-bold">{datosGen?.potEspera || '5046'} MW</strong>
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Fuegos Suplementarios</span>
-                    <strong className="text-amber-400 text-sm font-mono font-bold">{datosGen.fuegosSuplemen} MW</strong>
+                    <strong className="text-amber-400 text-sm font-mono font-bold">{datosGen?.fuegosSuplemen || '0'} MW</strong>
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Horas Carga Base</span>
-                    <strong className="text-slate-100 text-sm font-mono font-bold">{datosGen.hrsCargaBase} hrs</strong>
+                    <strong className="text-slate-100 text-sm font-mono font-bold">{datosGen?.hrsCargaBase || '2'} hrs</strong>
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Mínimo Técnico</span>
-                    <strong className="text-purple-300 text-sm font-mono font-bold">{datosGen.hrsMinTec} hrs</strong>
+                    <strong className="text-purple-300 text-sm font-mono font-bold">{datosGen?.hrsMinTec || '14'} hrs</strong>
                   </div>
                 </div>
               </div>

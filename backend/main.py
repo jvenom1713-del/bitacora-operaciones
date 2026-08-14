@@ -390,7 +390,7 @@ def obtener_turno_activo():
     if not row:
         now = datetime.datetime.now()
         tipo_turno_calc = 'DIURNO' if 8 <= now.hour < 20 else 'NOCTURNO'
-        nuevo_folio = "2428-A"
+        nuevo_folio = "01"
 
         try:
             cursor.execute("""
@@ -446,7 +446,8 @@ def abrir_nuevo_turno(data: NuevoTurnoRequest):
         WHERE estado IN ('ABIERTO', 'EN_REVISION')
     """)
 
-    nuevo_folio = f"2428-{chr(65 + (ultimo_turno['id'] if ultimo_turno else 0) % 26)}"
+    siguiente_id = (ultimo_turno['id'] + 1) if ultimo_turno else 1
+    nuevo_folio = f"{siguiente_id:02d}"
     now = datetime.datetime.now()
     tipo_t = data.tipo_turno or ('DIURNO' if 8 <= now.hour < 20 else 'NOCTURNO')
     

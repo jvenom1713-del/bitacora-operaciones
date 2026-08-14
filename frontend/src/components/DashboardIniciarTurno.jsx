@@ -169,7 +169,7 @@ export default function DashboardIniciarTurno({
     }
   }, [tabInicial]);
   const [turnoActivo, setTurnoActivo] = useState(turnoActivoProp || null);
-  const folioStr = turnoActivo?.folio || turnoActivoProp?.folio || '2428-A';
+  const folioStr = turnoActivo?.folio || turnoActivoProp?.folio || '01';
   const [estadoTurno, setEstadoTurno] = useState(turnoActivoProp?.estado || 'ABIERTO'); // 'ABIERTO', 'EN_REVISION', 'CERRADO'
   const [modoSeccionJefe, setModoSeccionJefe] = useState(false);
   const [minutaCierre, setMinutaCierre] = useState('');

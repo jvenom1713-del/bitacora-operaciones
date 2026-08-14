@@ -28,7 +28,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
         const adaptadas = data.map(item => ({
           ...item,
           id: item.id,
-          folio: item.folio || `TRN-${item.id}`,
+          folio: item.folio || String(item.id || 1).padStart(2, '0'),
           fecha_turno: item.fecha || item.fecha_turno,
           tipo_turno: item.turno || item.tipo_turno,
           cerrado_por_nombre: item.jefe_turno || item.cerrado_por_nombre,
@@ -75,7 +75,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
     container.style.width = '700px';
     container.style.boxSizing = 'border-box';
 
-    const folio = item.folio || `TRN-${item.turno_id}`;
+    const folio = item.folio || String(item.turno_id || item.id || 1).padStart(2, '0');
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
     const jefe = item.cerrado_por_nombre || 'Jefe de Turno';
     const turno = item.tipo_turno || 'DIURNO';
@@ -367,7 +367,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-wider block">
-                          FOLIO: {item.folio || `TRN-${item.turno_id}`}
+                          FOLIO: {item.folio || String(item.turno_id || item.id || 1).padStart(2, '0')}
                         </span>
                         <h4 className="text-sm font-black text-slate-100 flex items-center gap-2 mt-0.5">
                           <Calendar className="w-4 h-4 text-cyan-400" />

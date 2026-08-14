@@ -14,20 +14,25 @@ export default function MenuOperador({
   const esTurnoCerrado = turnoActivo?.estado === 'CERRADO';
   const emailUsuario = usuarioActual?.email || 'jalbornoz@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Operador Sala de Control';
-  const folioTurno = turnoActivo?.folio || '2428-A';
+  const folioTurno = turnoActivo?.folio || '01';
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
   const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
-    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || turnoActual?.estado || 'ABIERTO';
+    return turnoActivo?.estado || turnoActual?.estado || localStorage.getItem('estado_turno_activo') || 'ABIERTO';
   });
 
   useEffect(() => {
     const syncEstado = () => {
-      const stored = localStorage.getItem('estado_turno_activo');
-      if (stored) {
-        setEstadoTurnoLocal(stored);
-      } else if (turnoActivo?.estado || turnoActual?.estado) {
-        setEstadoTurnoLocal(turnoActivo?.estado || turnoActual?.estado);
+      if (turnoActivo?.estado) {
+        setEstadoTurnoLocal(turnoActivo.estado);
+        try { localStorage.setItem('estado_turno_activo', turnoActivo.estado); } catch (_) {}
+      } else {
+        const stored = localStorage.getItem('estado_turno_activo');
+        if (stored) {
+          setEstadoTurnoLocal(stored);
+        } else if (turnoActual?.estado) {
+          setEstadoTurnoLocal(turnoActual.estado);
+        }
       }
     };
     syncEstado();
@@ -195,11 +200,11 @@ export default function MenuOperador({
             } else {
               return (
                 <button
-                  onClick={() => onNavegarBitacora('APROBAR_CIERRE')}
+                  onClick={() => onNavegarBitacora('SALA_CONTROL')}
                   className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
                 >
-                  <FileCheck className="w-5 h-5 text-amber-200" />
-                  <span>📄 Cierre de Turno</span>
+                  <FileText className="w-5 h-5 text-amber-200" />
+                  <span>Ingreso Bitácora Operacional</span>
                 </button>
               );
             }
