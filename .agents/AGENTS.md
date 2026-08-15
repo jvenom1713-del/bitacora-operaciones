@@ -46,7 +46,7 @@
 
 ## 3. Regla de Persistencia vs Reset en Cierre de Ciclo
 
-- **LO ÚNICO QUE SE BORRA AL CERRAR EL CICLO**: El cuerpo de texto redactado de la bitácora (`novedades` / `textoBitacora`).
+- **LO ÚNICO QUE SE BORRA AL CERRAR EL CICLO DE 24H**: El cuerpo de texto redactado de la bitácora (`novedades` / `textoBitacora`).
 - **SECCIONES QUE SE MANTIENEN Y NO SE BORRAN** (Modificables manualmente por el operador):
   1. `Generación Diaria` (Sincronizada con CEN / Actualizada por operador)
   2. `Estado de Planta`
@@ -55,4 +55,15 @@
   5. `Señales Forzadas`
   6. `Instrucciones Operacionales`
 
-Cualquier cambio futuro en la aplicación **debe conservar intacta la lógica de cálculo reactiva y persistencia** aquí documentada.
+---
+
+## 4. Flujo de Aprobación y Seguridad de Inicio de Sesión
+
+1. **Mensaje de Error de Contraseña**:
+   - Para cualquier intento fallido de contraseña en la portada de login, el mensaje oficial devuelto debe ser exactamente: **`Contraseña equivocada.`**
+
+2. **Bloqueo del Botón del Jefe de Turno**:
+   - El botón de aprobación y firma del **Jefe de Turno** debe estar **estrictamente bloqueado y deshabilitado** mientras el **Operador de Sala** no haya enviado formalmente la bitácora a revisión (`estado !== 'EN_REVISION'`).
+   - Solamente al pasar al estado `EN_REVISION`, se habilita el botón para ingresar la clave autorizada del Jefe de Turno.
+
+Cualquier cambio futuro en la aplicación **debe conservar intactas las reglas de negocio, persistencia, flujo de aprobación y seguridad** aquí documentadas.
