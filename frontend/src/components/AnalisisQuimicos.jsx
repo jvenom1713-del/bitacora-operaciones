@@ -207,10 +207,11 @@ function FilaMuestraRow({
         })
         .map((param) => {
           const esCobreCondensado = (subpuntoActivo === 'CONDENSADO' && param.key === 'cobre');
+          const esDurezaCalderaBaja = (subpuntoActivo === 'CALDERA_BAJA' && param.key === 'dureza');
           const esDurezaOHierroDomos = ((subpuntoActivo === 'DOMO_ALTA' || subpuntoActivo === 'DOMO_MEDIA') && (param.key === 'dureza' || param.key === 'hierro'));
           const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
           const esSiliceVaporSC = (subpuntoActivo === 'VAPOR_SC_ALTA' && param.key === 'silice');
-          const deshabilitadoEnEsteHorario = (esCobreCondensado || esDurezaOHierroDomos || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00';
+          const deshabilitadoEnEsteHorario = (esCobreCondensado || esDurezaCalderaBaja || esDurezaOHierroDomos || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00';
 
         if (deshabilitadoEnEsteHorario) {
           return (
