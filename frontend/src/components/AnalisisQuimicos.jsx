@@ -174,11 +174,7 @@ function FilaMuestraRow({
 }) {
   const hora = filaObj.hora || '';
   const filaMuestra = obtenerFilaMuestra(subpuntoActivo, hora);
-  const [paramsLocal, setParamsLocal] = useState(() => filaMuestra.parametros || {});
-
-  useEffect(() => {
-    setParamsLocal(obtenerFilaMuestra(subpuntoActivo, hora).parametros || {});
-  }, [subpuntoActivo, fechaSeleccionada, hora]);
+  const paramsActuales = filaMuestra.parametros || {};
 
   const isDeletable = Boolean(filaObj.isDeletable || !filaObj.esDefault);
 
@@ -330,7 +326,7 @@ function FilaMuestraRow({
           );
         }
 
-        const valRaw = paramsLocal[param.key];
+        const valRaw = paramsActuales[param.key];
         const valActual = valRaw !== undefined && valRaw !== null ? String(valRaw) : '';
         const fueraRango = esFueraDeRango(param, valActual);
 
@@ -346,8 +342,7 @@ function FilaMuestraRow({
               onPaste={(e) => handleInputPaste(e, rowIndex, colIndex)}
               onChange={(e) => {
                 const v = e.target.value;
-                const updated = { ...paramsLocal, [param.key]: v };
-                setParamsLocal(updated);
+                const updated = { ...paramsActuales, [param.key]: v };
                 if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
               }}
               placeholder=""
@@ -400,11 +395,7 @@ function TablaCirculacionVertical({
 }) {
   const hora = '05:00';
   const filaMuestra = obtenerFilaMuestra(subpuntoActivo, hora);
-  const [paramsLocal, setParamsLocal] = useState(() => filaMuestra.parametros || {});
-
-  useEffect(() => {
-    setParamsLocal(obtenerFilaMuestra(subpuntoActivo, hora).parametros || {});
-  }, [subpuntoActivo, fechaSeleccionada, hora]);
+  const paramsActuales = filaMuestra.parametros || {};
 
   const paramsVisibles = categoriaObjActiva.parametros.filter(
     p => p.key !== 'cloracionTtrr' && p.key !== 'clorurosTtrr'
@@ -481,7 +472,7 @@ function TablaCirculacionVertical({
         </thead>
         <tbody className="divide-y divide-slate-800/60">
           {paramsVisibles.map((param, pIdx) => {
-            const valRaw = paramsLocal[param.key];
+            const valRaw = paramsActuales[param.key];
             const valActual = valRaw !== undefined && valRaw !== null ? String(valRaw) : '';
             const fueraRango = esFueraDeRango(param, valActual);
 
@@ -503,8 +494,7 @@ function TablaCirculacionVertical({
                     onPaste={(e) => handlePaste(e, pIdx)}
                     onChange={(e) => {
                       const v = e.target.value;
-                      const updated = { ...paramsLocal, [param.key]: v };
-                      setParamsLocal(updated);
+                      const updated = { ...paramsActuales, [param.key]: v };
                       if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
                     }}
                     placeholder=""
