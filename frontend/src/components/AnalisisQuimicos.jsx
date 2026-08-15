@@ -387,6 +387,154 @@ function FilaMuestraRow({
   );
 }
 
+// =======================================================
+// COMPONENTE: TABLA VERTICAL PARA SISTEMA DE CIRCULACIÓN
+// =======================================================
+function TablaCirculacionVertical({
+  subpuntoActivo,
+  fechaSeleccionada,
+  categoriaObjActiva,
+  modoNocturno,
+  obtenerFilaMuestra,
+  esFueraDeRango,
+  obtenerMotivoFueraRango,
+  onParamChange
+}) {
+  const hora = '05:00';
+  const filaMuestra = obtenerFilaMuestra(subpuntoActivo, hora);
+  const [paramsLocal, setParamsLocal] = useState(() => filaMuestra.parametros || {});
+
+  useEffect(() => {
+    setParamsLocal(obtenerFilaMuestra(subpuntoActivo, hora).parametros || {});
+  }, [subpuntoActivo, fechaSeleccionada, hora]);
+
+  const paramsVisibles = categoriaObjActiva.parametros.filter(
+    p => p.key !== 'cloracionTtrr' && p.key !== 'clorurosTtrr'
+  );
+
+  const handleKeyDown = (e, pIdx) => {
+    const { key } = e;
+    if (key === 'ArrowDown' || key === 'Enter') {
+      e.preventDefault();
+      const nextInput = document.querySelector(
+        `input[data-subpunto="${subpuntoActivo}"][data-param-idx="${pIdx + 1}"]`
+      );
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.select();
+      }
+    } else if (key === 'ArrowUp') {
+      e.preventDefault();
+      const prevInput = document.querySelector(
+        `input[data-subpunto="${subpuntoActivo}"][data-param-idx="${pIdx - 1}"]`
+      );
+      if (prevInput) {
+        prevInput.focus();
+        prevInput.select();
+      }
+    }
+  };
+
+  const handlePaste = (e, startPIdx) => {
+    const pasteData = e.clipboardData ? e.clipboardData.getData('text') : '';
+    if (!pasteData) return;
+
+    const lines = pasteData.trim().split(/\r\n|\n|\r/);
+    if (lines.length > 1) {
+      e.preventDefault();
+      lines.forEach((line, rOffset) => {
+        const targetPIdx = startPIdx + rOffset;
+        const targetInput = document.querySelector(
+          `input[data-subpunto="${subpuntoActivo}"][data-param-idx="${targetPIdx}"]`
+        );
+        if (targetInput) {
+          const cleanVal = line.trim();
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype,
+            'value'
+          )?.set;
+          if (nativeInputValueSetter) {
+            nativeInputValueSetter.call(targetInput, cleanVal);
+          } else {
+            targetInput.value = cleanVal;
+          }
+          targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto overflow-hidden rounded-2xl border border-slate-800 shadow-2xl my-2">
+      <div className="bg-slate-950 p-3 border-b border-slate-800 flex items-center justify-between">
+        <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5 font-mono">
+          <Clock className="w-4 h-4 text-cyan-400" />
+          <span>Muestra Única: 05:00 hrs</span>
+        </span>
+        <span className="text-[11px] text-slate-400 font-mono">7 Parámetros Verticales</span>
+      </div>
+      <table className="w-full text-left text-xs font-mono border-collapse">
+        <thead>
+          <tr className={`border-b ${modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950/80' : 'border-slate-300 text-slate-700 bg-slate-100'}`}>
+            <th className="p-3.5 border-r border-slate-800 font-bold w-1/3">Parámetro Químico</th>
+            <th className="p-3.5 border-r border-slate-800 font-bold text-center w-1/3">Norma / Rango</th>
+            <th className="p-3.5 text-center font-bold text-cyan-400 w-1/3">Valor Registrado</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-800/60">
+          {paramsVisibles.map((param, pIdx) => {
+            const valRaw = paramsLocal[param.key];
+            const valActual = valRaw !== undefined && valRaw !== null ? String(valRaw) : '';
+            const fueraRango = esFueraDeRango(param, valActual);
+
+            return (
+              <tr key={param.key} className={modoNocturno ? 'hover:bg-slate-950/40' : 'hover:bg-slate-50'}>
+                <td className="p-3.5 font-bold text-slate-200 border-r border-slate-800/80 bg-slate-950/20">
+                  {param.label}
+                </td>
+                <td className="p-3.5 text-center border-r border-slate-800/80 text-amber-400 font-bold">
+                  {param.textRango || (param.unit ? `(${param.unit})` : `(${param.min} - ${param.max})`)}
+                </td>
+                <td className="p-2 text-center">
+                  <input
+                    type="text"
+                    data-subpunto={subpuntoActivo}
+                    data-param-idx={pIdx}
+                    value={valActual || ''}
+                    onKeyDown={(e) => handleKeyDown(e, pIdx)}
+                    onPaste={(e) => handlePaste(e, pIdx)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setParamsLocal(prev => {
+                        const updated = { ...prev, [param.key]: v };
+                        if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
+                        return updated;
+                      });
+                    }}
+                    placeholder=""
+                    className={`w-full text-center px-3 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
+                      fueraRango
+                        ? 'bg-red-950/80 border-red-500 text-red-300 font-extrabold focus:ring-red-500 animate-pulse'
+                        : modoNocturno
+                        ? 'bg-slate-950 border-slate-800 text-emerald-300 focus:ring-cyan-500'
+                        : 'bg-white border-slate-300 text-slate-900 focus:ring-cyan-500'
+                    }`}
+                  />
+                  {fueraRango && (
+                    <span className="text-[9px] font-bold text-red-400 block mt-0.5 whitespace-nowrap">
+                      {obtenerMotivoFueraRango(param, valActual)}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: onLogoutProp, onVolver, modoNocturno, setModoNocturno }) {
   // 1. Estado de Autenticación de Módulo Químico (Soporte Modo Demo y Persistencia)
   const [sesionQuimica, setSesionQuimica] = useState(() => {
@@ -1297,82 +1445,97 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                   </div>
 
                   {/* TABLA DE TOMA DE MUESTRAS POR HORARIOS */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs font-mono border-collapse">
-                      <thead>
-                        <tr className={`border-b ${
-                          modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-300 text-slate-700 bg-slate-100'
-                        }`}>
-                          <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
-                          {catObj.parametros
-                            .filter(p => {
-                              if (subpuntoActivoEnCat === 'CLORUROS_TTRR' && p.key !== 'clorurosTtrr') {
-                                return false;
-                              }
-                              if (subpuntoActivoEnCat === 'CLORACION' && p.key !== 'cloracionTtrr') {
-                                return false;
-                              }
-                              if (subpuntoActivoEnCat === 'AGUA_CIRCULACION' && (p.key === 'cloracionTtrr' || p.key === 'clorurosTtrr')) {
-                                return false;
-                              }
-                              if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'silice' || p.key === 'amoniaco' || p.key === 'cobre' || p.key === 'oxigeno')) {
-                                return false;
-                              }
-                              if (p.key === 'silice' && (subpuntoActivoEnCat === 'VAPOR_SAT_ALTA' || subpuntoActivoEnCat === 'VAPOR_SAT_MEDIA' || subpuntoActivoEnCat === 'VAPOR_SAT_BAJA')) {
-                                return false;
-                              }
-                              return true;
-                            })
-                            .map((p) => (
-                              <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
-                                <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
-                                <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
-                                  {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
-                                </span>
-                              </th>
+                  {subpuntoActivoEnCat === 'AGUA_CIRCULACION' ? (
+                    <TablaCirculacionVertical
+                      subpuntoActivo={subpuntoActivoEnCat}
+                      fechaSeleccionada={fechaSeleccionada}
+                      categoriaObjActiva={catObj}
+                      modoNocturno={modoNocturno}
+                      obtenerFilaMuestra={obtenerFilaMuestra}
+                      esFueraDeRango={esFueraDeRango}
+                      obtenerMotivoFueraRango={obtenerMotivoFueraRango}
+                      onParamChange={handleParamChange}
+                    />
+                  ) : (
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs font-mono border-collapse">
+                          <thead>
+                            <tr className={`border-b ${
+                              modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-300 text-slate-700 bg-slate-100'
+                            }`}>
+                              <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
+                              {catObj.parametros
+                                .filter(p => {
+                                  if (subpuntoActivoEnCat === 'CLORUROS_TTRR' && p.key !== 'clorurosTtrr') {
+                                    return false;
+                                  }
+                                  if (subpuntoActivoEnCat === 'CLORACION' && p.key !== 'cloracionTtrr') {
+                                    return false;
+                                  }
+                                  if (subpuntoActivoEnCat === 'AGUA_CIRCULACION' && (p.key === 'cloracionTtrr' || p.key === 'clorurosTtrr')) {
+                                    return false;
+                                  }
+                                  if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'silice' || p.key === 'amoniaco' || p.key === 'cobre' || p.key === 'oxigeno')) {
+                                    return false;
+                                  }
+                                  if (p.key === 'silice' && (subpuntoActivoEnCat === 'VAPOR_SAT_ALTA' || subpuntoActivoEnCat === 'VAPOR_SAT_MEDIA' || subpuntoActivoEnCat === 'VAPOR_SAT_BAJA')) {
+                                    return false;
+                                  }
+                                  return true;
+                                })
+                                .map((p) => (
+                                  <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
+                                    <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
+                                    <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
+                                      {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
+                                    </span>
+                                  </th>
+                                ))}
+                               <th className="p-3.5 text-center w-16 shrink-0">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800/60">
+                            {obtenerFilasSubpunto(subpuntoActivoEnCat).map((filaObj, rowIndex) => (
+                              <FilaMuestraRow
+                                key={filaObj.id || `${subpuntoActivoEnCat}_${filaObj.hora}`}
+                                rowIndex={rowIndex}
+                                filaObj={filaObj}
+                                subpuntoActivo={subpuntoActivoEnCat}
+                                fechaSeleccionada={fechaSeleccionada}
+                                categoriaObjActiva={catObj}
+                                modoNocturno={modoNocturno}
+                                obtenerFilaMuestra={obtenerFilaMuestra}
+                                esFueraDeRango={esFueraDeRango}
+                                obtenerMotivoFueraRango={obtenerMotivoFueraRango}
+                                handleGuardarMuestra={handleGuardarMuestra}
+                                handleEliminarFilaRow={handleEliminarFilaRow}
+                                handleCambiarHoraFilaExtra={handleCambiarHoraFilaExtra}
+                                onParamChange={handleParamChange}
+                                guardando={guardando}
+                              />
                             ))}
-                           <th className="p-3.5 text-center w-16 shrink-0">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800/60">
-                        {obtenerFilasSubpunto(subpuntoActivoEnCat).map((filaObj, rowIndex) => (
-                          <FilaMuestraRow
-                            key={filaObj.id || `${subpuntoActivoEnCat}_${filaObj.hora}`}
-                            rowIndex={rowIndex}
-                            filaObj={filaObj}
-                            subpuntoActivo={subpuntoActivoEnCat}
-                            fechaSeleccionada={fechaSeleccionada}
-                            categoriaObjActiva={catObj}
-                            modoNocturno={modoNocturno}
-                            obtenerFilaMuestra={obtenerFilaMuestra}
-                            esFueraDeRango={esFueraDeRango}
-                            obtenerMotivoFueraRango={obtenerMotivoFueraRango}
-                            handleGuardarMuestra={handleGuardarMuestra}
-                            handleEliminarFilaRow={handleEliminarFilaRow}
-                            handleCambiarHoraFilaExtra={handleCambiarHoraFilaExtra}
-                            onParamChange={handleParamChange}
-                            guardando={guardando}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                          </tbody>
+                        </table>
+                      </div>
 
-                  {/* Botón "+ Agregar Análisis" Extra */}
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
-                    <button
-                      type="button"
-                      onClick={() => handleAgregarFilaExtra(subpuntoActivoEnCat)}
-                      className="px-4 py-2 rounded-xl border border-cyan-500/50 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer transform hover:scale-[1.01]"
-                    >
-                      <Plus className="w-4 h-4 text-cyan-400" />
-                      <span>+ Agregar Análisis</span>
-                    </button>
+                      {/* Botón "+ Agregar Análisis" Extra */}
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+                        <button
+                          type="button"
+                          onClick={() => handleAgregarFilaExtra(subpuntoActivoEnCat)}
+                          className="px-4 py-2 rounded-xl border border-cyan-500/50 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer transform hover:scale-[1.01]"
+                        >
+                          <Plus className="w-4 h-4 text-cyan-400" />
+                          <span>+ Agregar Análisis</span>
+                        </button>
 
-                    <span className="text-[11px] text-slate-400 font-mono">
-                      Total análisis cargados: <strong className="text-white">{obtenerFilasSubpunto(subpuntoActivoEnCat).length}</strong>
-                    </span>
-                  </div>
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          Total análisis cargados: <strong className="text-white">{obtenerFilasSubpunto(subpuntoActivoEnCat).length}</strong>
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}
