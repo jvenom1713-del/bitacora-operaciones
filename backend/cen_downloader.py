@@ -71,34 +71,49 @@ def obtener_archivos_pcp() -> list:
 def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: int = 3) -> Tuple[Optional[bytes], Optional[bytes], Optional[str], Optional[str]]:
     """
     Descarga los Excel PRG*.xlsx y PO*.xlsx desde el archivo PROGRAMA*.zip del Coordinador.
-
-    Returns:
-        (prg_bytes, po_bytes, url_fuente, fecha_str) o (None, None, None, None)
     """
     archivos_pcp = obtener_archivos_pcp()
+    
+    nombres_archivos = []
+    if isinstance(archivos_pcp, list):
+        for item in archivos_pcp:
+            if isinstance(item, dict) and 'name' in item:
+                nombres_archivos.append(item['name'])
+            elif isinstance(item, str):
+                nombres_archivos.append(item)
+    
+    zips_disponibles = [n for n in nombres_archivos if 'PROGRAMA' in n.upper() and n.endswith('.zip')]
+    zips_disponibles.sort(reverse=True)
 
-    # Si se especificó una fecha fija, la usamos; si no, probamos desde mañana (mañana -> hoy -> días atrás)
+    fechas_a_probar = []
     if fecha is not None:
         fechas_a_probar = [fecha - timedelta(days=d) for d in range(max_dias_atras + 1)]
     else:
         hoy = datetime.now()
         fechas_a_probar = [hoy + timedelta(days=1)] + [hoy - timedelta(days=d) for d in range(max_dias_atras + 1)]
 
-    for fecha_target in fechas_a_probar:
-        fecha8 = fecha_target.strftime('%Y%m%d')
-        nombre_zip_esperado = f"PROGRAMA{fecha8}.zip"
-        fecha_str = f"{fecha8[:4]}-{fecha8[4:6]}-{fecha8[6:8]}"
+    candidatos_zip = []
+    for f in fechas_a_probar:
+        fecha8 = f.strftime('%Y%m%d')
+        coincidencias = [z for z in zips_disponibles if fecha8 in z]
+        if coincidencias:
+            candidatos_zip.extend(coincidencias)
+        else:
+            candidatos_zip.append(f"PROGRAMA{fecha8}.zip")
 
-        print(f"[CEN API] Buscando {nombre_zip_esperado}...")
+    for z in zips_disponibles:
+        if z not in candidatos_zip:
+            candidatos_zip.append(z)
 
-        url_s3 = obtener_url_descarga_s3("PCP", nombre_zip_esperado)
+    for zip_name in candidatos_zip:
+        print(f"[CEN API] Intentando descargar {zip_name} desde AWS S3...")
+        url_s3 = obtener_url_descarga_s3("PCP", zip_name)
 
         if url_s3:
             try:
-                print(f"[CEN API] Descargando ZIP desde AWS S3...")
                 r = requests.get(url_s3, timeout=60)
                 if r.status_code == 200 and len(r.content) > 10_000:
-                    print(f"[CEN API] [OK] ZIP Descargado: {len(r.content):,} bytes ({nombre_zip_esperado})")
+                    print(f"[CEN API] [OK] ZIP Descargado: {len(r.content):,} bytes ({zip_name})")
                     
                     with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
                         namelist = zf.namelist()
@@ -118,9 +133,10 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
                             print(f"[CEN API] [OK] Extrayendo Excel PRG: {prg_target}")
                             prg_bytes = zf.read(prg_target)
                             po_bytes = zf.read(po_target) if po_target else None
-                            return prg_bytes, po_bytes, f"Coordinador Eléctrico Nacional ({nombre_zip_esperado} / {prg_target})", fecha_str
+                            fecha_extraida = datetime.now().strftime('%Y-%m-%d')
+                            return prg_bytes, po_bytes, f"Coordinador Eléctrico Nacional ({zip_name} / {prg_target})", fecha_extraida
             except Exception as e:
-                print(f"[CEN API] Error al descargar/procesar ZIP: {e}")
+                print(f"[CEN API] Error procesando {zip_name}: {e}")
 
     print("[CEN API] [X] No se encontro el archivo del Programa de Operacion.")
     return None, None, None, None

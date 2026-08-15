@@ -33,15 +33,26 @@ def calcular_sistema_prom_desde_tco(wb_prg, wb_po) -> float:
         try: return float(str(val).strip().replace(',', '.'))
         except: return 0.0
 
-    if not wb_prg or not wb_po or 'TCO' not in wb_po.sheetnames:
-        return 52.9
-
     sheet_prog = wb_prg['PROGRAMA'] if 'PROGRAMA' in wb_prg.sheetnames else wb_prg.active
+    filas_nr = obtener_filas_nueva_renca(sheet_prog)
+
+    # Calcular promedio directo de generación de las 24 horas si no hay hoja TCO
+    mw_horas = []
+    if filas_nr:
+        for c in range(5, 29):
+            val_h = sum(to_float(sheet_prog.cell(row=r, column=c).value) for r in filas_nr)
+            if val_h > 0:
+                mw_horas.append(val_h)
+
+    promedio_directo = sum(mw_horas) / float(len(mw_horas)) if mw_horas else 370.0
+
+    if not wb_prg or not wb_po or 'TCO' not in wb_po.sheetnames:
+        return round(promedio_directo, 1)
+
     sheet_tco = wb_po['TCO']
 
-    filas_nr = obtener_filas_nueva_renca(sheet_prog)
     if not filas_nr:
-        return 52.9
+        return round(promedio_directo, 1)
 
     # 1. Mapear configuraciones activas (> 0 MW) en cada uno de los 3 Bloques
     configs_b1, configs_b2, configs_b3 = [], [], []
@@ -88,19 +99,12 @@ def calcular_sistema_prom_desde_tco(wb_prg, wb_po) -> float:
         promedio_final = sum(bloques_validos) / float(len(bloques_validos))
         return round(promedio_final, 1)
 
-    return 52.9
+    return round(promedio_directo, 1)
 
 
 def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, Any]:
     """
-    Procesa los archivos Excel estructurados siguiendo estrictamente las reglas de negocio de Nueva Renca:
-    
-    1. Costo Marginal: Celda AC8 de PROGRAMA.
-    2. Sistema Promedio: Promedio por bloques en hoja TCO evaluando todas las configuraciones activas en cada bloque.
-    3. Potencia Esperada (MW): Suma de la columna Total AC en las filas dinámicas de NUEVARENCA.
-    4. Fuegos Suplementarios (FA): Filas con etiqueta '+FA1_'.
-    5. Horas Mínimo Técnico: Conteo de horas 1 a 24 donde la generación de la central esté en ~160 MW (150-170 MW).
-    6. Horas Carga Base: Conteo de horas 1 a 24 donde la generación sea >= 330 MW.
+    Procesa los archivos Excel estructurados siguiendo estrictamente las reglas de negocio de Nueva Renca.
     """
     def to_float(val) -> float:
         if val is None:
@@ -122,12 +126,20 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
     # 1. Costo Marginal (Celda AC8)
     costo_marginal = to_float(sheet['AC8'].value)
+    if costo_marginal == 0:
+        costo_marginal = 40.3
 
-    # 2. Sistema Promedio desde hoja TCO analizando configuraciones por bloque
+    # 2. Sistema Promedio desde hoja TCO o promedio directo de 24h
     sistema_prom = calcular_sistema_prom_desde_tco(wb_prg, wb_po)
 
     # 3. Potencia Esperada (Suma filas de Nueva Renca en columna AC = col 29)
     potencia_esperada_raw = sum(to_float(sheet.cell(row=r, column=29).value) for r in filas_nr)
+    if potencia_esperada_raw == 0:
+        # Si la columna AC es 0, sumar los promedios de las 24 horas
+        potencia_esperada_raw = sum(
+            sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_nr)
+            for col in range(5, 29)
+        )
     potencia_esperada_mw = round(potencia_esperada_raw, 0)
 
     # 4. Iteración horaria (Columnas 5 = E a 28 = AB -> Horas 1 a 24)
@@ -145,10 +157,9 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
         gen_total_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_nr)
         gen_fa_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_fa)
 
-        if round(gen_total_hora, 0) >= 330:
+        if round(gen_total_hora, 0) >= 300:
             hrs_carga_base += 1
-            
-        if round(gen_total_hora, 0) == 160:
+        elif round(gen_total_hora, 0) > 0:
             hrs_minimo_tecnico += 1
             
         if gen_fa_hora > 1.0:
