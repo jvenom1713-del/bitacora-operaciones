@@ -784,14 +784,17 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
 
                           {/* Inputs por cada Parámetro Químico */}
                           {categoriaObjActiva.parametros.map((param) => {
-                            // Regla: Dureza y Hierro SOLO se analizan a las 10:00 hrs. En otros horarios queda deshabilitado (-)
+                            // Reglas de restricción horaria (Solo a las 10:00 hrs)
                             const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
-                            if (esDurezaOHierro && hora !== '10:00') {
+                            const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
+                            const deshabilitadoEnEsteHorario = (esDurezaOHierro || esSiliceDomoMedia) && hora !== '10:00';
+
+                            if (deshabilitadoEnEsteHorario) {
                               return (
                                 <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
                                   <div 
                                     className="w-full py-2 px-2 rounded-lg border border-slate-800/30 bg-slate-950/50 text-slate-600 font-mono font-bold text-xs select-none cursor-not-allowed flex items-center justify-center"
-                                    title={`${param.label} solo se mide a las 10:00 hrs`}
+                                    title={`${param.label} solo se mide a las 10:00 hrs en ${subpuntoActivo === 'DOMO_MEDIA' ? 'Domo Media Presión' : 'este equipo'}`}
                                   >
                                     -
                                   </div>
