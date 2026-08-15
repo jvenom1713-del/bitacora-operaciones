@@ -213,7 +213,7 @@ function FilaMuestraRow({
           const esDurezaOHierroDomos = ((subpuntoActivo === 'DOMO_ALTA' || subpuntoActivo === 'DOMO_MEDIA') && (param.key === 'dureza' || param.key === 'hierro'));
           const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
           const esSiliceVaporSC = (subpuntoActivo === 'VAPOR_SC_ALTA' && param.key === 'silice');
-          const esHierroOCobreAlimentacion = (subpuntoActivo === 'AGUA_ALIMENTACION' && (param.key === 'hierro' || param.key === 'cobre'));
+          const esHierroCobreOSiliceAlimentacion = (subpuntoActivo === 'AGUA_ALIMENTACION' && (param.key === 'hierro' || param.key === 'cobre' || param.key === 'silice'));
 
           const deshabilitadoEnEsteHorario = (
             esCobreCondensado ||
@@ -221,7 +221,7 @@ function FilaMuestraRow({
             esDurezaOHierroDomos ||
             esSiliceDomoMedia ||
             esSiliceVaporSC ||
-            esHierroOCobreAlimentacion
+            esHierroCobreOSiliceAlimentacion
           ) && hora !== '10:00';
 
         if (deshabilitadoEnEsteHorario) {
