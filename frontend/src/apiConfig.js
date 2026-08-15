@@ -26,10 +26,32 @@ export async function safeFetchJson(url, options = {}) {
   }
 }
 
+export function normalizeEstado(st) {
+  if (!st) return 'borrador';
+  const s = String(st).toLowerCase().trim();
+  if (s === 'borrador' || s === 'abierto' || s === 'abierta') return 'borrador';
+  if (s === 'enviado' || s === 'en_revision' || s === 'en revisión') return 'enviado';
+  if (s === 'aprobada' || s === 'aprobado' || s === 'cerrado' || s === 'finalizado') return 'aprobada';
+  return 'borrador';
+}
+
+export function isBorrador(st) {
+  return normalizeEstado(st) === 'borrador';
+}
+
+export function isEnviado(st) {
+  return normalizeEstado(st) === 'enviado';
+}
+
+export function isAprobada(st) {
+  return normalizeEstado(st) === 'aprobada';
+}
+
 export async function guardarBitacoraSupabase({ folio, fecha, turno, operador, jefe_turno, estado, contenido }) {
+  const estadoNorm = normalizeEstado(estado);
   const { data, error } = await supabase
     .from('bitacoras')
-    .insert([ { folio, fecha, turno, operador, jefe_turno, estado, contenido } ]);
+    .insert([ { folio, fecha, turno, operador, jefe_turno, estado: estadoNorm, contenido } ]);
   if (error) {
     console.error("Error al guardar bitácora en Supabase:", error);
   }

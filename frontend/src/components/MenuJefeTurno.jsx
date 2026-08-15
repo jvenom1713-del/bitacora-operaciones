@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, LogOut, FileText, Search, FlaskConical } from 'lucide-react';
-import { getApiUrl, safeFetchJson } from '../apiConfig';
+import { getApiUrl, safeFetchJson, isBorrador, isEnviado, isAprobada } from '../apiConfig';
 
 export default function MenuJefeTurno({ 
   usuarioActual, 
@@ -12,18 +13,23 @@ export default function MenuJefeTurno({
   modoNocturno, 
   setModoNocturno 
 }) {
+  const navigate = useNavigate();
   const emailUsuario = usuarioActual?.email || 'jsanmartin@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Jefe de Turno';
   const folioTurno = turnoActivo?.folio || '01';
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
   const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
-    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || 'ABIERTO';
+    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || 'borrador';
   });
 
   useEffect(() => {
     const syncEstado = async () => {
       const stored = localStorage.getItem('estado_turno_activo');
+      if (stored) {
+        setEstadoTurnoLocal(stored);
+        return;
+      }
       try {
         const res = await safeFetchJson(getApiUrl('/api/turnos/activo'));
         const st = res.data?.turno?.estado || res.data?.data?.estado;
@@ -34,9 +40,7 @@ export default function MenuJefeTurno({
         }
       } catch (_) {}
       
-      if (stored) {
-        setEstadoTurnoLocal(stored);
-      } else if (turnoActivo?.estado) {
+      if (turnoActivo?.estado) {
         setEstadoTurnoLocal(turnoActivo.estado);
       }
     };
@@ -156,43 +160,48 @@ export default function MenuJefeTurno({
         {/* 2 BOTONES PRINCIPALES PARA EL JEFE DE TURNO */}
         {(() => {
           const storedState = localStorage.getItem('estado_turno_activo');
-          const estadoEfectivo = storedState || estadoTurnoLocal || turnoActivo?.estado || 'ABIERTO';
-          const estaEnRevision = estadoEfectivo === 'EN_REVISION';
-          const estaAbierta = estadoEfectivo === 'ABIERTO' || estadoEfectivo === 'ABIERTA';
-          const estaCerrada = estadoEfectivo === 'CERRADO';
+          const estadoEfectivo = storedState || estadoTurnoLocal || turnoActivo?.estado || 'borrador';
+          const estaEnviado = isEnviado(estadoEfectivo);
+          const estaBorrador = isBorrador(estadoEfectivo);
+          const estaAprobada = isAprobada(estadoEfectivo);
           
-          // El Jefe de Turno siempre puede ingresar a revisar y consultar la bitácora
-          const esDeshabilitado = false;
+          // El botón solo se ACTIVA si el Operador ha enviado la bitácora ('enviado')
+          const esDeshabilitado = !estaEnviado;
 
           return (
             <div className="space-y-4">
-              {/* Botón 1: Revisar y Aprobar Bitácora */}
+              {/* Botón 1: Revisar y Cerrar Bitácora */}
               <button
-                onClick={onVerBitacoraEnCurso}
+                onClick={() => {
+                  if (!esDeshabilitado) {
+                    onVerBitacoraEnCurso();
+                    navigate('/hoja-turno');
+                  }
+                }}
                 disabled={esDeshabilitado}
-                title="Ingresar a la hoja de bitácora para revisar, autorizar y firmar"
-                className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 cursor-pointer ${
-                  estaEnRevision
-                    ? 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 animate-pulse'
-                    : 'text-white bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-[0.99] shadow-lg shadow-emerald-600/30 border-emerald-500/50'
+                title={esDeshabilitado ? "El botón permanece bloqueado hasta que el Operador envíe la bitácora" : "Ingresar a la hoja de bitácora para revisar, autorizar y firmar"}
+                className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  esDeshabilitado
+                    ? 'bg-gray-500 text-gray-200 border-gray-600 opacity-50 cursor-not-allowed'
+                    : 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 animate-pulse'
                 }`}
               >
                 <FileText className="w-6 h-6 text-emerald-300" />
                 <div className="text-left">
-                  <span className="block font-bold text-base">Revisar, Aprobar y Firmar Bitácora (JDT)</span>
-                  {estaEnRevision && (
+                  <span className="block font-bold text-base">Revisar y Cerrar Bitácora (JDT)</span>
+                  {estaEnviado && (
                     <span className="text-[11px] font-extrabold text-amber-200 block animate-bounce mt-0.5">
-                      ⚠️ ¡EN REVISIÓN! Pendiente de firma del Jefe de Turno
+                      ⚠️ ¡BITÁCORA ENVIADA! Pendiente de firma del Jefe de Turno
                     </span>
                   )}
-                  {estaAbierta && (
-                    <span className="text-[11px] font-medium text-emerald-200 block">
-                      En desarrollo (Operador en edición / Disponible para revisión)
-                    </span>
-                  )}
-                  {estaCerrada && (
+                  {estaBorrador && (
                     <span className="text-[11px] font-medium text-slate-300 block">
-                      ✓ Turno Cerrado y Archivado
+                      🔒 Bloqueado: Operador en edición (Esperando envío de bitácora)
+                    </span>
+                  )}
+                  {estaAprobada && (
+                    <span className="text-[11px] font-medium text-slate-300 block">
+                      🔒 Bloqueado: Turno Cerrado y Aprobado (Esperando nueva bitácora)
                     </span>
                   )}
                 </div>
@@ -200,7 +209,10 @@ export default function MenuJefeTurno({
 
               {/* Botón 2: Buscar Bitácoras */}
               <button
-                onClick={onBuscarBitacoras}
+                onClick={() => {
+                  onBuscarBitacoras();
+                  navigate('/consulta');
+                }}
                 className="w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 hover:from-slate-700 hover:to-slate-800 active:scale-[0.99] shadow-lg shadow-slate-900/50 transition-all border border-slate-700/80 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <Search className="w-6 h-6 text-cyan-400" />

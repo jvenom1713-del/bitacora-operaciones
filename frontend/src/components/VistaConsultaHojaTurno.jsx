@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo } from '../apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo, isBorrador, isEnviado, isAprobada } from '../apiConfig';
 import { supabase } from '../supabaseClient';
 
 // Componente de Edición de Texto Enriquecido
@@ -237,10 +238,11 @@ export default function VistaConsultaHojaTurno({
   }, [senalesForzadasProp]);
   const [guardado, setGuardado] = useState(false);
 
+  const navigate = useNavigate();
   const [observacionesJefe, setObservacionesJefe] = useState('');
   const [enviandoCierre, setEnviandoCierre] = useState(false);
   const [estadoTurnoCierre, setEstadoTurnoCierre] = useState(() => {
-    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || turnoActual?.estado || 'ABIERTO';
+    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || turnoActual?.estado || 'borrador';
   });
   const [cerradoPorNombre, setCerradoPorNombre] = useState(turnoActivo?.cerrado_por_nombre || '-');
   const [mensajeCierre, setMensajeCierre] = useState(null);
@@ -673,7 +675,7 @@ export default function VistaConsultaHojaTurno({
             turno: turnoActivo?.tipo_turno || 'DIURNO',
             operador: usuarioActual?.nombre || 'Operador',
             jefe_turno: 'Jefe de Turno',
-            estado: 'EN_REVISION',
+            estado: 'enviado',
             contenido: 'Solicitud de cierre enviada por el operador.'
           }]);
         } catch (_) {}
@@ -690,15 +692,19 @@ export default function VistaConsultaHojaTurno({
         })
       });
 
-      setEstadoTurnoCierre('EN_REVISION');
+      setEstadoTurnoCierre('enviado');
       try {
-        localStorage.setItem('estado_turno_activo', 'EN_REVISION');
+        localStorage.setItem('estado_turno_activo', 'enviado');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (_) {}
 
       setMensajeCierre({ texto: 'Solicitud de cierre enviada exitosamente. La bitácora se encuentra en revisión por el Jefe de Turno.', tipo: 'success' });
     } catch (err) {
-      setEstadoTurnoCierre('EN_REVISION');
+      setEstadoTurnoCierre('enviado');
+      try {
+        localStorage.setItem('estado_turno_activo', 'enviado');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (_) {}
       setMensajeCierre({ texto: 'Solicitud de cierre enviada exitosamente. La bitácora se encuentra en revisión por el Jefe de Turno.', tipo: 'success' });
     } finally {
       setEnviandoCierre(false);
@@ -788,7 +794,7 @@ ${instrucciones}
 ${senalesForzadasTexto}
 `;
 
-      // Insertar bitácora en Supabase directamente
+      // Insertar bitácora en Supabase directamente con estado 'aprobada'
       try {
         await supabase.from('bitacoras').insert([{
           folio: folioStr || '01',
@@ -796,7 +802,7 @@ ${senalesForzadasTexto}
           turno: turnoBitacora || 'DIURNO',
           operador: equipoTurno?.operador || 'Operador',
           jefe_turno: usuarioActual?.nombre || equipoTurno?.jdt || 'Norman Galaz (Jefe de Turno)',
-          estado: 'CERRADO',
+          estado: 'aprobada',
           contenido: contenidoTexto || observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.'
         }]);
       } catch (supErr) {
@@ -820,9 +826,9 @@ ${senalesForzadasTexto}
         })
       });
 
-      setEstadoTurnoCierre('CERRADO');
+      setEstadoTurnoCierre('aprobada');
       try {
-        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        localStorage.setItem('estado_turno_activo', 'aprobada');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
       if (onAprobarBitacora) onAprobarBitacora(turnoActivo?.id, { skipApi: true });
@@ -831,12 +837,14 @@ ${senalesForzadasTexto}
         tipo: 'success' 
       });
       setTimeout(() => {
-        onVolverMenu();
-      }, 1200);
+        if (onVolverMenu) onVolverMenu();
+        const esJefe = usuarioActual?.rol_codigo === 'JEFE_TURNO' || usuarioActual?.email?.includes('jefe');
+        navigate(esJefe ? '/menu-jefe' : '/menu-operador');
+      }, 1000);
     } catch (err) {
-      setEstadoTurnoCierre('CERRADO');
+      setEstadoTurnoCierre('aprobada');
       try {
-        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        localStorage.setItem('estado_turno_activo', 'aprobada');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
       setMensajeCierre({ 
@@ -844,8 +852,10 @@ ${senalesForzadasTexto}
         tipo: 'success' 
       });
       setTimeout(() => {
-        onVolverMenu();
-      }, 1200);
+        if (onVolverMenu) onVolverMenu();
+        const esJefe = usuarioActual?.rol_codigo === 'JEFE_TURNO' || usuarioActual?.email?.includes('jefe');
+        navigate(esJefe ? '/menu-jefe' : '/menu-operador');
+      }, 1000);
     } finally {
       setEnviandoCierre(false);
     }
@@ -1571,13 +1581,13 @@ ${senalesForzadasTexto}
             </div>
           </div>
 
-          {/* PASO 1: ESTADO ABIERTO */}
-          {estadoTurnoCierre === 'ABIERTO' && (
+          {/* PASO 1: ESTADO BORRADOR */}
+          {isBorrador(estadoTurnoCierre) && (
             <div className="grid grid-cols-1 gap-4">
               <button
                 onClick={handleSolicitarCierreOperador}
                 disabled={enviandoCierre}
-                className="p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all"
+                className="p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send className="w-5 h-5 text-cyan-300" />
                 <div className="text-left">
@@ -1588,15 +1598,15 @@ ${senalesForzadasTexto}
             </div>
           )}
 
-          {/* PASO 2: ESTADO EN_REVISION */}
-          {estadoTurnoCierre === 'EN_REVISION' && (
+          {/* PASO 2: ESTADO ENVIADO */}
+          {isEnviado(estadoTurnoCierre) && (
             <div>
               {esJefeTurnoEfectivo ? (
                 /* Botón Único: Aprobar Bitácora (JDT) */
                 <button
                   onClick={handleAbrirModalPassword}
                   disabled={enviandoCierre}
-                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all"
+                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ShieldCheck className="w-5 h-5 text-white" />
                   <div className="text-left">
@@ -1610,7 +1620,7 @@ ${senalesForzadasTexto}
                   <button
                     disabled
                     title="La bitácora ha sido enviada a revisión y el botón permanecerá bloqueado hasta que el Jefe de Turno la apruebe"
-                    className="w-full p-5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex items-center justify-center gap-3 font-black cursor-not-allowed opacity-90"
+                    className="w-full p-5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex items-center justify-center gap-3 font-black disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Lock className="w-5 h-5 text-amber-400 animate-pulse" />
                     <div className="text-left">

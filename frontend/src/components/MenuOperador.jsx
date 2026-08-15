@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, LogOut, Lock, Clock, AlertCircle, X, FileText, FileCheck, ShieldAlert, Flame, FlaskConical } from 'lucide-react';
+import { isBorrador, isEnviado, isAprobada } from '../apiConfig';
 
 export default function MenuOperador({ 
   usuarioActual, 
@@ -11,28 +13,26 @@ export default function MenuOperador({
   modoNocturno, 
   setModoNocturno 
 }) {
-  const esTurnoCerrado = turnoActivo?.estado === 'CERRADO';
+  const navigate = useNavigate();
+  const esTurnoCerrado = isAprobada(turnoActivo?.estado);
   const emailUsuario = usuarioActual?.email || 'jalbornoz@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Operador Sala de Control';
   const folioTurno = turnoActivo?.folio || '01';
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
   const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
-    return turnoActivo?.estado || turnoActual?.estado || localStorage.getItem('estado_turno_activo') || 'ABIERTO';
+    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || turnoActual?.estado || 'borrador';
   });
 
   useEffect(() => {
     const syncEstado = () => {
-      if (turnoActivo?.estado) {
+      const stored = localStorage.getItem('estado_turno_activo');
+      if (stored) {
+        setEstadoTurnoLocal(stored);
+      } else if (turnoActivo?.estado) {
         setEstadoTurnoLocal(turnoActivo.estado);
-        try { localStorage.setItem('estado_turno_activo', turnoActivo.estado); } catch (_) {}
-      } else {
-        const stored = localStorage.getItem('estado_turno_activo');
-        if (stored) {
-          setEstadoTurnoLocal(stored);
-        } else if (turnoActual?.estado) {
-          setEstadoTurnoLocal(turnoActual.estado);
-        }
+      } else if (turnoActual?.estado) {
+        setEstadoTurnoLocal(turnoActual.estado);
       }
     };
     syncEstado();
@@ -47,7 +47,7 @@ export default function MenuOperador({
   useEffect(() => {
     const intervalo = setInterval(() => {
       setFechaHoraActual(new Date());
-    }, 1000); // Se actualiza cada 1 segundo
+    }, 1000);
 
     return () => clearInterval(intervalo);
   }, []);
@@ -186,25 +186,28 @@ export default function MenuOperador({
           {/* Botón Principal Naranja Dinámico */}
           {(() => {
             const storedState = localStorage.getItem('estado_turno_activo');
-            const estadoEval = (storedState || turnoActivo?.estado || turnoActual?.estado || estadoTurnoLocal || 'ABIERTO').toUpperCase();
-            const estaCerradoOAprobado = estadoEval === 'CERRADO' || estadoEval === 'APROBADO';
-            const estaEnRevision = estadoEval === 'EN_REVISION';
+            const estadoEval = storedState || turnoActivo?.estado || turnoActual?.estado || estadoTurnoLocal || 'borrador';
+            const estaAprobadaTurno = isAprobada(estadoEval);
+            const estaEnviadoTurno = isEnviado(estadoEval);
 
-            if (estaCerradoOAprobado) {
+            if (estaAprobadaTurno) {
               return (
                 <button
-                  onClick={() => onNavegarBitacora('ABRIR_TURNO')}
+                  onClick={() => {
+                    onNavegarBitacora('ABRIR_TURNO');
+                    navigate('/abrir-turno');
+                  }}
                   className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
                 >
                   <span>🚀 Abrir Siguiente Turno</span>
                 </button>
               );
-            } else if (estaEnRevision && !esJefeOAdmin) {
+            } else if (estaEnviadoTurno && !esJefeOAdmin) {
               return (
                 <button
                   disabled
                   title="La bitácora ya fue enviada a revisión y se encuentra bloqueada hasta que el Jefe de Turno la apruebe"
-                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg flex flex-col items-center justify-center gap-1 cursor-not-allowed bg-slate-800/90 text-amber-300 border border-amber-500/50 opacity-90 shadow-black/40"
+                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg flex flex-col items-center justify-center gap-1 bg-slate-800/90 text-amber-300 border border-amber-500/50 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <div className="flex items-center gap-2 font-black text-sm uppercase">
                     <Lock className="w-5 h-5 text-amber-400 animate-pulse" />
@@ -218,7 +221,10 @@ export default function MenuOperador({
             } else {
               return (
                 <button
-                  onClick={() => onNavegarBitacora('SALA_CONTROL')}
+                  onClick={() => {
+                    onNavegarBitacora('SALA_CONTROL');
+                    navigate('/dashboard');
+                  }}
                   className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
                 >
                   <FileText className="w-5 h-5 text-amber-200" />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import LoginPortada from './components/LoginPortada';
 import PortalAcceso from './components/PortalAcceso';
 import MenuOperador from './components/MenuOperador';
@@ -41,6 +42,8 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [vistaActual, setVistaActual] = useState('PORTADA'); // 'PORTADA', 'LOGIN_BITACORA', 'LOGIN_QUIMICO', 'DASHBOARD_QUIMICO'
   const [sesionQuimicaActual, setSesionQuimicaActual] = useState(() => {
     try {
@@ -79,18 +82,19 @@ export default function App() {
   }, [equipoTurnoSeleccionado]);
 
   useEffect(() => {
-    const syncUrlPath = () => {
-      const href = window.location.href.toLowerCase();
-      if (href.includes('login-bitacora')) {
-        setVistaActual('LOGIN_BITACORA');
-      } else if (href.includes('login-quimico') || href.includes('quimico')) {
-        setVistaActual('LOGIN_QUIMICO');
-      }
-    };
-    syncUrlPath();
-    window.addEventListener('popstate', syncUrlPath);
-    return () => window.removeEventListener('popstate', syncUrlPath);
-  }, []);
+    const path = location.pathname.toLowerCase();
+    if (path.includes('menu-operador')) {
+      setVistaActual('MENU_OPERADOR');
+    } else if (path.includes('menu-jefe')) {
+      setVistaActual('MENU_JEFE');
+    } else if (path.includes('dashboard') || path.includes('bitacora')) {
+      setVistaActual('BITACORA_DASHBOARD');
+    } else if (path.includes('hoja-turno')) {
+      setVistaActual('CONSULTA_HOJA_TURNO');
+    } else if (path.includes('consulta')) {
+      setVistaActual('CONSULTA_BITACORA');
+    }
+  }, [location.pathname]);
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
 
