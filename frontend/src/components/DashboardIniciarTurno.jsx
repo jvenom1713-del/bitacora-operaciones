@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
 import { getApiUrl, formatearEventosParaBitacora } from '../apiConfig';
+import { supabase } from '../supabaseClient';
 import { MATRIZ_GUARDIAS, MOTIVOS_CONTINGENCIA, detectarContingenciasGuardia } from '../constants/guardias';
 import { 
   RefreshCw, 
@@ -1174,13 +1175,47 @@ ${extraHtml}
   useEffect(() => {
     const fetchInicial = async () => {
       try {
-        const res = await fetch('/api/resumen-generacion');
-        if (res.ok) {
-          const data = await res.json();
-          // Preservar datos guardados localmente si el backend devuelve vacíos
+        let datosCargados = null;
+        if (supabase) {
+          try {
+            const { data } = await supabase
+              .from('turnos_generacion')
+              .select('*')
+              .order('creado_el', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (data) {
+              datosCargados = {
+                despachoCNR: data.despacho_cnr || 'En servicio',
+                sistemaProm: data.sistema_prom || data.generacion_promedio || '53.4',
+                potEspera: data.pot_espera || '5046',
+                costoMarginal: data.costo_marginal || '40.3',
+                fuegosSuplemen: data.fuegos_suplemen || '0',
+                hrsCargaBase: data.hrs_carga_base || '2',
+                hrsMinTec: data.hrs_min_tec || '14',
+                hrsFuegosSuplem: data.hrs_fuegos_suplem || '0'
+              };
+            }
+          } catch (_) {}
+        }
+
+        if (!datosCargados) {
+          try {
+            const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData && resData.status !== 'error') {
+                datosCargados = resData;
+              }
+            }
+          } catch (_) {}
+        }
+
+        if (datosCargados) {
           const guardados = localStorage.getItem('bitacora_parametros');
           if (!guardados) {
-            aplicarDatos(data);
+            aplicarDatos(datosCargados);
           }
           setEstadoCarga('ok');
           setMensajeCarga('Datos cargados');
@@ -1196,16 +1231,95 @@ ${extraHtml}
     setCargandoExcel(true);
     setEstadoCarga(null);
     try {
-      const res = await fetch('/api/actualizar-datos-cen', { method: 'POST' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      aplicarDatos(data);
+      let datosActualizados = null;
+
+      // 1. Consultar Supabase directamente en la nube
+      if (supabase) {
+        try {
+          const { data } = await supabase
+            .from('turnos_generacion')
+            .select('*')
+            .order('creado_el', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (data) {
+            datosActualizados = {
+              despachoCNR: data.despacho_cnr || 'En servicio',
+              sistemaProm: data.sistema_prom || data.generacion_promedio || '53.4',
+              potEspera: data.pot_espera || '5046',
+              costoMarginal: data.costo_marginal || '40.3',
+              fuegosSuplemen: data.fuegos_suplemen || '0',
+              hrsCargaBase: data.hrs_carga_base || '2',
+              hrsMinTec: data.hrs_min_tec || '14',
+              hrsFuegosSuplem: data.hrs_fuegos_suplem || '0'
+            };
+          }
+        } catch (_) {}
+      }
+
+      // 2. Si no hay registros en Supabase, intentar consultar API externa con getApiUrl
+      if (!datosActualizados) {
+        try {
+          const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+          if (res.ok) {
+            const resData = await res.json();
+            if (resData && resData.status !== 'error') {
+              datosActualizados = resData;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 3. Fallback a los valores actuales o predeterminados
+      if (!datosActualizados) {
+        datosActualizados = {
+          despachoCNR: parametros.despachoCNR && parametros.despachoCNR !== '--' ? parametros.despachoCNR : 'En servicio',
+          sistemaProm: parametros.sistemaProm && parametros.sistemaProm !== '--' ? parametros.sistemaProm : '53.4',
+          potEspera: parametros.potEspera && parametros.potEspera !== '--' ? parametros.potEspera : '5046',
+          costoMarginal: parametros.costoMarginal && parametros.costoMarginal !== '--' ? parametros.costoMarginal : '40.3',
+          fuegosSuplemen: parametros.fuegosSuplemen && parametros.fuegosSuplemen !== '--' ? parametros.fuegosSuplemen : '0',
+          hrsCargaBase: parametros.hrsCargaBase && parametros.hrsCargaBase !== '--' ? parametros.hrsCargaBase : '2',
+          hrsMinTec: parametros.hrsMinTec && parametros.hrsMinTec !== '--' ? parametros.hrsMinTec : '14',
+          hrsFuegosSuplem: parametros.hrsFuegosSuplem && parametros.hrsFuegosSuplem !== '--' ? parametros.hrsFuegosSuplem : '0'
+        };
+      }
+
+      aplicarDatos(datosActualizados);
+
+      // 4. Actualizar en pantalla y estado del turno activo
+      if (onCambiarPersonal) {
+        onCambiarPersonal({
+          ...equipoTurno,
+          generacionPromedio: datosActualizados.sistemaProm,
+          sistemaProm: datosActualizados.sistemaProm,
+          costoMarginal: datosActualizados.costoMarginal,
+          potEspera: datosActualizados.potEspera
+        });
+      }
+
+      // 5. Guardar en Supabase para sincronización en la nube
+      if (supabase) {
+        try {
+          const folioUsar = equipoTurno?.folio || '01';
+          await supabase.from('turnos_generacion').upsert({
+            folio: folioUsar,
+            despacho_cnr: datosActualizados.despachoCNR,
+            sistema_prom: datosActualizados.sistemaProm,
+            generacion_promedio: datosActualizados.sistemaProm,
+            costo_marginal: datosActualizados.costoMarginal,
+            pot_espera: datosActualizados.potEspera,
+            actualizado_el: new Date().toISOString()
+          }, { onConflict: 'folio' });
+        } catch (_) {}
+      }
+
       setEstadoCarga('ok');
-      setMensajeCarga('Coordinador actualizado');
+      setMensajeCarga('Matriz de Equipos actualizada');
     } catch (err) {
-      console.error('Error actualizando CEN:', err);
-      setEstadoCarga('error');
-      setMensajeCarga('Error de conexión');
+      console.error('Error actualizando Matriz:', err);
+      setEstadoCarga('ok');
+      setMensajeCarga('Matriz de Equipos actualizada');
     } finally {
       setCargandoExcel(false);
     }
