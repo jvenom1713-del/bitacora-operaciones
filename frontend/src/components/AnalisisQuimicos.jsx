@@ -455,6 +455,28 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       ...prev,
       [key]: { subpuntoId, hora, paramsObj }
     }));
+
+    setMuestras(prevMuestras => {
+      const copy = [...prevMuestras];
+      const idx = copy.findIndex(m => m.punto_muestreo === subpuntoId && m.hora === hora);
+      if (idx >= 0) {
+        copy[idx] = { ...copy[idx], fecha: fechaSeleccionada, parametros: paramsObj };
+      } else {
+        copy.push({
+          id: `draft_${subpuntoId}_${hora}`,
+          fecha: fechaSeleccionada,
+          hora: hora,
+          punto_muestreo: subpuntoId,
+          parametros: paramsObj
+        });
+      }
+
+      try {
+        localStorage.setItem(`quimica_muestras_${fechaSeleccionada}`, JSON.stringify(copy));
+      } catch (_) {}
+
+      return copy;
+    });
   };
 
   const obtenerHorasSubpunto = (subpuntoId) => {
@@ -782,13 +804,20 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     return null;
   };
 
-  // Obtener la fila de muestra para un punto y hora específicos
+  // Obtener la fila de muestra para un punto y hora específicos con preservación de borrador
   const obtenerFilaMuestra = (subpuntoId, hora) => {
-    return muestras.find(m => m.punto_muestreo === subpuntoId && m.hora === hora) || {
+    const key = `${subpuntoId}_${hora}`;
+    const borrador = paramsBorrador[key];
+    const muestraGuardada = muestras.find(m => m.punto_muestreo === subpuntoId && m.hora === hora);
+
+    const baseParams = muestraGuardada ? (muestraGuardada.parametros || {}) : {};
+    const draftParams = borrador ? (borrador.paramsObj || {}) : {};
+
+    return {
       fecha: fechaSeleccionada,
       hora: hora,
       punto_muestreo: subpuntoId,
-      parametros: {}
+      parametros: { ...baseParams, ...draftParams }
     };
   };
 
