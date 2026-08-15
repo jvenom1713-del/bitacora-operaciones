@@ -87,6 +87,8 @@ const PUNTOS_MUESTREO = [
     parametros: [
       { key: 'ph', label: 'pH', min: 8.8, max: 9.4, textRango: '8,8 - 9,4' },
       { key: 'conductividad', label: 'Conductividad', maxStrict: 20.0, unit: 'uS/cm', textRango: '< 20 uS/cm' },
+      { key: 'silice', label: 'Silice', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' },
+      { key: 'dureza', label: 'Dureza', maxStrict: 0.0, unit: 'ppm', textRango: '0 ppm' },
       { key: 'oxigeno', label: 'Oxigeno (O2)', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' },
       { key: 'cobre', label: 'Cobre', maxStrict: 2.0, unit: 'ppb', textRango: '< 2 ppb' },
       { key: 'hierro', label: 'Hierro', maxStrict: 0.02, unit: 'ppm', textRango: '< 0,02 ppm' }
