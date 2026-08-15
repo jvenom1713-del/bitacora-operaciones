@@ -10,6 +10,7 @@ import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
 import { getApiUrl, formatearEventosParaBitacora } from './apiConfig';
 import { supabase } from './supabaseClient';
+import { detectarContingenciasGuardia } from './constants/guardias';
 
 import { 
   ShieldCheck, 
@@ -491,18 +492,33 @@ export default function App() {
     });
 
     setTurnoActivo(prev => {
-      const objActualizado = {
-        ...(prev || {}),
-        equipoTurno: { ...(prev?.equipoTurno || {}), ...nuevoEquipo },
+      const datosCombinados = {
+        rotacion: nuevoEquipo.rotacion || prev?.rotacion || 'TIGRES',
         jdt: nuevoEquipo.jdt || prev?.jdt || 'Ariel Torres',
         osc: nuevoEquipo.osc || prev?.osc || 'Jorge Albornoz',
-        ot: nuevoEquipo.ot || prev?.ot || 'Matias Cisternas',
-        rotacion: nuevoEquipo.rotacion || prev?.rotacion || 'TIGRES',
-        motivoContingencia: nuevoEquipo.motivoContingencia || prev?.motivoContingencia || 'Sin contingencia',
+        ot: nuevoEquipo.ot || prev?.ot || 'Matias Cisternas'
+      };
+
+      const infoContingencia = detectarContingenciasGuardia(datosCombinados);
+      const motivoAuto = infoContingencia.hayContingencia
+        ? (nuevoEquipo.motivoContingencia && nuevoEquipo.motivoContingencia !== 'Dotación Normal / Sin contingencia' ? nuevoEquipo.motivoContingencia : (prev?.motivoContingencia || 'Licencia'))
+        : 'Dotación Normal / Sin contingencia';
+
+      const objActualizado = {
+        ...(prev || {}),
+        equipoTurno: { ...(prev?.equipoTurno || {}), ...nuevoEquipo, motivoContingencia: motivoAuto },
+        jdt: datosCombinados.jdt,
+        osc: datosCombinados.osc,
+        ot: datosCombinados.ot,
+        rotacion: datosCombinados.rotacion,
+        hayContingencia: infoContingencia.hayContingencia,
+        reemplazosContingencia: infoContingencia.reemplazos,
+        resumenReemplazos: infoContingencia.resumenReemplazos,
+        motivoContingencia: motivoAuto,
         detalleContingencia: nuevoEquipo.detalleContingencia !== undefined ? nuevoEquipo.detalleContingencia : (prev?.detalleContingencia || ''),
-        jefe_turno: nuevoEquipo.jdt || prev?.jefe_turno,
-        operador: nuevoEquipo.osc || prev?.operador,
-        personal_turno: nuevoEquipo.ot || prev?.personal_turno
+        jefe_turno: datosCombinados.jdt,
+        operador: datosCombinados.osc,
+        personal_turno: datosCombinados.ot
       };
       try {
         localStorage.setItem('turno_activo_guardado', JSON.stringify(objActualizado));
@@ -514,12 +530,14 @@ export default function App() {
           const folioUsar = objActualizado?.folio || '01';
           supabase.from('turnos_personal').upsert({
             folio: folioUsar,
-            rotacion: nuevoEquipo.rotacion || objActualizado.rotacion,
-            jefe_turno: nuevoEquipo.jdt || objActualizado.jdt,
-            operador_sala: nuevoEquipo.osc || objActualizado.osc,
-            operador_terreno: nuevoEquipo.ot || objActualizado.ot,
-            motivo_contingencia: nuevoEquipo.motivoContingencia || objActualizado.motivoContingencia || 'Sin contingencia',
-            detalle_contingencia: nuevoEquipo.detalleContingencia || objActualizado.detalleContingencia || '',
+            rotacion: objActualizado.rotacion,
+            jefe_turno: objActualizado.jdt,
+            operador_sala: objActualizado.osc,
+            operador_terreno: objActualizado.ot,
+            hay_contingencia: objActualizado.hayContingencia,
+            motivo_contingencia: objActualizado.motivoContingencia,
+            detalle_contingencia: objActualizado.detalleContingencia,
+            resumen_reemplazos: objActualizado.resumenReemplazos,
             actualizado_el: new Date().toISOString()
           }, { onConflict: 'folio' }).then(() => {}).catch(() => {});
         }

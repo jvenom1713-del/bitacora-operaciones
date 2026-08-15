@@ -32,10 +32,34 @@ export const MATRIZ_GUARDIAS = {
 };
 
 export const MOTIVOS_CONTINGENCIA = [
-  'Sin contingencia',
   'Licencia',
   'Día compensado',
   'Día administrativo',
   'Mantenimiento',
-  'Problemas climáticos'
+  'Problemas climáticos',
+  'Otro'
 ];
+
+export function detectarContingenciasGuardia(equipoTurno) {
+  const rotacion = equipoTurno?.rotacion || 'TIGRES';
+  const oficial = MATRIZ_GUARDIAS[rotacion] || MATRIZ_GUARDIAS.TIGRES;
+  
+  const reemplazos = [];
+  if (equipoTurno?.jdt && equipoTurno.jdt !== oficial.jdt) {
+    reemplazos.push({ cargo: 'Jefe de Turno', actual: equipoTurno.jdt, original: oficial.jdt });
+  }
+  if (equipoTurno?.osc && equipoTurno.osc !== oficial.osc) {
+    reemplazos.push({ cargo: 'Operador Sala Control', actual: equipoTurno.osc, original: oficial.osc });
+  }
+  if (equipoTurno?.ot && equipoTurno.ot !== oficial.ot) {
+    reemplazos.push({ cargo: 'Operador Terreno', actual: equipoTurno.ot, original: oficial.ot });
+  }
+
+  const hayContingencia = reemplazos.length > 0;
+  return {
+    hayContingencia,
+    reemplazos,
+    oficial,
+    resumenReemplazos: reemplazos.map(r => `${r.actual} reemplaza a ${r.original}`).join(' | ')
+  };
+}
