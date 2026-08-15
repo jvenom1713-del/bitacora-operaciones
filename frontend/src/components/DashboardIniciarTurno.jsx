@@ -3156,49 +3156,133 @@ ${extraHtml}
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>SISTEMA PROM</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-white' : 'text-slate-950'}`}>{formatearNum(parametros.sistemaProm)}</span>
+                  <input
+                    type="text"
+                    value={parametros.sistemaProm ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, sistemaProm: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, generacionPromedio: val, sistemaProm: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-white' : 'text-slate-950'
+                    }`}
+                  />
                 </div>
 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>(MW) POT ESPERA</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-emerald-400' : 'text-emerald-800'}`}>{formatearNum(parametros.potEspera)}</span>
+                  <input
+                    type="text"
+                    value={parametros.potEspera ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, potEspera: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, potEspera: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-emerald-400' : 'text-emerald-800'
+                    }`}
+                  />
                 </div>
 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>(MW) FUEGOS SUPLEMEN</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-white' : 'text-slate-950'}`}>{formatearNum(parametros.fuegosSuplemen)}</span>
+                  <input
+                    type="text"
+                    value={parametros.fuegosSuplemen ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, fuegosSuplemen: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, fuegosSuplemen: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-white' : 'text-slate-950'
+                    }`}
+                  />
                 </div>
 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>HRS CARGA BASE</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-white' : 'text-slate-950'}`}>{formatearNum(parametros.hrsCargaBase)}</span>
+                  <input
+                    type="text"
+                    value={parametros.hrsCargaBase ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, hrsCargaBase: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, hrsCargaBase: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-white' : 'text-slate-950'
+                    }`}
+                  />
                 </div>
 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>HRS MIN TEC</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-white' : 'text-slate-950'}`}>{formatearNum(parametros.hrsMinTec)}</span>
+                  <input
+                    type="text"
+                    value={parametros.hrsMinTec ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, hrsMinTec: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, hrsMinTec: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-white' : 'text-slate-950'
+                    }`}
+                  />
                 </div>
 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>HRS FUEGOS SUPLEM</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-white' : 'text-slate-950'}`}>{formatearNum(parametros.hrsFuegosSuplem)}</span>
+                  <input
+                    type="text"
+                    value={parametros.hrsFuegosSuplem ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, hrsFuegosSuplem: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, hrsFuegosSuplem: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-white' : 'text-slate-950'
+                    }`}
+                  />
                 </div>
 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
                   modoNocturno ? 'bg-[#0b223f] border-blue-800/80 text-white' : 'bg-slate-100 border-slate-300 text-slate-950'
                 }`}>
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>COSTO MARGINAL</span>
-                  <span className={`font-black text-xl sm:text-2xl ${modoNocturno ? 'text-amber-500' : 'text-amber-800'}`}>{formatearNum(parametros.costoMarginal)}</span>
+                  <input
+                    type="text"
+                    value={parametros.costoMarginal ?? '0'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const nParams = { ...parametros, costoMarginal: val };
+                      setParametros(nParams);
+                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, costoMarginal: val });
+                    }}
+                    className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
+                      modoNocturno ? 'text-amber-500' : 'text-amber-800'
+                    }`}
+                  />
                 </div>
 
               </div>
