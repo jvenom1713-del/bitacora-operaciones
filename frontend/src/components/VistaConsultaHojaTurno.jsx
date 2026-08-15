@@ -294,36 +294,61 @@ export default function VistaConsultaHojaTurno({
 
 
   const [datosGenLocal, setDatosGenLocal] = useState({
-    costoMarginal: '40.3',
-    potEspera: '5046',
+    costoMarginal: '0',
+    potEspera: '0',
     fuegosSuplemen: '0',
-    hrsCargaBase: '2',
-    hrsMinTec: '14'
+    hrsCargaBase: '0',
+    hrsMinTec: '0'
   });
 
-  const datosGen = (parametrosGeneracion && parametrosGeneracion.potEspera && parametrosGeneracion.potEspera !== '--')
+  const datosGen = (parametrosGeneracion && parametrosGeneracion.potEspera && parametrosGeneracion.potEspera !== '--' && parametrosGeneracion.potEspera !== '0')
     ? parametrosGeneracion
     : datosGenLocal;
 
   useEffect(() => {
-    fetch(getApiUrl('/api/resumen-generacion-diaria'))
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status !== 'error') {
-          const actualizados = {
-            costoMarginal: data.costoMarginal || '40.3',
-            potEspera: data.potEspera || '5046',
-            fuegosSuplemen: data.fuegosSuplemen || '0',
-            hrsCargaBase: data.hrsCargaBase || '2',
-            hrsMinTec: data.hrsMinTec || '14'
-          };
-          setDatosGenLocal(actualizados);
-          if (setParametrosGeneracion) {
-            setParametrosGeneracion(prev => ({ ...prev, ...actualizados }));
+    const fetchGeneracion = async () => {
+      if (supabase) {
+        try {
+          const { data } = await supabase
+            .from('turnos_generacion')
+            .select('*')
+            .order('creado_el', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (data) {
+            const actualizados = {
+              costoMarginal: String(data.costo_marginal || '0'),
+              potEspera: String(data.pot_espera || '0'),
+              fuegosSuplemen: String(data.fuegos_suplemen || '0'),
+              hrsCargaBase: String(data.hrs_carga_base || '0'),
+              hrsMinTec: String(data.hrs_min_tec || '0')
+            };
+            setDatosGenLocal(actualizados);
+            return;
+          }
+        } catch (_) {}
+      }
+
+      try {
+        const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status !== 'error') {
+            const actualizados = {
+              costoMarginal: String(data.costoMarginal || data.costo_marginal || '0'),
+              potEspera: String(data.potEspera || data.pot_espera || '0'),
+              fuegosSuplemen: String(data.fuegosSuplemen || data.fuegos_suplemen || '0'),
+              hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '0'),
+              hrsMinTec: String(data.hrsMinTec || data.hrs_min_tec || '0')
+            };
+            setDatosGenLocal(actualizados);
           }
         }
-      })
-      .catch(err => console.error("Error al cargar resumen generacion en consulta:", err));
+      } catch (_) {}
+    };
+
+    fetchGeneracion();
   }, []);
 
   useEffect(() => {

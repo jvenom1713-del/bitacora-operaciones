@@ -1093,32 +1093,32 @@ ${extraHtml}
       const saved = localStorage.getItem('bitacora_parametros');
       return saved ? JSON.parse(saved) : {
         despachoCNR: 'En servicio',
-        sistemaProm: '53.4',
-        potEspera: '--',
-        fuegosSuplemen: '--',
-        hrsCargaBase: '--',
-        hrsMinTec: '--',
-        hrsFuegosSuplem: '--',
+        sistemaProm: '0',
+        potEspera: '0',
+        fuegosSuplemen: '0',
+        hrsCargaBase: '0',
+        hrsMinTec: '0',
+        hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '--'
+        costoMarginal: '0'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '53.4',
-        potEspera: '--',
-        fuegosSuplemen: '--',
-        hrsCargaBase: '--',
-        hrsMinTec: '--',
-        hrsFuegosSuplem: '--',
+        sistemaProm: '0',
+        potEspera: '0',
+        fuegosSuplemen: '0',
+        hrsCargaBase: '0',
+        hrsMinTec: '0',
+        hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '--'
+        costoMarginal: '0'
       };
     }
   });

@@ -205,32 +205,32 @@ export default function App() {
       const saved = localStorage.getItem('bitacora_parametros');
       return saved ? JSON.parse(saved) : {
         despachoCNR: 'En servicio',
-        sistemaProm: '53.4',
-        potEspera: '5046',
+        sistemaProm: '0',
+        potEspera: '0',
         fuegosSuplemen: '0',
-        hrsCargaBase: '2',
-        hrsMinTec: '14',
+        hrsCargaBase: '0',
+        hrsMinTec: '0',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '40.3'
+        costoMarginal: '0'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '53.4',
-        potEspera: '5046',
+        sistemaProm: '0',
+        potEspera: '0',
         fuegosSuplemen: '0',
-        hrsCargaBase: '2',
-        hrsMinTec: '14',
+        hrsCargaBase: '0',
+        hrsMinTec: '0',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '40.3'
+        costoMarginal: '0'
       };
     }
   });
@@ -250,12 +250,12 @@ export default function App() {
           if (data) {
             datosGeneracion = {
               despachoCNR: data.despacho_cnr || 'En servicio',
-              sistemaProm: String(data.sistema_prom || data.generacion_promedio || '53.4'),
-              potEspera: String(data.pot_espera || '5046'),
-              costoMarginal: String(data.costo_marginal || '40.3'),
+              sistemaProm: String(data.sistema_prom || data.generacion_promedio || '0'),
+              potEspera: String(data.pot_espera || '0'),
+              costoMarginal: String(data.costo_marginal || '0'),
               fuegosSuplemen: String(data.fuegos_suplemen || '0'),
-              hrsCargaBase: String(data.hrs_carga_base || '2'),
-              hrsMinTec: String(data.hrs_min_tec || '14'),
+              hrsCargaBase: String(data.hrs_carga_base || '0'),
+              hrsMinTec: String(data.hrs_min_tec || '0'),
               hrsFuegosSuplem: String(data.hrs_fuegos_suplem || '0')
             };
           }
@@ -270,12 +270,12 @@ export default function App() {
             if (data && data.status !== 'error') {
               datosGeneracion = {
                 despachoCNR: data.despachoCNR || 'En servicio',
-                sistemaProm: String(data.sistemaProm || data.sistema_prom_mw || '53.4'),
-                potEspera: String(data.potEspera || data.potencia_esperada_mw || '5046'),
-                costoMarginal: String(data.costoMarginal || data.costo_marginal_usd_mw || '40.3'),
+                sistemaProm: String(data.sistemaProm || data.sistema_prom_mw || '0'),
+                potEspera: String(data.potEspera || data.potencia_esperada_mw || '0'),
+                costoMarginal: String(data.costoMarginal || data.costo_marginal_usd_mw || '0'),
                 fuegosSuplemen: String(data.fuegosSuplemen || '0'),
-                hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '2'),
-                hrsMinTec: String(data.hrsMinTec || data.hrs_minimo_tecnico || '14'),
+                hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '0'),
+                hrsMinTec: String(data.hrsMinTec || data.hrs_minimo_tecnico || '0'),
                 hrsFuegosSuplem: String(data.hrsFuegosSuplem || data.hrs_fuegos_suplementarios || '0')
               };
             }
@@ -574,10 +574,10 @@ export default function App() {
         resumenReemplazos: infoContingencia.resumenReemplazos,
         motivoContingencia: motivoAuto,
         detalleContingencia: nuevoEquipo.detalleContingencia !== undefined ? nuevoEquipo.detalleContingencia : (prev?.detalleContingencia || ''),
-        generacionPromedio: nuevoEquipo.generacionPromedio || nuevoEquipo.sistemaProm || prev?.generacionPromedio || prev?.sistemaProm || '53.4',
-        sistemaProm: nuevoEquipo.sistemaProm || nuevoEquipo.generacionPromedio || prev?.sistemaProm || prev?.generacionPromedio || '53.4',
-        costoMarginal: nuevoEquipo.costoMarginal || prev?.costoMarginal || '40.3',
-        potEspera: nuevoEquipo.potEspera || prev?.potEspera || '5046',
+        generacionPromedio: nuevoEquipo.generacionPromedio || nuevoEquipo.sistemaProm || prev?.generacionPromedio || prev?.sistemaProm || '0',
+        sistemaProm: nuevoEquipo.sistemaProm || nuevoEquipo.generacionPromedio || prev?.sistemaProm || prev?.generacionPromedio || '0',
+        costoMarginal: nuevoEquipo.costoMarginal || prev?.costoMarginal || '0',
+        potEspera: nuevoEquipo.potEspera || prev?.potEspera || '0',
         jefe_turno: datosCombinados.jdt,
         operador: datosCombinados.osc,
         personal_turno: datosCombinados.ot
