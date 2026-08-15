@@ -111,9 +111,10 @@ const PUNTOS_MUESTREO = [
   },
   {
     id: 'CIRCULACION_CLORACION',
-    nombre: 'Sistema de Circulación',
+    nombre: 'Circulación y Cloración',
     subpuntos: [
-      { id: 'AGUA_CIRCULACION', nombre: 'Sistema de Circulación' }
+      { id: 'AGUA_CIRCULACION', nombre: 'Sistema de Circulación' },
+      { id: 'CLORACION', nombre: 'Cloración TT/RR' }
     ],
     parametros: [
       { key: 'ph', label: 'pH', min: 8.0, max: 8.3, textRango: '8,0 - 8,3' },
@@ -122,7 +123,8 @@ const PUNTOS_MUESTREO = [
       { key: 'fosfato', label: 'Fosfato', min: 2.0, max: 5.0, unit: 'ppm', textRango: '2 - 5 ppm' },
       { key: 'durezaTotal', label: 'Dureza Total', maxStrict: 1500.0, unit: 'ppm', textRango: '< 1500 ppm' },
       { key: 'durezaCalcica', label: 'Dureza Cálcica', maxStrict: 1200.0, unit: 'ppm', textRango: '< 1200 ppm' },
-      { key: 'sulfatos', label: 'Sulfatos', maxStrict: 1000.0, unit: 'ppm', textRango: '< 1000 ppm' }
+      { key: 'sulfatos', label: 'Sulfatos', maxStrict: 1000.0, unit: 'ppm', textRango: '< 1000 ppm' },
+      { key: 'cloracionTtrr', label: 'Cloración TT/RR', min: 0.1, max: 0.3, unit: 'ppm', textRango: '0,1 - 0,3 ppm' }
     ]
   }
 ];
@@ -201,6 +203,12 @@ function FilaMuestraRow({
       {/* Inputs por cada Parámetro Químico con valores controlados seguros */}
       {categoriaObjActiva.parametros
         .filter(param => {
+          if (subpuntoActivo === 'CLORACION' && param.key !== 'cloracionTtrr') {
+            return false;
+          }
+          if (subpuntoActivo === 'AGUA_CIRCULACION' && param.key === 'cloracionTtrr') {
+            return false;
+          }
           if (subpuntoActivo === 'CALDERA_BAJA' && (param.key === 'silice' || param.key === 'amoniaco' || param.key === 'cobre' || param.key === 'oxigeno')) {
             return false;
           }
@@ -1184,6 +1192,12 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                           <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
                           {catObj.parametros
                             .filter(p => {
+                              if (subpuntoActivoEnCat === 'CLORACION' && p.key !== 'cloracionTtrr') {
+                                return false;
+                              }
+                              if (subpuntoActivoEnCat === 'AGUA_CIRCULACION' && p.key === 'cloracionTtrr') {
+                                return false;
+                              }
                               if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'silice' || p.key === 'amoniaco' || p.key === 'cobre' || p.key === 'oxigeno')) {
                                 return false;
                               }
