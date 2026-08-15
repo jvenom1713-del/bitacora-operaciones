@@ -116,16 +116,15 @@ const PUNTOS_MUESTREO = [
 
 const HORAS_ESTANDAR = ['10:00', '16:00', '22:00', '05:00'];
 
-export default function AnalisisQuimicos({ onVolver, modoNocturno }) {
-  // 1. Estado de Autenticación de Módulo Químico
-  const [sesionQuimica, setSesionQuimica] = useState(() => {
-    try {
-      const saved = localStorage.getItem('sesion_modulo_quimico');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
+export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: onLogoutProp, onVolver, modoNocturno, setModoNocturno }) {
+  // 1. Estado de Autenticación de Módulo Químico (Forzar login explícito)
+  const [sesionQuimica, setSesionQuimica] = useState(sesionProp || null);
+
+  useEffect(() => {
+    if (sesionProp) {
+      setSesionQuimica(sesionProp);
     }
-  });
+  }, [sesionProp]);
 
   // 2. Estado de Navegación del Módulo
   const [categoriaActiva, setCategoriaActiva] = useState('DOMOS');
@@ -209,6 +208,7 @@ export default function AnalisisQuimicos({ onVolver, modoNocturno }) {
   const handleLogoutQuimico = () => {
     localStorage.removeItem('sesion_modulo_quimico');
     setSesionQuimica(null);
+    if (onLogoutProp) onLogoutProp();
   };
 
   // Validar si un parámetro ingresado sale del rango operacional

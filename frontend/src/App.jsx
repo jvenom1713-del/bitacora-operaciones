@@ -10,6 +10,7 @@ import VistaConsultaHojaTurno from './components/VistaConsultaHojaTurno';
 import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
 import AnalisisQuimicos from './components/AnalisisQuimicos';
+import LoginQuimico from './components/LoginQuimico';
 import { getApiUrl, formatearEventosParaBitacora } from './apiConfig';
 import { supabase } from './supabaseClient';
 import { detectarContingenciasGuardia } from './constants/guardias';
@@ -40,7 +41,8 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  const [vistaActual, setVistaActual] = useState('PORTADA'); // 'PORTADA', 'MENU_OPERADOR', 'ABRIR_TURNO_MENU', 'BITACORA_DASHBOARD'
+  const [vistaActual, setVistaActual] = useState('PORTADA'); // 'PORTADA', 'LOGIN_BITACORA', 'LOGIN_QUIMICO', 'DASHBOARD_QUIMICO'
+  const [sesionQuimicaActual, setSesionQuimicaActual] = useState(null);
   const [tabInicialDashboard, setTabInicialDashboard] = useState('EQUIPOS');
   const [modoNocturno, setModoNocturno] = useState(true);
   const [vistaAnteriorCambioPersonal, setVistaAnteriorCambioPersonal] = useState('ABRIR_TURNO_MENU');
@@ -75,7 +77,7 @@ export default function App() {
       if (href.includes('login-bitacora')) {
         setVistaActual('LOGIN_BITACORA');
       } else if (href.includes('login-quimico') || href.includes('quimico')) {
-        setVistaActual('ANALISIS_QUIMICOS');
+        setVistaActual('LOGIN_QUIMICO');
       }
     };
     syncUrlPath();
@@ -957,7 +959,7 @@ export default function App() {
       <>
         <PortalAcceso
           onIrABitacora={() => setVistaActual('LOGIN_BITACORA')}
-          onIrAQuimicos={() => setVistaActual('ANALISIS_QUIMICOS')}
+          onIrAQuimicos={() => setVistaActual('LOGIN_QUIMICO')}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
         />
@@ -1226,11 +1228,31 @@ export default function App() {
     );
   }
 
-  if (vistaActual === 'ANALISIS_QUIMICOS') {
+  if (vistaActual === 'LOGIN_QUIMICO') {
+    return (
+      <LoginQuimico
+        onLoginExitoso={(sesion) => {
+          setSesionQuimicaActual(sesion);
+          setVistaActual('DASHBOARD_QUIMICO');
+        }}
+        onVolver={() => setVistaActual('PORTADA')}
+        modoNocturno={modoNocturno}
+        setModoNocturno={setModoNocturno}
+      />
+    );
+  }
+
+  if (vistaActual === 'DASHBOARD_QUIMICO' || vistaActual === 'ANALISIS_QUIMICOS') {
     return (
       <AnalisisQuimicos
-        modoNocturno={modoNocturno}
+        sesionQuimica={sesionQuimicaActual}
+        onLogout={() => {
+          setSesionQuimicaActual(null);
+          setVistaActual('LOGIN_QUIMICO');
+        }}
         onVolver={() => setVistaActual('PORTADA')}
+        modoNocturno={modoNocturno}
+        setModoNocturno={setModoNocturno}
       />
     );
   }
