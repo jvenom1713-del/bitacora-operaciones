@@ -1387,13 +1387,13 @@ ${extraHtml}
       }
 
       setEstadoCarga('ok');
-      setMensajeCarga('Matriz de Equipos actualizada');
+      setMensajeCarga('Generación actualizada');
     } catch (err) {
       console.error('Error actualizando Matriz:', err);
       const fallbackCalculado = calcularMatrizDinamica(parametros);
       aplicarDatos(fallbackCalculado);
       setEstadoCarga('ok');
-      setMensajeCarga('Matriz de Equipos actualizada');
+      setMensajeCarga('Generación actualizada');
     } finally {
       setCargandoExcel(false);
     }
