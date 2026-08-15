@@ -14,6 +14,8 @@ import {
   AlertTriangle, 
   ArrowLeft,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Layers,
   Activity,
   Droplets
@@ -116,6 +118,24 @@ const PUNTOS_MUESTREO = [
 
 const HORAS_ESTANDAR = ['10:00', '16:00', '22:00', '05:00'];
 
+const IMAGENES_CARRUSEL = [
+  {
+    url: '/quimica1.jpg',
+    titulo: 'Laboratorio de Control Químico',
+    subtitulo: 'Monitoreo continuo de parámetros de agua y vapor en ciclo térmico HRSG'
+  },
+  {
+    url: '/quimica2.jpg',
+    titulo: 'Análisis de Domos & Agua de Alimentación',
+    subtitulo: 'Verificación periódica de pH, conductividad catiónica y sílice'
+  },
+  {
+    url: '/quimica3.jpg',
+    titulo: 'Plantas de Agua Desmineralizada y Servicios',
+    subtitulo: 'Aseguramiento de agua ultrapura con tecnología Vigaflow y Veolia'
+  }
+];
+
 export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: onLogoutProp, onVolver, modoNocturno, setModoNocturno }) {
   // 1. Estado de Autenticación de Módulo Químico (Forzar login explícito)
   const [sesionQuimica, setSesionQuimica] = useState(sesionProp || null);
@@ -125,6 +145,16 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       setSesionQuimica(sesionProp);
     }
   }, [sesionProp]);
+
+  // Estado para Carrusel Automático de Fotos Químicas
+  const [imgCarruselIdx, setImgCarruselIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setImgCarruselIdx((prev) => (prev + 1) % IMAGENES_CARRUSEL.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   // 2. Estado de Navegación del Módulo
   const [categoriaActiva, setCategoriaActiva] = useState('DOMOS');
@@ -536,6 +566,76 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       ) : (
         /* 3. VISTA PRINCIPAL POR PESTAÑAS DE CATEGORÍA QUÍMICA */
         <div className="max-w-7xl mx-auto space-y-6">
+          
+          {/* BANNER DINÁMICO CON CARRUSEL ANIMADO DE FOTOS */}
+          <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl group">
+            {/* Imágenes con transición suave de opacidad (Fade-in) */}
+            {IMAGENES_CARRUSEL.map((img, idx) => (
+              <div
+                key={img.url}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  idx === imgCarruselIdx ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                }`}
+              >
+                <img
+                  src={img.url}
+                  alt={img.titulo}
+                  className="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700"
+                />
+                {/* Capa negra semitransparente estilo bg-black/40 y gradiente corporativo */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-black/40" />
+              </div>
+            ))}
+
+            {/* Contenido e información sobre la foto */}
+            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 flex flex-wrap items-end justify-between gap-4">
+              <div className="space-y-1 max-w-xl backdrop-blur-md bg-slate-950/60 p-3.5 rounded-xl border border-white/10 shadow-lg">
+                <div className="flex items-center gap-2 text-cyan-400 font-bold text-[11px] uppercase tracking-widest">
+                  <FlaskConical className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                  <span>Laboratorio & Control de Procesos Químicos</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-white drop-shadow">
+                  {IMAGENES_CARRUSEL[imgCarruselIdx].titulo}
+                </h3>
+                <p className="text-xs text-slate-300 font-medium">
+                  {IMAGENES_CARRUSEL[imgCarruselIdx].subtitulo}
+                </p>
+              </div>
+
+              {/* Controles de Navegación y Puntos del Carrusel */}
+              <div className="flex items-center gap-3 z-20 backdrop-blur-md bg-slate-950/70 p-2 rounded-xl border border-white/15 shadow-md">
+                <button
+                  onClick={() => setImgCarruselIdx((prev) => (prev - 1 + IMAGENES_CARRUSEL.length) % IMAGENES_CARRUSEL.length)}
+                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                  title="Imagen Anterior"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <div className="flex gap-1.5">
+                  {IMAGENES_CARRUSEL.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setImgCarruselIdx(i)}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        i === imgCarruselIdx ? 'w-6 bg-cyan-400' : 'w-2 bg-slate-600 hover:bg-slate-400'
+                      }`}
+                      title={`Ir a imagen ${i + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setImgCarruselIdx((prev) => (prev + 1) % IMAGENES_CARRUSEL.length)}
+                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                  title="Siguiente Imagen"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Pestañas Horizontales de Categorías */}
           <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none">
             {PUNTOS_MUESTREO.map((cat) => (
