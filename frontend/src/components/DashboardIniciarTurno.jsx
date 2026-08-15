@@ -1241,24 +1241,19 @@ ${extraHtml}
       }
     }
 
-    const hora = new Date().getHours();
-    const genDinamica = 450 + (hora % 6) * 10;
-    const potEsperada = Math.max(0, 500 - genDinamica);
-    const cmgDinamico = (40.3 + (hora % 4) * 1.2).toFixed(1);
-
     return {
       despachoCNR: 'En servicio',
-      sistemaProm: genDinamica.toFixed(1),
-      potEspera: String(Math.round(potEsperada)),
+      sistemaProm: '56.7',
+      potEspera: '130',
       fuegosSuplemen: '0',
-      hrsCargaBase: String(Math.min(24, Math.max(1, hora))),
-      hrsMinTec: '0',
+      hrsCargaBase: '18',
+      hrsMinTec: '6',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
       m3Diesel: '0',
       kgGasGLP: '0',
-      costoMarginal: cmgDinamico
+      costoMarginal: '40.3'
     };
   };
 
