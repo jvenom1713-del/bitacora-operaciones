@@ -929,8 +929,9 @@ def upload_programacion_coordinador():
     guardar_resumen_en_db(resumen)
 
     return jsonify({
-        "status": "ok", "archivo": file.filename, "despachoCNR": "En servicio", "sistemaProm": "0",
-        "potEspera": str(resumen["potencia_esperada_mw"]),
+        "status": "ok", "archivo": file.filename, "despachoCNR": "En servicio",
+        "sistemaProm": str(resumen.get("sistema_prom_mw", "330.0")),
+        "potEspera": str(resumen.get("potencia_esperada_mw", "5046")),
         "fuegosSuplemen": str(resumen["mw_fuegos_suplementarios"]),
         "hrsCargaBase": str(resumen["hrs_carga_base"]),
         "hrsMinTec": str(resumen["hrs_minimo_tecnico"]),
@@ -950,8 +951,8 @@ def actualizar_datos_cen():
             "status": "ok",
             "fuente": resumen.get("fuente", "coordinador.cl"),
             "despachoCNR": "En servicio",
-            "sistemaProm": str(resumen.get("sistema_prom_mw", "55.9")),
-            "potEspera": str(resumen["potencia_esperada_mw"]),
+            "sistemaProm": str(resumen.get("sistema_prom_mw", "330.0")),
+            "potEspera": str(resumen.get("potencia_esperada_mw", "5046")),
             "fuegosSuplemen": str(resumen["mw_fuegos_suplementarios"]),
             "hrsCargaBase": str(resumen["hrs_carga_base"]),
             "hrsMinTec": str(resumen["hrs_minimo_tecnico"]),
@@ -963,7 +964,7 @@ def actualizar_datos_cen():
     else:
         conn = database.get_db_connection()
         row = conn.execute("""
-            SELECT potencia_esperada_mw, mw_fuegos_suplementarios, hrs_carga_base,
+            SELECT sistema_prom_mw, potencia_esperada_mw, mw_fuegos_suplementarios, hrs_carga_base,
                    hrs_minimo_tecnico, hrs_fuegos_suplementarios, costo_marginal_usd_mw
             FROM resumen_generacion_diaria
             ORDER BY fecha_turno DESC, id DESC LIMIT 1

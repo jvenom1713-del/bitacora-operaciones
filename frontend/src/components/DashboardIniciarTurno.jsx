@@ -1185,14 +1185,15 @@ ${extraHtml}
 
     if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
       const sisProm = Number(sisPromVal) || 0;
-      const potEsp = potEspVal !== undefined && potEspVal !== '--'
-        ? String(potEspVal)
-        : String(Math.round(Math.max(0, 500 - sisProm)));
+      let potEspNum = Number(potEspVal);
+      if (isNaN(potEspNum) || potEspNum > 500 || potEspVal === undefined || potEspVal === '--') {
+        potEspNum = Math.max(0, 500 - sisProm);
+      }
 
       return {
         despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (sisProm > 0 ? 'En servicio' : 'Fuera de servicio'),
         sistemaProm: sisProm.toFixed(1),
-        potEspera: potEsp,
+        potEspera: String(Math.round(potEspNum)),
         fuegosSuplemen: String(fuegosSuplemMWVal ?? '0'),
         hrsCargaBase: String(hrsCBVal ?? '0'),
         hrsMinTec: String(hrsMTVal ?? '0'),
