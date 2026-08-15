@@ -182,6 +182,70 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   const [guardando, setGuardando] = useState(false);
   const [mensajeFeedback, setMensajeFeedback] = useState(null);
 
+  // 3.5. Estado de Filas Dinámicas por Subpunto (Horarios Estándar + Filas Extra)
+  const HORAS_DEFECTO = ['10:00', '16:00', '22:00', '05:00'];
+  const [filasExtra, setFilasExtra] = useState({});
+
+  // Obtener la lista completa de filas (Estándar + Extra) para un subpunto
+  const obtenerFilasSubpunto = (subpuntoId) => {
+    const base = HORAS_DEFECTO.map(h => ({ hora: h, esDefault: true }));
+    
+    // Horas guardadas en muestras para este subpunto fuera del horario estándar
+    const muestrasSub = muestras.filter(m => m.punto_muestreo === subpuntoId);
+    const horasGuardadasExtra = muestrasSub
+      .map(m => m.hora)
+      .filter(h => !HORAS_DEFECTO.includes(h));
+
+    const extrasLocales = (filasExtra[subpuntoId] || []);
+    const todasExtra = Array.from(new Set([...horasGuardadasExtra, ...extrasLocales]));
+    const extraRows = todasExtra.map(h => ({ hora: h, esDefault: false }));
+
+    return [...base, ...extraRows];
+  };
+
+  // Agregar una nueva fila extra para toma de muestras fuera de horario
+  const handleAgregarFilaExtra = (subpuntoId) => {
+    const ahora = new Date();
+    const horaStr = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+    const actual = filasExtra[subpuntoId] || [];
+    if (!actual.includes(horaStr)) {
+      setFilasExtra(prev => ({
+        ...prev,
+        [subpuntoId]: [...actual, horaStr]
+      }));
+    }
+  };
+
+  // Cambiar la hora de una fila extra personalizada
+  const handleCambiarHoraFilaExtra = (subpuntoId, horaVieja, horaNueva) => {
+    if (!horaNueva) return;
+    const actual = filasExtra[subpuntoId] || [];
+    const idx = actual.indexOf(horaVieja);
+    if (idx >= 0) {
+      const nuevaLista = [...actual];
+      nuevaLista[idx] = horaNueva;
+      setFilasExtra(prev => ({ ...prev, [subpuntoId]: nuevaLista }));
+    } else {
+      setFilasExtra(prev => ({ ...prev, [subpuntoId]: [...actual, horaNueva] }));
+    }
+  };
+
+  // Eliminar una fila extra o muestra guardada
+  const handleEliminarFilaRow = async (subpuntoId, filaObj) => {
+    const horaStr = filaObj.hora;
+    const muestra = muestras.find(m => m.punto_muestreo === subpuntoId && m.hora === horaStr);
+
+    if (muestra) {
+      await handleEliminarMuestra(subpuntoId, horaStr);
+    }
+
+    const actual = filasExtra[subpuntoId] || [];
+    setFilasExtra(prev => ({
+      ...prev,
+      [subpuntoId]: actual.filter(h => h !== horaStr)
+    }));
+  };
+
   // 4. Carga Inicial de Datos desde Supabase / LocalStorage
   useEffect(() => {
     if (sesionQuimica) {
@@ -763,7 +827,8 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
-                    {HORAS_ESTANDAR.map((hora) => {
+                    {obtenerFilasSubpunto(subpuntoActivo).map((filaObj) => {
+                      const hora = filaObj.hora;
                       const filaMuestra = obtenerFilaMuestra(subpuntoActivo, hora);
                       const [paramsLocal, setParamsLocal] = useState(filaMuestra.parametros || {});
 
@@ -776,10 +841,22 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                         <tr key={hora} className={modoNocturno ? 'hover:bg-slate-950/40' : 'hover:bg-slate-50'}>
                           {/* Hora */}
                           <td className="p-3.5 font-bold text-cyan-400 border-r border-slate-800/80 bg-slate-950/20 w-24">
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                              <span>{hora} hrs</span>
-                            </div>
+                            {filaObj.esDefault ? (
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>{hora} hrs</span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center gap-1">
+                                <input
+                                  type="time"
+                                  value={hora}
+                                  onChange={(e) => handleCambiarHoraFilaExtra(subpuntoActivo, hora, e.target.value)}
+                                  className="w-20 px-1.5 py-1 bg-slate-950 text-cyan-300 font-mono font-bold text-xs border border-slate-700 rounded text-center focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                                />
+                                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-tight">Extra</span>
+                              </div>
+                            )}
                           </td>
 
                           {/* Inputs por cada Parámetro Químico */}
@@ -845,16 +922,14 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                 <span>Guardar</span>
                               </button>
 
-                              {filaMuestra.id && (
-                                <button
-                                  onClick={() => handleEliminarMuestra(subpuntoActivo, hora)}
-                                  disabled={guardando}
-                                  className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all"
-                                  title="Eliminar registro"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
+                              <button
+                                onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
+                                disabled={guardando}
+                                className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer"
+                                title="Eliminar fila / registro de análisis"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -862,6 +937,22 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Botón "+ Agregar Análisis" Extra */}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => handleAgregarFilaExtra(subpuntoActivo)}
+                  className="px-4 py-2.5 rounded-xl border border-cyan-500/50 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer transform hover:scale-[1.01]"
+                >
+                  <Plus className="w-4 h-4 text-cyan-400" />
+                  <span>+ Agregar Análisis</span>
+                </button>
+
+                <span className="text-[11px] text-slate-400 font-mono">
+                  Total análisis cargados: <strong className="text-white">{obtenerFilasSubpunto(subpuntoActivo).length}</strong>
+                </span>
               </div>
             </div>
           )}
