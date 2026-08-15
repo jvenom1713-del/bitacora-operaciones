@@ -1218,8 +1218,8 @@ ${extraHtml}
         let mwFuegosSum = 0;
 
         mwLista.forEach(mw => {
-          if (mw >= 300) hrsCB++;
-          else if (mw > 0 && mw < 300) hrsMT++;
+          if (mw >= 330) hrsCB++;
+          else if (mw > 0 && mw < 330) hrsMT++;
           if (mw > 32) {
             hrsFS++;
             mwFuegosSum += mw;

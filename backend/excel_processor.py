@@ -139,9 +139,12 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
         mw_totales_dia += gen_total_hora
 
-        if round(gen_total_hora, 0) >= 300:
+        gen_mw_round = round(gen_total_hora, 0)
+
+        # Regla: >= 330 MW es Carga Base, entre > 0 MW y < 330 MW (~160 MW) es Mínimo Técnico
+        if gen_mw_round >= 330:
             hrs_carga_base += 1
-        elif round(gen_total_hora, 0) > 0:
+        elif gen_mw_round > 0:
             hrs_minimo_tecnico += 1
             
         # Regla de negocio: solo se suman e incrementan horas si los MW de fuegos son mayores a 32 MW
