@@ -213,15 +213,6 @@ export default function MenuJefeTurno({
                 <Search className="w-6 h-6 text-cyan-400" />
                 <span>Buscar Bitácoras</span>
               </button>
-
-              {/* Botón 3: Módulo de Análisis Químicos */}
-              <button
-                onClick={onNavegarAnalisisQuimicos}
-                className="w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-cyan-700 via-teal-700 to-emerald-700 hover:from-cyan-600 hover:to-emerald-600 active:scale-[0.99] shadow-lg shadow-teal-900/40 transition-all border border-teal-500/40 flex items-center justify-center gap-3 cursor-pointer"
-              >
-                <FlaskConical className="w-6 h-6 text-cyan-300" />
-                <span>Módulo de Análisis Químicos</span>
-              </button>
             </div>
           );
         })()}

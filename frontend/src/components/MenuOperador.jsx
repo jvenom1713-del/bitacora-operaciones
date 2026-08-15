@@ -220,15 +220,6 @@ export default function MenuOperador({
           >
             Consulta Bitácoras por Fecha y Texto
           </button>
-
-          {/* Botón 4: Módulo de Análisis Químicos */}
-          <button
-            onClick={() => onNavegarBitacora('ANALISIS_QUIMICOS')}
-            className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-cyan-700 via-teal-700 to-emerald-700 hover:from-cyan-600 hover:to-emerald-600 text-white shadow-teal-900/40 border border-teal-500/30"
-          >
-            <FlaskConical className="w-5 h-5 text-cyan-300" />
-            <span>Módulo de Análisis Químicos</span>
-          </button>
         </div>
 
         {/* Pie de Página Interno del Menú */}

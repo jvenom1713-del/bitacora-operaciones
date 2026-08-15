@@ -945,6 +945,7 @@ export default function App() {
           usuarioActual={usuarioActual}
           setUsuarioActual={setUsuarioActual}
           onLogin={handleLogin}
+          onIngresoQuimico={() => setVistaActual('ANALISIS_QUIMICOS')}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
         />
@@ -1200,7 +1201,7 @@ export default function App() {
     return (
       <AnalisisQuimicos
         modoNocturno={modoNocturno}
-        onVolver={() => setVistaActual(usuarioActual?.rol_codigo === 'JEFE_TURNO' ? 'MENU_JEFE' : 'MENU_OPERADOR')}
+        onVolver={() => setVistaActual('PORTADA')}
       />
     );
   }

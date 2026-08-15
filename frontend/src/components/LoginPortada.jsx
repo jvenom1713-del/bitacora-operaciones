@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, FlaskConical } from 'lucide-react';
 
 export default function LoginPortada({ 
   usuarios = [], 
   usuarioActual, 
   setUsuarioActual, 
   onLogin, 
+  onIngresoQuimico,
   modoNocturno, 
   setModoNocturno 
 }) {
@@ -242,6 +243,18 @@ export default function LoginPortada({
               Iniciar Sesión
             </button>
           </form>
+
+          {/* Acceso Independiente Externo a Módulo Análisis Químicos */}
+          <div className="mt-6 pt-5 border-t border-slate-700/40">
+            <button
+              type="button"
+              onClick={onIngresoQuimico}
+              className="w-full py-3.5 px-4 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-teal-950/80 to-emerald-950/80 hover:from-cyan-900 hover:to-teal-900 text-cyan-200 hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-teal-950/50 transition-all cursor-pointer transform hover:scale-[1.01] active:scale-[0.99]"
+            >
+              <FlaskConical className="w-5 h-5 text-cyan-400 animate-pulse" />
+              <span>Ingreso Módulo Análisis Químicos</span>
+            </button>
+          </div>
 
         </div>
 
