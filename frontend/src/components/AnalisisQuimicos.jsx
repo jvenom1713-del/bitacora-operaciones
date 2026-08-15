@@ -140,6 +140,137 @@ const IMAGENES_CARRUSEL = [
   }
 ];
 
+// =======================================================
+// COMPONENTE FilaMuestraRow DE RENDERIZADO SEGURO
+// Previene crash de React Rules of Hooks en filas dinámicas
+// =======================================================
+function FilaMuestraRow({
+  filaObj,
+  subpuntoActivo,
+  fechaSeleccionada,
+  categoriaObjActiva,
+  modoNocturno,
+  obtenerFilaMuestra,
+  esFueraDeRango,
+  obtenerMotivoFueraRango,
+  handleGuardarMuestra,
+  handleEliminarFilaRow,
+  handleCambiarHoraFilaExtra,
+  guardando
+}) {
+  const hora = filaObj.hora || '';
+  const filaMuestra = obtenerFilaMuestra(subpuntoActivo, hora);
+  const [paramsLocal, setParamsLocal] = useState(() => filaMuestra.parametros || {});
+
+  useEffect(() => {
+    setParamsLocal(obtenerFilaMuestra(subpuntoActivo, hora).parametros || {});
+  }, [subpuntoActivo, fechaSeleccionada, hora]);
+
+  const isDeletable = Boolean(filaObj.isDeletable || !filaObj.esDefault);
+
+  return (
+    <tr className={modoNocturno ? 'hover:bg-slate-950/40' : 'hover:bg-slate-50'}>
+      {/* Hora */}
+      <td className="p-3.5 font-bold text-cyan-400 border-r border-slate-800/80 bg-slate-950/20 w-24">
+        {!isDeletable ? (
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{hora} hrs</span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1">
+            <input
+              type="time"
+              value={hora || ''}
+              onChange={(e) => handleCambiarHoraFilaExtra(subpuntoActivo, hora, e.target.value)}
+              className="w-20 px-1.5 py-1 bg-slate-950 text-cyan-300 font-mono font-bold text-xs border border-slate-700 rounded text-center focus:outline-none focus:ring-1 focus:ring-cyan-500"
+            />
+            <span className="text-[9px] font-bold text-amber-400 uppercase tracking-tight">Extra</span>
+          </div>
+        )}
+      </td>
+
+      {/* Inputs por cada Parámetro Químico con valores controlados seguros */}
+      {categoriaObjActiva.parametros.map((param) => {
+        const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
+        const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
+        const deshabilitadoEnEsteHorario = (esDurezaOHierro || esSiliceDomoMedia) && hora !== '10:00';
+
+        if (deshabilitadoEnEsteHorario) {
+          return (
+            <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
+              <div 
+                className="w-full py-2 px-2 rounded-lg border border-slate-800/30 bg-slate-950/50 text-slate-600 font-mono font-bold text-xs select-none cursor-not-allowed flex items-center justify-center"
+                title={`${param.label} solo se mide a las 10:00 hrs`}
+              >
+                -
+              </div>
+            </td>
+          );
+        }
+
+        const valRaw = paramsLocal[param.key];
+        const valActual = valRaw !== undefined && valRaw !== null ? String(valRaw) : '';
+        const fueraRango = esFueraDeRango(param, valActual);
+
+        return (
+          <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
+            <input
+              type="text"
+              value={valActual || ''}
+              onChange={(e) => {
+                const v = e.target.value;
+                setParamsLocal(prev => ({ ...prev, [param.key]: v }));
+              }}
+              placeholder=""
+              className={`w-full text-center px-2 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
+                fueraRango
+                  ? 'bg-red-950/80 border-red-500 text-red-300 font-extrabold focus:ring-red-500 animate-pulse'
+                  : modoNocturno
+                  ? 'bg-slate-950 border-slate-800 text-emerald-300 focus:ring-cyan-500'
+                  : 'bg-white border-slate-300 text-slate-900 focus:ring-cyan-500'
+              }`}
+            />
+            {fueraRango && (
+              <span className="text-[9px] font-bold text-red-400 block mt-0.5 whitespace-nowrap">
+                {obtenerMotivoFueraRango(param, valActual)}
+              </span>
+            )}
+          </td>
+        );
+      })}
+
+      {/* Acciones CRUD */}
+      <td className="p-2 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => handleGuardarMuestra(subpuntoActivo, hora, paramsLocal)}
+            disabled={guardando}
+            className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center gap-1 shadow-md transition-all cursor-pointer"
+            title="Guardar Muestra y Auditar en Supabase"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>Guardar</span>
+          </button>
+
+          {isDeletable ? (
+            <button
+              onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
+              disabled={guardando}
+              className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer shrink-0"
+              title="Eliminar esta fila extra"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <div className="w-8 shrink-0" />
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: onLogoutProp, onVolver, modoNocturno, setModoNocturno }) {
   // 1. Estado de Autenticación de Módulo Químico (Soporte Modo Demo y Persistencia)
   const [sesionQuimica, setSesionQuimica] = useState(() => {
@@ -182,57 +313,98 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   const [guardando, setGuardando] = useState(false);
   const [mensajeFeedback, setMensajeFeedback] = useState(null);
 
-  // 3.5. Estado de Filas Dinámicas por Subpunto (Horarios Estándar + Filas Extra)
+  // 3.5. Estado de Filas Dinámicas Inmutables por Subpunto
   const HORAS_DEFECTO = ['10:00', '16:00', '22:00', '05:00'];
   const [filasExtra, setFilasExtra] = useState({});
 
-  // Obtener la lista completa de filas (Estándar + Extra) para un subpunto
   const obtenerFilasSubpunto = (subpuntoId) => {
-    const base = HORAS_DEFECTO.map(h => ({ hora: h, esDefault: true }));
-    
-    // Horas guardadas en muestras para este subpunto fuera del horario estándar
+    const base = HORAS_DEFECTO.map(h => ({
+      id: `default_${subpuntoId}_${h}`,
+      hora: h,
+      esDefault: true,
+      isDeletable: false
+    }));
+
     const muestrasSub = muestras.filter(m => m.punto_muestreo === subpuntoId);
     const horasGuardadasExtra = muestrasSub
       .map(m => m.hora)
       .filter(h => !HORAS_DEFECTO.includes(h));
 
     const extrasLocales = (filasExtra[subpuntoId] || []);
-    const todasExtra = Array.from(new Set([...horasGuardadasExtra, ...extrasLocales]));
-    const extraRows = todasExtra.map(h => ({ hora: h, esDefault: false }));
 
-    return [...base, ...extraRows];
+    const extrasNormalizadas = extrasLocales.map(item => {
+      if (typeof item === 'string') {
+        return {
+          id: `extra_${subpuntoId}_${item}`,
+          hora: item,
+          esDefault: false,
+          isDeletable: true
+        };
+      }
+      return {
+        ...item,
+        esDefault: false,
+        isDeletable: true
+      };
+    });
+
+    horasGuardadasExtra.forEach(h => {
+      if (!extrasNormalizadas.some(e => e.hora === h)) {
+        extrasNormalizadas.push({
+          id: `saved_${subpuntoId}_${h}`,
+          hora: h,
+          esDefault: false,
+          isDeletable: true
+        });
+      }
+    });
+
+    return [...base, ...extrasNormalizadas];
   };
 
-  // Agregar una nueva fila extra para toma de muestras fuera de horario
+  // Agregar una nueva fila extra inmutable usando crypto.randomUUID() o timestamp
   const handleAgregarFilaExtra = (subpuntoId) => {
     const ahora = new Date();
     const horaStr = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
-    const actual = filasExtra[subpuntoId] || [];
-    if (!actual.includes(horaStr)) {
-      setFilasExtra(prev => ({
+    const uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `extra_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    const nuevaFilaObj = {
+      id: uuid,
+      hora: horaStr,
+      isDeletable: true,
+      esDefault: false
+    };
+
+    setFilasExtra(prev => {
+      const listActual = prev[subpuntoId] || [];
+      return {
         ...prev,
-        [subpuntoId]: [...actual, horaStr]
-      }));
-    }
+        [subpuntoId]: [...listActual, nuevaFilaObj]
+      };
+    });
   };
 
-  // Cambiar la hora de una fila extra personalizada
   const handleCambiarHoraFilaExtra = (subpuntoId, horaVieja, horaNueva) => {
     if (!horaNueva) return;
-    const actual = filasExtra[subpuntoId] || [];
-    const idx = actual.indexOf(horaVieja);
-    if (idx >= 0) {
-      const nuevaLista = [...actual];
-      nuevaLista[idx] = horaNueva;
-      setFilasExtra(prev => ({ ...prev, [subpuntoId]: nuevaLista }));
-    } else {
-      setFilasExtra(prev => ({ ...prev, [subpuntoId]: [...actual, horaNueva] }));
-    }
+    setFilasExtra(prev => {
+      const listActual = prev[subpuntoId] || [];
+      const nuevaLista = listActual.map(item => {
+        if (typeof item === 'object' && (item.hora === horaVieja || item.id === horaVieja)) {
+          return { ...item, hora: horaNueva };
+        }
+        if (typeof item === 'string' && item === horaVieja) {
+          return { id: `extra_${Date.now()}`, hora: horaNueva, isDeletable: true, esDefault: false };
+        }
+        return item;
+      });
+      return { ...prev, [subpuntoId]: nuevaLista };
+    });
   };
 
-  // Eliminar únicamente una fila extra agregada o muestra extra guardada
   const handleEliminarFilaRow = async (subpuntoId, filaObj) => {
-    if (filaObj.esDefault) {
+    if (filaObj.esDefault || !filaObj.isDeletable) {
       alert('Las filas por defecto (10:00, 16:00, 22:00, 05:00) son obligatorias y no se pueden eliminar.');
       return;
     }
@@ -244,11 +416,14 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       await handleEliminarMuestra(subpuntoId, horaStr);
     }
 
-    const actual = filasExtra[subpuntoId] || [];
-    setFilasExtra(prev => ({
-      ...prev,
-      [subpuntoId]: actual.filter(h => h !== horaStr)
-    }));
+    setFilasExtra(prev => {
+      const listActual = prev[subpuntoId] || [];
+      const filtrada = listActual.filter(item => {
+        if (typeof item === 'object') return item.id !== filaObj.id && item.hora !== horaStr;
+        return item !== horaStr;
+      });
+      return { ...prev, [subpuntoId]: filtrada };
+    });
   };
 
   // 4. Carga Inicial de Datos desde Supabase / LocalStorage
@@ -832,118 +1007,23 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
-                    {obtenerFilasSubpunto(subpuntoActivo).map((filaObj) => {
-                      const hora = filaObj.hora;
-                      const filaMuestra = obtenerFilaMuestra(subpuntoActivo, hora);
-                      const [paramsLocal, setParamsLocal] = useState(filaMuestra.parametros || {});
-
-                      // Sincronizar estado local si cambia fecha o muestra
-                      useEffect(() => {
-                        setParamsLocal(obtenerFilaMuestra(subpuntoActivo, hora).parametros || {});
-                      }, [muestras, subpuntoActivo, fechaSeleccionada, hora]);
-
-                      return (
-                        <tr key={hora} className={modoNocturno ? 'hover:bg-slate-950/40' : 'hover:bg-slate-50'}>
-                          {/* Hora */}
-                          <td className="p-3.5 font-bold text-cyan-400 border-r border-slate-800/80 bg-slate-950/20 w-24">
-                            {filaObj.esDefault ? (
-                              <div className="flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                                <span>{hora} hrs</span>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center gap-1">
-                                <input
-                                  type="time"
-                                  value={hora}
-                                  onChange={(e) => handleCambiarHoraFilaExtra(subpuntoActivo, hora, e.target.value)}
-                                  className="w-20 px-1.5 py-1 bg-slate-950 text-cyan-300 font-mono font-bold text-xs border border-slate-700 rounded text-center focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                                />
-                                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-tight">Extra</span>
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Inputs por cada Parámetro Químico */}
-                          {categoriaObjActiva.parametros.map((param) => {
-                            // Reglas de restricción horaria (Solo a las 10:00 hrs)
-                            const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
-                            const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
-                            const deshabilitadoEnEsteHorario = (esDurezaOHierro || esSiliceDomoMedia) && hora !== '10:00';
-
-                            if (deshabilitadoEnEsteHorario) {
-                              return (
-                                <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
-                                  <div 
-                                    className="w-full py-2 px-2 rounded-lg border border-slate-800/30 bg-slate-950/50 text-slate-600 font-mono font-bold text-xs select-none cursor-not-allowed flex items-center justify-center"
-                                    title={`${param.label} solo se mide a las 10:00 hrs en ${subpuntoActivo === 'DOMO_MEDIA' ? 'Domo Media Presión' : 'este equipo'}`}
-                                  >
-                                    -
-                                  </div>
-                                </td>
-                              );
-                            }
-
-                            const valActual = paramsLocal[param.key] ?? '';
-                            const fueraRango = esFueraDeRango(param, valActual);
-
-                            return (
-                              <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
-                                <input
-                                  type="text"
-                                  value={valActual}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    setParamsLocal(prev => ({ ...prev, [param.key]: v }));
-                                  }}
-                                  placeholder=""
-                                  className={`w-full text-center px-2 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
-                                    fueraRango
-                                      ? 'bg-red-950/80 border-red-500 text-red-300 font-extrabold focus:ring-red-500 animate-pulse'
-                                      : modoNocturno
-                                      ? 'bg-slate-950 border-slate-800 text-emerald-300 focus:ring-cyan-500'
-                                      : 'bg-white border-slate-300 text-slate-900 focus:ring-cyan-500'
-                                  }`}
-                                />
-                                {fueraRango && (
-                                  <span className="text-[9px] font-bold text-red-400 block mt-0.5 whitespace-nowrap">
-                                    {obtenerMotivoFueraRango(param, valActual)}
-                                  </span>
-                                )}
-                              </td>
-                            );
-                          })}
-
-                          {/* Acciones CRUD */}
-                          <td className="p-2 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => handleGuardarMuestra(subpuntoActivo, hora, paramsLocal)}
-                                disabled={guardando}
-                                className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center gap-1 shadow-md transition-all cursor-pointer"
-                                title="Guardar Muestra y Auditar en Supabase"
-                              >
-                                <Save className="w-3.5 h-3.5" />
-                                <span>Guardar</span>
-                              </button>
-
-                              {!filaObj.esDefault ? (
-                                <button
-                                  onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
-                                  disabled={guardando}
-                                  className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer shrink-0"
-                                  title="Eliminar esta fila extra"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <div className="w-8 shrink-0" />
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {obtenerFilasSubpunto(subpuntoActivo).map((filaObj) => (
+                      <FilaMuestraRow
+                        key={filaObj.id || `${subpuntoActivo}_${filaObj.hora}`}
+                        filaObj={filaObj}
+                        subpuntoActivo={subpuntoActivo}
+                        fechaSeleccionada={fechaSeleccionada}
+                        categoriaObjActiva={categoriaObjActiva}
+                        modoNocturno={modoNocturno}
+                        obtenerFilaMuestra={obtenerFilaMuestra}
+                        esFueraDeRango={esFueraDeRango}
+                        obtenerMotivoFueraRango={obtenerMotivoFueraRango}
+                        handleGuardarMuestra={handleGuardarMuestra}
+                        handleEliminarFilaRow={handleEliminarFilaRow}
+                        handleCambiarHoraFilaExtra={handleCambiarHoraFilaExtra}
+                        guardando={guardando}
+                      />
+                    ))}
                   </tbody>
                 </table>
               </div>
