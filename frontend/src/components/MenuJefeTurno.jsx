@@ -160,12 +160,13 @@ export default function MenuJefeTurno({
           const estaEnRevision = estadoEfectivo === 'EN_REVISION';
           const estaAbierta = estadoEfectivo === 'ABIERTO' || estadoEfectivo === 'ABIERTA';
           const estaCerrada = estadoEfectivo === 'CERRADO';
-          // El botón DEBE ESTAR ACTIVO si el estado es EN_REVISION o ABIERTA / ABIERTO
-          const esDeshabilitado = estaCerrada;
+          
+          // Mientras el operador de sala no envíe la bitácora para aprobación del jefe de turno (estado != 'EN_REVISION'), el botón está bloqueado.
+          const esDeshabilitado = !estaEnRevision;
 
           return (
             <div className="space-y-4">
-              {/* Botón 1: Ver Bitácora en Curso */}
+              {/* Botón 1: Revisar y Aprobar Bitácora */}
               <button
                 onClick={onVerBitacoraEnCurso}
                 disabled={esDeshabilitado}
@@ -174,32 +175,30 @@ export default function MenuJefeTurno({
                     ? "Pendiente de revisión y firma del Jefe de Turno" 
                     : estaCerrada 
                     ? "Bitácora aprobada y cerrada." 
-                    : "En edición por el Operador de Sala"
+                    : "Bloqueado: El Operador de Sala aún no ha enviado la bitácora a revisión."
                 }
                 className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 ${
                   esDeshabilitado
                     ? 'bg-slate-800/60 text-slate-500 border-slate-700/60 cursor-not-allowed opacity-60 shadow-none'
-                    : estaEnRevision
-                    ? 'text-white bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-[0.99] shadow-lg shadow-emerald-600/30 border-emerald-500/50 cursor-pointer'
-                    : 'text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 active:scale-[0.99] shadow-lg shadow-blue-600/30 border-blue-500/40 cursor-pointer'
+                    : 'text-white bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 active:scale-[0.99] shadow-lg shadow-emerald-600/30 border-emerald-500/50 cursor-pointer'
                 }`}
               >
-                <FileText className={`w-6 h-6 ${esDeshabilitado ? 'text-slate-600' : 'text-amber-400'}`} />
+                <FileText className={`w-6 h-6 ${esDeshabilitado ? 'text-slate-600' : 'text-emerald-400'}`} />
                 <div className="text-left">
-                  <span className="block font-bold">Ver Bitácora en Curso</span>
+                  <span className="block font-bold">Aprobar y Firmar Bitácora (JDT)</span>
                   {estaEnRevision && (
                     <span className="text-[11px] font-bold text-emerald-200 block">
                       ⚠️ Pendiente de revisión y firma del Jefe de Turno
                     </span>
                   )}
                   {estaAbierta && (
-                    <span className="text-[11px] font-normal text-amber-300/90 block">
-                      En edición por el Operador de Sala
+                    <span className="text-[11px] font-medium text-slate-400 block">
+                      🔒 Bloqueado (Operador en edición)
                     </span>
                   )}
                   {estaCerrada && (
-                    <span className="text-[11px] font-normal text-slate-400 block">
-                      Bitácora aprobada y cerrada
+                    <span className="text-[11px] font-medium text-slate-500 block">
+                      ✓ Turno Cerrado
                     </span>
                   )}
                 </div>
