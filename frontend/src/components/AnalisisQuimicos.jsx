@@ -56,7 +56,7 @@ const PUNTOS_MUESTREO = [
       { id: 'VAPOR_SAT_BAJA', nombre: 'Vapor Saturado Baja' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH', min: 8.8, max: 9.5, unit: '', textRango: '8,8 - 9,5' },
+      { key: 'ph', label: 'pH', min: 8.5, max: 9.4, unit: '', textRango: '8,5 - 9,4' },
       { key: 'conductividad', label: 'Conductividad', maxStrict: 20.0, unit: 'µS/cm', textRango: '< 20 µS/cm' },
       { key: 'silice', label: 'Sílice (SiO2)', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' },
       { key: 'sodio', label: 'Dureza (Na)', maxStrict: 0.0, unit: 'ppb', textRango: '0 ppb' }
