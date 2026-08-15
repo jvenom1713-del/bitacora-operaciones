@@ -36,23 +36,71 @@ export async function guardarBitacoraSupabase({ folio, fecha, turno, operador, j
   return { data, error };
 }
 
+/**
+ * LÓGICA DE DÍA OPERATIVO (Inicio a las 20:00 hrs):
+ * - Si la hora actual es ANTES de las 20:00, el Día Operativo comenzó AYER a las 20:00.
+ * - Si la hora actual es DESPUÉS (o igual) a las 20:00, el Día Operativo comenzó HOY a las 20:00.
+ */
+export function obtenerInicioDiaOperativo(fechaRef = new Date()) {
+  const d = new Date(fechaRef);
+  const hora = d.getHours();
+  const inicio = new Date(d);
+  if (hora < 20) {
+    inicio.setDate(inicio.getDate() - 1);
+  }
+  inicio.setHours(20, 0, 0, 0);
+  return inicio;
+}
+
+export function filtrarEventosPorDiaOperativo(eventosLista, fechaRef = new Date()) {
+  if (!eventosLista || !Array.isArray(eventosLista)) return [];
+  const inicioDia = obtenerInicioDiaOperativo(fechaRef);
+
+  return eventosLista.filter(e => {
+    let fechaEvento = null;
+    if (e.created_at) {
+      fechaEvento = new Date(e.created_at);
+    } else if (e.fecha_hora) {
+      const fhStr = String(e.fecha_hora).includes('T') ? e.fecha_hora : String(e.fecha_hora).replace(' ', 'T');
+      fechaEvento = new Date(fhStr);
+    } else if (e.fecha) {
+      const horaStr = e.hora || '00:00';
+      fechaEvento = new Date(`${e.fecha}T${horaStr}:00`);
+    }
+
+    if (!fechaEvento || isNaN(fechaEvento.getTime())) {
+      return true; // Conservar si la fecha no es determinable
+    }
+
+    return fechaEvento >= inicioDia;
+  });
+}
+
 export async function consultarBitacorasSupabase() {
+  const inicioDiaIso = obtenerInicioDiaOperativo().toISOString();
   const { data, error } = await supabase
     .from('bitacoras')
     .select('*')
+    .gte('created_at', inicioDiaIso)
     .order('id', { ascending: false });
+
   if (error) {
-    console.error("Error al consultar bitácoras en Supabase:", error);
+    console.error("Error al consultar bitácoras en Supabase con filtro de día operativo:", error);
+    // Caída defensiva sin filtro .gte si la columna creada_at varía
+    const resFallback = await supabase.from('bitacoras').select('*').order('id', { ascending: false });
+    return resFallback;
   }
   return { data, error };
 }
-
 
 export function formatearEventosParaBitacora(eventosLista) {
   if (!eventosLista || !Array.isArray(eventosLista) || eventosLista.length === 0) {
     return '';
   }
-  return eventosLista.map(e => {
+  const eventosFiltrados = filtrarEventosPorDiaOperativo(eventosLista);
+  const listaProcesar = eventosFiltrados.length > 0 ? eventosFiltrados : eventosLista;
+
+  return listaProcesar.map(e => {
     let horaStr = '';
     if (e.fecha_hora) {
       const partes = String(e.fecha_hora).split(' ');

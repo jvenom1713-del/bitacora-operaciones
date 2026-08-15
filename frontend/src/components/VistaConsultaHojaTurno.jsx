@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto } from '../apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo } from '../apiConfig';
 import { supabase } from '../supabaseClient';
-
 
 // Componente de Edición de Texto Enriquecido
 function RichTextEditorField({ value, onChange, placeholder, className, style }) {
@@ -96,17 +95,17 @@ export default function VistaConsultaHojaTurno({
     JEFES_EMAILS.includes(emailTrim)
   );
 
-  const [eventosTurno, setEventosTurno] = useState(eventos || []);
+  const [eventosTurno, setEventosTurno] = useState(() => filtrarEventosPorDiaOperativo(eventos || []));
 
   useEffect(() => {
     if (eventos && eventos.length > 0) {
-      setEventosTurno(eventos);
+      setEventosTurno(filtrarEventosPorDiaOperativo(eventos));
     } else {
       const tId = turnoActivo?.id || 1;
       safeFetchJson(getApiUrl(`/api/bitacora/eventos/${tId}`))
         .then(res => {
           if (Array.isArray(res.data)) {
-            setEventosTurno(res.data);
+            setEventosTurno(filtrarEventosPorDiaOperativo(res.data));
           }
         })
         .catch(err => console.error("Error cargando eventos relevantes en consulta:", err));
@@ -1007,41 +1006,46 @@ ${senalesForzadasTexto}
         </div>
       )}
 
-      <main id="hoja-turno-container" className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      <main id="hoja-turno-container" className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 space-y-3.5">
 
         {/* TARJETA DOTACIÓN DE PERSONAL */}
-        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
-          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+        <div className={`rounded-xl border shadow-md overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-4 py-2.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-orange-400" />
               CENTRAL NUEVA RENCA — INFORMACIÓN DEL TURNO Y DOTACIÓN
             </span>
-            <span className="font-mono text-xs text-cyan-400 font-bold bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">FOLIO: {folioStr}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded border border-amber-500/40 hidden md:inline-block">
+                🕒 Día Operativo: desde 20:00 hrs
+              </span>
+              <span className="font-mono text-xs text-cyan-400 font-bold bg-slate-900 px-2.5 py-0.5 rounded-lg border border-slate-700">FOLIO: {folioStr}</span>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 text-xs font-semibold">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3.5 text-xs font-semibold">
             {[
               { label: 'Rotación Guardia', value: equipoTurno?.rotacion || 'TIGRES', color: 'text-amber-400' },
               { label: 'Jefe de Turno (JDT)', value: equipoTurno?.jdt || 'Norman Galaz', color: 'text-cyan-300' },
               { label: 'Operador Sala Control (OSC)', value: equipoTurno?.osc || 'Jorge Albornoz', color: 'text-emerald-300' },
               { label: 'Operador Turno (OT)', value: equipoTurno?.ot || 'Matías Cisternas', color: 'text-purple-300' },
             ].map((item, i) => (
-              <div key={i} className={`p-3.5 rounded-xl border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">{item.label}</span>
-                <strong className={`${item.color} font-black text-sm block`}>{item.value}</strong>
+              <div key={i} className={`p-2.5 rounded-lg border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">{item.label}</span>
+                <strong className={`${item.color} font-black text-xs sm:text-sm block`}>{item.value}</strong>
               </div>
             ))}
           </div>
         </div>
 
         {/* ─── SECCIÓN 1: GENERACIÓN DIARIA ─────────────────────────── */}
-        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
-          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+        <div className={`rounded-xl border shadow-md overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-4 py-2.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-cyan-400" />
               1. RESUMEN DE GENERACIÓN DIARIA — CENTRAL NUEVA RENCA
             </span>
           </div>
-          <div className="p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs font-semibold">
+          <div className="p-3.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs font-semibold">
             {[
               { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '52.9'} USD/MWh`, color: 'text-cyan-300' },
               { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4004'} MW`, color: 'text-emerald-400' },
@@ -1049,9 +1053,9 @@ ${senalesForzadasTexto}
               { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '0'} hrs`, color: 'text-slate-100' },
               { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '22'} hrs`, color: 'text-purple-300' },
             ].map((item, i) => (
-              <div key={i} className={`p-3.5 rounded-xl border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">{item.label}</span>
-                <strong className={`${item.color} text-base font-mono font-black block`}>{item.value}</strong>
+              <div key={i} className={`p-2.5 rounded-lg border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">{item.label}</span>
+                <strong className={`${item.color} text-sm font-mono font-black block`}>{item.value}</strong>
               </div>
             ))}
           </div>

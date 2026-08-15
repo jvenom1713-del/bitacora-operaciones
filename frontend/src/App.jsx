@@ -11,7 +11,7 @@ import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
 import AnalisisQuimicos from './components/AnalisisQuimicos';
 import LoginQuimico from './components/LoginQuimico';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora } from './apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo } from './apiConfig';
 import { supabase } from './supabaseClient';
 import { detectarContingenciasGuardia } from './constants/guardias';
 
@@ -898,7 +898,8 @@ export default function App() {
 
   // Eventos Filtrados con lectura defensiva opcional
   const listaEventosActual = turnoActual?.eventos?.length ? turnoActual.eventos : eventos;
-  const eventosFiltrados = (listaEventosActual || []).filter(e => {
+  const listaEventosDiaOperativo = filtrarEventosPorDiaOperativo(listaEventosActual || []);
+  const eventosFiltrados = listaEventosDiaOperativo.filter(e => {
     const coincideCat = filtroCategoria === 'TODOS' || e.categoria === filtroCategoria;
     const coincidePrio = filtroPrioridad === 'TODAS' || e.prioridad === filtroPrioridad;
     return coincideCat && coincidePrio;
