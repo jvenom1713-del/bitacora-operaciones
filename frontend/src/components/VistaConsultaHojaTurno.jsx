@@ -47,6 +47,7 @@ const ESTADOS_EQUIPO = [
 export default function VistaConsultaHojaTurno({ 
   usuarioActual, 
   turnoActivo, 
+  turnoActual,
   equipoTurno = {}, 
   modoNocturno, 
   onVolverMenu,
@@ -71,7 +72,7 @@ export default function VistaConsultaHojaTurno({
   setInstruccionesEspeciales
 }) {
   const folioStr = turnoActivo?.folio || turnoActual?.folio || '01';
-  const fechaStr = turnoActivo?.fecha || '29-07-2026';
+  const fechaStr = turnoActivo?.fecha || turnoActual?.fecha || new Date().toISOString().slice(0, 10);
 
   const emailTrim = usuarioActual?.email?.toLowerCase() || '';
   const JEFES_EMAILS = [
@@ -239,7 +240,9 @@ export default function VistaConsultaHojaTurno({
 
   const [observacionesJefe, setObservacionesJefe] = useState('');
   const [enviandoCierre, setEnviandoCierre] = useState(false);
-  const [estadoTurnoCierre, setEstadoTurnoCierre] = useState(turnoActivo?.estado || 'ABIERTO');
+  const [estadoTurnoCierre, setEstadoTurnoCierre] = useState(() => {
+    return localStorage.getItem('estado_turno_activo') || turnoActivo?.estado || turnoActual?.estado || 'ABIERTO';
+  });
   const [cerradoPorNombre, setCerradoPorNombre] = useState(turnoActivo?.cerrado_por_nombre || '-');
   const [mensajeCierre, setMensajeCierre] = useState(null);
   const [mostrarModalResumenOperativo, setMostrarModalResumenOperativo] = useState(false);

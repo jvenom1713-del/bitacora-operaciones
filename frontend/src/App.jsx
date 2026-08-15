@@ -1137,6 +1137,7 @@ export default function App() {
         <VistaConsultaHojaTurno 
           usuarioActual={usuarioActual}
           turnoActivo={turnoActivo}
+          turnoActual={turnoActual}
           equipoTurno={equipoTurnoSeleccionado}
           modoNocturno={modoNocturno}
           onVolverMenu={volverMenuGenerico}
