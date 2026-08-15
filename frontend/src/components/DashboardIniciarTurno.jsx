@@ -1215,18 +1215,22 @@ ${extraHtml}
         let hrsCB = 0;
         let hrsMT = 0;
         let hrsFS = 0;
+        let mwFuegosSum = 0;
 
         mwLista.forEach(mw => {
           if (mw >= 300) hrsCB++;
           else if (mw > 0 && mw < 300) hrsMT++;
-          if (mw > 450) hrsFS++;
+          if (mw > 32) {
+            hrsFS++;
+            mwFuegosSum += mw;
+          }
         });
 
         return {
           despachoCNR: promMW > 0 ? 'En servicio' : 'Fuera de servicio',
           sistemaProm: promMW.toFixed(1),
           potEspera: String(Math.round(sumaMW)),
-          fuegosSuplemen: String(hrsFS > 0 ? 50 : 0),
+          fuegosSuplemen: String(Math.round(mwFuegosSum)),
           hrsCargaBase: String(hrsCB),
           hrsMinTec: String(hrsMT),
           hrsFuegosSuplem: String(hrsFS),

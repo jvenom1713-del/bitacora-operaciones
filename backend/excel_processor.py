@@ -132,9 +132,6 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
     filas_fa = [r for r in filas_nr if 'FA' in str(sheet.cell(row=r, column=3).value or '').upper()]
 
-    for r in filas_fa:
-        mw_fuegos_suplementarios_total += to_float(sheet.cell(row=r, column=29).value)
-
     mw_totales_dia = 0.0
     for col in range(5, 29): # Horas 1 a 24 (Columnas E a AB)
         gen_total_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_nr)
@@ -147,8 +144,10 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
         elif round(gen_total_hora, 0) > 0:
             hrs_minimo_tecnico += 1
             
-        if gen_fa_hora > 1.0:
+        # Regla de negocio: solo se suman e incrementan horas si los MW de fuegos son mayores a 32 MW
+        if gen_fa_hora > 32.0:
             hrs_fuegos_suplementarios += 1
+            mw_fuegos_suplementarios_total += gen_fa_hora
 
     if sistema_prom == 0 or sistema_prom == 52.9 or sistema_prom == 370.0 or sistema_prom == 330.0:
         sistema_prom = 56.7
