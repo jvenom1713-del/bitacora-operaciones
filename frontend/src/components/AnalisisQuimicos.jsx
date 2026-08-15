@@ -157,6 +157,7 @@ const IMAGENES_CARRUSEL = [
 // Previene crash de React Rules of Hooks en filas dinámicas
 // =======================================================
 function FilaMuestraRow({
+  rowIndex,
   filaObj,
   subpuntoActivo,
   fechaSeleccionada,
@@ -180,6 +181,82 @@ function FilaMuestraRow({
   }, [subpuntoActivo, fechaSeleccionada, hora]);
 
   const isDeletable = Boolean(filaObj.isDeletable || !filaObj.esDefault);
+
+  const handleInputKeyDown = (e, rIdx, cIdx) => {
+    const { key, target } = e;
+
+    if (key === 'ArrowDown' || key === 'Enter') {
+      e.preventDefault();
+      const nextInput = document.querySelector(
+        `input[data-subpunto="${subpuntoActivo}"][data-row-idx="${rIdx + 1}"][data-col-idx="${cIdx}"]`
+      );
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.select();
+      }
+    } else if (key === 'ArrowUp') {
+      e.preventDefault();
+      const prevInput = document.querySelector(
+        `input[data-subpunto="${subpuntoActivo}"][data-row-idx="${rIdx - 1}"][data-col-idx="${cIdx}"]`
+      );
+      if (prevInput) {
+        prevInput.focus();
+        prevInput.select();
+      }
+    } else if (key === 'ArrowRight' && target.selectionEnd === target.value.length) {
+      const rightInput = document.querySelector(
+        `input[data-subpunto="${subpuntoActivo}"][data-row-idx="${rIdx}"][data-col-idx="${cIdx + 1}"]`
+      );
+      if (rightInput) {
+        rightInput.focus();
+        rightInput.select();
+      }
+    } else if (key === 'ArrowLeft' && target.selectionStart === 0) {
+      const leftInput = document.querySelector(
+        `input[data-subpunto="${subpuntoActivo}"][data-row-idx="${rIdx}"][data-col-idx="${cIdx - 1}"]`
+      );
+      if (leftInput) {
+        leftInput.focus();
+        leftInput.select();
+      }
+    }
+  };
+
+  const handleInputPaste = (e, startRIdx, startCIdx) => {
+    const pasteData = e.clipboardData ? e.clipboardData.getData('text') : '';
+    if (!pasteData) return;
+
+    const lines = pasteData.trim().split(/\r\n|\n|\r/);
+    const isMultiCell = lines.length > 1 || lines[0].includes('\t');
+
+    if (isMultiCell) {
+      e.preventDefault();
+      lines.forEach((line, rOffset) => {
+        const cells = line.split('\t');
+        cells.forEach((cellVal, cOffset) => {
+          const targetRIdx = startRIdx + rOffset;
+          const targetCIdx = startCIdx + cOffset;
+          const targetInput = document.querySelector(
+            `input[data-subpunto="${subpuntoActivo}"][data-row-idx="${targetRIdx}"][data-col-idx="${targetCIdx}"]`
+          );
+
+          if (targetInput && !targetInput.disabled) {
+            const cleanVal = cellVal.trim();
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+              window.HTMLInputElement.prototype,
+              'value'
+            )?.set;
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(targetInput, cleanVal);
+            } else {
+              targetInput.value = cleanVal;
+            }
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        });
+      });
+    }
+  };
 
   return (
     <tr className={modoNocturno ? 'hover:bg-slate-950/40' : 'hover:bg-slate-50'}>
@@ -223,7 +300,7 @@ function FilaMuestraRow({
           }
           return true;
         })
-        .map((param) => {
+        .map((param, colIndex) => {
           const esCobreCondensado = (subpuntoActivo === 'CONDENSADO' && param.key === 'cobre');
           const esDurezaCalderaBaja = (subpuntoActivo === 'CALDERA_BAJA' && param.key === 'dureza');
           const esDurezaOHierroDomos = ((subpuntoActivo === 'DOMO_ALTA' || subpuntoActivo === 'DOMO_MEDIA') && (param.key === 'dureza' || param.key === 'hierro'));
@@ -261,7 +338,12 @@ function FilaMuestraRow({
           <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
             <input
               type="text"
+              data-subpunto={subpuntoActivo}
+              data-row-idx={rowIndex}
+              data-col-idx={colIndex}
               value={valActual || ''}
+              onKeyDown={(e) => handleInputKeyDown(e, rowIndex, colIndex)}
+              onPaste={(e) => handleInputPaste(e, rowIndex, colIndex)}
               onChange={(e) => {
                 const v = e.target.value;
                 setParamsLocal(prev => {
@@ -1216,9 +1298,10 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/60">
-                        {obtenerFilasSubpunto(subpuntoActivoEnCat).map((filaObj) => (
+                        {obtenerFilasSubpunto(subpuntoActivoEnCat).map((filaObj, rowIndex) => (
                           <FilaMuestraRow
                             key={filaObj.id || `${subpuntoActivoEnCat}_${filaObj.hora}`}
+                            rowIndex={rowIndex}
                             filaObj={filaObj}
                             subpuntoActivo={subpuntoActivoEnCat}
                             fechaSeleccionada={fechaSeleccionada}
