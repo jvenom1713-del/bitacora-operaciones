@@ -505,6 +505,22 @@ export default function App() {
       try {
         localStorage.setItem('turno_activo_guardado', JSON.stringify(objActualizado));
       } catch (e) {}
+
+      // Sincronizar en Supabase de fondo si está disponible
+      try {
+        if (supabase) {
+          const folioUsar = objActualizado?.folio || '01';
+          supabase.from('turnos_personal').upsert({
+            folio: folioUsar,
+            rotacion: nuevoEquipo.rotacion || objActualizado.rotacion,
+            jefe_turno: nuevoEquipo.jdt || objActualizado.jdt,
+            operador_sala: nuevoEquipo.osc || objActualizado.osc,
+            operador_terreno: nuevoEquipo.ot || objActualizado.ot,
+            actualizado_el: new Date().toISOString()
+          }, { onConflict: 'folio' }).then(() => {}).catch(() => {});
+        }
+      } catch (_) {}
+
       return objActualizado;
     });
   };

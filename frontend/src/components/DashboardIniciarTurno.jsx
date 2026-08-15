@@ -2291,21 +2291,71 @@ ${extraHtml}
                     </button>
                   </div>
                   <div className="grid grid-cols-4 text-center font-bold text-xs py-2 divide-x divide-slate-300 bg-white">
-                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">TURNO</span>
-                      <span className="text-amber-600 font-black text-xs sm:text-sm">Día - {equipoTurno.rotacion || 'TIGRES'}</span>
+                      <select
+                        value={equipoTurno.rotacion || 'TIGRES'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, rotacion: e.target.value })}
+                        className="print:hidden font-black text-xs text-amber-600 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer shadow-sm"
+                      >
+                        <option value="TIGRES">TIGRES</option>
+                        <option value="JAGUAR">JAGUAR</option>
+                        <option value="HALCONES">HALCONES</option>
+                        <option value="LEONES">LEONES</option>
+                        <option value="ÁGUILAS">ÁGUILAS</option>
+                      </select>
+                      <span className="hidden print:inline text-amber-600 font-black text-xs">Día - {equipoTurno.rotacion || 'TIGRES'}</span>
                     </div>
-                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
+
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">JDT</span>
-                      <span className="font-black text-xs sm:text-sm text-black">{equipoTurno.jdt || 'Ariel Torres'}</span>
+                      <select
+                        value={equipoTurno.jdt || 'Ariel Torres'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, jdt: e.target.value })}
+                        className="print:hidden font-black text-xs text-slate-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
+                      >
+                        <option value="Ariel Torres">Ariel Torres</option>
+                        <option value="Javier San Martín">Javier San Martín</option>
+                        <option value="Pablo Flores Vásquez">Pablo Flores Vásquez</option>
+                        <option value="Norman Galaz">Norman Galaz</option>
+                        <option value="Cristian Valdivia Maldonado">Cristian Valdivia Maldonado</option>
+                        <option value="Rodrigo Troncoso">Rodrigo Troncoso (Contingencia)</option>
+                      </select>
+                      <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.jdt || 'Ariel Torres'}</span>
                     </div>
-                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
+
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OSC</span>
-                      <span className="font-black text-xs sm:text-sm text-black">{equipoTurno.osc || 'Jorge Albornoz'}</span>
+                      <select
+                        value={equipoTurno.osc || 'Jorge Albornoz'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, osc: e.target.value })}
+                        className="print:hidden font-black text-xs text-slate-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
+                      >
+                        <option value="Jorge Albornoz">Jorge Albornoz</option>
+                        <option value="Humberto Barra Tapia">Humberto Barra Tapia</option>
+                        <option value="Luis Morales">Luis Morales</option>
+                        <option value="Eduardo Armijo Retamal">Eduardo Armijo Retamal</option>
+                        <option value="Arístides Toledo Peña">Arístides Toledo Peña</option>
+                        <option value="Máximo Cortés">Máximo Cortés (Contingencia)</option>
+                      </select>
+                      <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.osc || 'Jorge Albornoz'}</span>
                     </div>
-                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
-                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OT</span>
-                      <span className="font-black text-xs sm:text-sm text-black">{equipoTurno.ot || 'Matías Cisternas'}</span>
+
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
+                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OT / Personal</span>
+                      <select
+                        value={equipoTurno.ot || 'Matías Cisternas'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, ot: e.target.value })}
+                        className="print:hidden font-black text-xs text-slate-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
+                      >
+                        <option value="Matías Cisternas">Matías Cisternas</option>
+                        <option value="Eric Godoy Díaz">Eric Godoy Díaz</option>
+                        <option value="Gerson Cofré">Gerson Cofré</option>
+                        <option value="Carlos Vivero">Carlos Vivero</option>
+                        <option value="Claudio Garrido San Martín">Claudio Garrido San Martín</option>
+                        <option value="Enzo Cornejo">Enzo Cornejo (Contingencia)</option>
+                      </select>
+                      <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.ot || 'Matías Cisternas'}</span>
                     </div>
                   </div>
                 </div>
