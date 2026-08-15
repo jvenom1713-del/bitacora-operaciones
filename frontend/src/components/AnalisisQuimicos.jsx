@@ -111,10 +111,11 @@ const PUNTOS_MUESTREO = [
   },
   {
     id: 'CIRCULACION_CLORACION',
-    nombre: 'Circulación y Cloración',
+    nombre: 'Circulación, Cloración y Cloruros',
     subpuntos: [
       { id: 'AGUA_CIRCULACION', nombre: 'Sistema de Circulación' },
-      { id: 'CLORACION', nombre: 'Cloración TT/RR' }
+      { id: 'CLORACION', nombre: 'Cloración TT/RR' },
+      { id: 'CLORUROS_TTRR', nombre: 'Cloruros TT/RR' }
     ],
     parametros: [
       { key: 'ph', label: 'pH', min: 8.0, max: 8.3, textRango: '8,0 - 8,3' },
@@ -124,7 +125,8 @@ const PUNTOS_MUESTREO = [
       { key: 'durezaTotal', label: 'Dureza Total', maxStrict: 1500.0, unit: 'ppm', textRango: '< 1500 ppm' },
       { key: 'durezaCalcica', label: 'Dureza Cálcica', maxStrict: 1200.0, unit: 'ppm', textRango: '< 1200 ppm' },
       { key: 'sulfatos', label: 'Sulfatos', maxStrict: 1000.0, unit: 'ppm', textRango: '< 1000 ppm' },
-      { key: 'cloracionTtrr', label: 'Cloración TT/RR', min: 0.1, max: 0.3, unit: 'ppm', textRango: '0,1 - 0,3 ppm' }
+      { key: 'cloracionTtrr', label: 'Cloración TT/RR', min: 0.1, max: 0.3, unit: 'ppm', textRango: '0,1 - 0,3 ppm' },
+      { key: 'clorurosTtrr', label: 'Cloruros TT/RR', maxStrict: 400.0, unit: 'mg/L', textRango: '< 400 mg/L' }
     ]
   }
 ];
@@ -203,10 +205,13 @@ function FilaMuestraRow({
       {/* Inputs por cada Parámetro Químico con valores controlados seguros */}
       {categoriaObjActiva.parametros
         .filter(param => {
+          if (subpuntoActivo === 'CLORUROS_TTRR' && param.key !== 'clorurosTtrr') {
+            return false;
+          }
           if (subpuntoActivo === 'CLORACION' && param.key !== 'cloracionTtrr') {
             return false;
           }
-          if (subpuntoActivo === 'AGUA_CIRCULACION' && param.key === 'cloracionTtrr') {
+          if (subpuntoActivo === 'AGUA_CIRCULACION' && (param.key === 'cloracionTtrr' || param.key === 'clorurosTtrr')) {
             return false;
           }
           if (subpuntoActivo === 'CALDERA_BAJA' && (param.key === 'silice' || param.key === 'amoniaco' || param.key === 'cobre' || param.key === 'oxigeno')) {
@@ -386,6 +391,9 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   const obtenerHorasSubpunto = (subpuntoId) => {
     if (subpuntoId === 'AGUA_CIRCULACION') {
       return ['05:00'];
+    }
+    if (subpuntoId === 'CLORUROS_TTRR') {
+      return ['07:00', '08:30', '11:00', '14:00', '16:30', '19:00', '22:00', '05:00'];
     }
     if (subpuntoId === 'PLANTA_DESMI' || subpuntoId === 'PLANTA_VIGAFLOW' || subpuntoId === 'PLANTA_VEOLIA') {
       return HORAS_DEFECTO_PLANTAS;
@@ -1192,10 +1200,13 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                           <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
                           {catObj.parametros
                             .filter(p => {
+                              if (subpuntoActivoEnCat === 'CLORUROS_TTRR' && p.key !== 'clorurosTtrr') {
+                                return false;
+                              }
                               if (subpuntoActivoEnCat === 'CLORACION' && p.key !== 'cloracionTtrr') {
                                 return false;
                               }
-                              if (subpuntoActivoEnCat === 'AGUA_CIRCULACION' && p.key === 'cloracionTtrr') {
+                              if (subpuntoActivoEnCat === 'AGUA_CIRCULACION' && (p.key === 'cloracionTtrr' || p.key === 'clorurosTtrr')) {
                                 return false;
                               }
                               if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'silice' || p.key === 'amoniaco' || p.key === 'cobre' || p.key === 'oxigeno')) {
