@@ -44,4 +44,15 @@
 - `backend/main.py`
 - `backend/server.py`
 
-Cualquier cambio futuro en la aplicación **debe conservar intacta la lógica de cálculo reactiva** aquí documentada.
+## 3. Regla de Persistencia vs Reset en Cierre de Ciclo
+
+- **LO ÚNICO QUE SE BORRA AL CERRAR EL CICLO**: El cuerpo de texto redactado de la bitácora (`novedades` / `textoBitacora`).
+- **SECCIONES QUE SE MANTIENEN Y NO SE BORRAN** (Modificables manualmente por el operador):
+  1. `Generación Diaria` (Sincronizada con CEN / Actualizada por operador)
+  2. `Estado de Planta`
+  3. `Abastecimiento`
+  4. `Equipos Principales de Operación`
+  5. `Señales Forzadas`
+  6. `Instrucciones Operacionales`
+
+Cualquier cambio futuro en la aplicación **debe conservar intacta la lógica de cálculo reactiva y persistencia** aquí documentada.
