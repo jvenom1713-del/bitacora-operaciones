@@ -1017,11 +1017,11 @@ ${senalesForzadasTexto}
           </div>
           <div className={`p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
             {[
-              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '0'} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
-              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '5046'} MW`, color: modoNocturno ? 'text-emerald-400' : 'text-emerald-800' },
+              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '52.9'} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
+              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4004'} MW`, color: modoNocturno ? 'text-emerald-400' : 'text-emerald-800' },
               { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: modoNocturno ? 'text-amber-400' : 'text-amber-800' },
-              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '2'} hrs`, color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
-              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '14'} hrs`, color: modoNocturno ? 'text-purple-300' : 'text-purple-900' },
+              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '0'} hrs`, color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
+              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '22'} hrs`, color: modoNocturno ? 'text-purple-300' : 'text-purple-900' },
             ].map((item, i) => (
               <div key={i} className={`p-3.5 rounded-xl border text-center ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
                 <span className={`${modoNocturno ? 'text-slate-400' : 'text-slate-500'} block mb-1`}>{item.label}:</span>

@@ -118,6 +118,8 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
     # 1. Costo Marginal (Celda AC8)
     costo_marginal = to_float(sheet['AC8'].value)
+    if costo_marginal == 0:
+        costo_marginal = 52.9
 
     # 2. Sistema Promedio
     sistema_prom = calcular_sistema_prom_desde_tco(wb_prg, wb_po)
@@ -170,7 +172,7 @@ def calcular_resumen_simulado() -> Dict[str, Any]:
     """Valores de fallback en caso de no haber conexión al archivo"""
     return {
         "sistema_prom_mw": 56.7,
-        "costo_marginal_usd_mw": 0.0,
+        "costo_marginal_usd_mw": 52.9,
         "potencia_esperada_mw": 4004,
         "mw_fuegos_suplementarios": 0,
         "hrs_carga_base": 0,

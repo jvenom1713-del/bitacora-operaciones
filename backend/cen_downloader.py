@@ -151,7 +151,7 @@ def descargar_y_procesar_coordinador(fecha: Optional[datetime] = None) -> Dict[s
         "fuente": None,
         "fecha_turno": datetime.now().strftime('%Y-%m-%d'),
         "sistema_prom_mw": 56.7,
-        "costo_marginal_usd_mw": 40.3,
+        "costo_marginal_usd_mw": 52.9,
         "potencia_esperada_mw": 4004,
         "mw_fuegos_suplementarios": 0,
         "hrs_carga_base": 0,

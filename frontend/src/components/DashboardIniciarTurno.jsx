@@ -1202,7 +1202,7 @@ ${extraHtml}
         m3FA: String(datosEntrada.m3FA || '0'),
         m3Diesel: String(datosEntrada.m3Diesel || '0'),
         kgGasGLP: String(datosEntrada.kgGasGLP || '0'),
-        costoMarginal: cmgVal && cmgVal !== '--' ? String(cmgVal) : '0'
+        costoMarginal: cmgVal && cmgVal !== '--' ? String(cmgVal) : '52.9'
       };
     }
 
@@ -1238,7 +1238,7 @@ ${extraHtml}
           m3FA: '0',
           m3Diesel: '0',
           kgGasGLP: '0',
-          costoMarginal: '0'
+          costoMarginal: '52.9'
         };
       }
     }
@@ -1255,7 +1255,7 @@ ${extraHtml}
       m3FA: '0',
       m3Diesel: '0',
       kgGasGLP: '0',
-      costoMarginal: '0'
+      costoMarginal: '52.9'
     };
   };
 
