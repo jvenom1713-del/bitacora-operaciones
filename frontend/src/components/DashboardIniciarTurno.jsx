@@ -1173,30 +1173,38 @@ ${extraHtml}
   };
 
   const calcularMatrizDinamica = (datosEntrada = {}, bloquesMW = null) => {
-    // Si la entrada ya viene procesada con valores explícitos válidos
-    if (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '--' && datosEntrada.sistemaProm !== '0') {
-      const sisProm = Number(datosEntrada.sistemaProm) || 53.4;
-      const potEsp = datosEntrada.potEspera && datosEntrada.potEspera !== '--'
-        ? datosEntrada.potEspera
+    const sisPromVal = datosEntrada?.sistemaProm ?? datosEntrada?.sistema_prom_mw ?? datosEntrada?.sistema_prom ?? datosEntrada?.generacionPromedio ?? datosEntrada?.generacion_promedio;
+    const potEspVal = datosEntrada?.potEspera ?? datosEntrada?.potencia_esperada_mw ?? datosEntrada?.pot_espera;
+    const cmgVal = datosEntrada?.costoMarginal ?? datosEntrada?.costo_marginal_usd_mw ?? datosEntrada?.costo_marginal;
+    const hrsCBVal = datosEntrada?.hrsCargaBase ?? datosEntrada?.hrs_carga_base;
+    const hrsMTVal = datosEntrada?.hrsMinTec ?? datosEntrada?.hrs_minimo_tecnico ?? datosEntrada?.hrs_min_tec;
+    const hrsFSVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? datosEntrada?.hrs_fuegos_suplem;
+    const fuegosSuplemMWVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios;
+
+    const tieneDatosServidorOExcel = datosEntrada?.fuente || datosEntrada?.creado_el || datosEntrada?.status === 'ok' || datosEntrada?.esDeServidor;
+
+    if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
+      const sisProm = Number(sisPromVal) || 0;
+      const potEsp = potEspVal !== undefined && potEspVal !== '--'
+        ? String(potEspVal)
         : String(Math.round(Math.max(0, 500 - sisProm)));
-      
+
       return {
-        despachoCNR: datosEntrada.despachoCNR || 'En servicio',
+        despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (sisProm > 0 ? 'En servicio' : 'Fuera de servicio'),
         sistemaProm: sisProm.toFixed(1),
         potEspera: potEsp,
-        fuegosSuplemen: datosEntrada.fuegosSuplemen || '0',
-        hrsCargaBase: datosEntrada.hrsCargaBase || '2',
-        hrsMinTec: datosEntrada.hrsMinTec || '14',
-        hrsFuegosSuplem: datosEntrada.hrsFuegosSuplem || '0',
-        milesM3Gas: datosEntrada.milesM3Gas || '0',
-        m3FA: datosEntrada.m3FA || '0',
-        m3Diesel: datosEntrada.m3Diesel || '0',
-        kgGasGLP: datosEntrada.kgGasGLP || '0',
-        costoMarginal: datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '--' ? datosEntrada.costoMarginal : '40.3'
+        fuegosSuplemen: String(fuegosSuplemMWVal ?? '0'),
+        hrsCargaBase: String(hrsCBVal ?? '0'),
+        hrsMinTec: String(hrsMTVal ?? '0'),
+        hrsFuegosSuplem: String(hrsFSVal ?? '0'),
+        milesM3Gas: String(datosEntrada.milesM3Gas || '0'),
+        m3FA: String(datosEntrada.m3FA || '0'),
+        m3Diesel: String(datosEntrada.m3Diesel || '0'),
+        kgGasGLP: String(datosEntrada.kgGasGLP || '0'),
+        costoMarginal: cmgVal && cmgVal !== '--' ? String(cmgVal) : '40.3'
       };
     }
 
-    // Si tenemos un arreglo de bloques/horas de MW
     if (Array.isArray(bloquesMW) && bloquesMW.length > 0) {
       const mwLista = bloquesMW.map(b => Number(b?.mw ?? b)).filter(n => !isNaN(n) && n >= 0);
       if (mwLista.length > 0) {
@@ -1208,8 +1216,8 @@ ${extraHtml}
         let hrsFS = 0;
 
         mwLista.forEach(mw => {
-          if (mw >= 350) hrsCB++;
-          else if (mw > 0 && mw < 350) hrsMT++;
+          if (mw >= 300) hrsCB++;
+          else if (mw > 0 && mw < 300) hrsMT++;
           if (mw > 450) hrsFS++;
         });
 
@@ -1232,7 +1240,6 @@ ${extraHtml}
       }
     }
 
-    // Cálculo dinámico en tiempo real basado en hora del día e interacción
     const hora = new Date().getHours();
     const genDinamica = 450 + (hora % 6) * 10;
     const potEsperada = Math.max(0, 500 - genDinamica);
@@ -1269,14 +1276,8 @@ ${extraHtml}
 
             if (data) {
               datosCargados = {
-                despachoCNR: data.despacho_cnr || 'En servicio',
-                sistemaProm: data.sistema_prom || data.generacion_promedio || '53.4',
-                potEspera: data.pot_espera || '5046',
-                costoMarginal: data.costo_marginal || '40.3',
-                fuegosSuplemen: data.fuegos_suplemen || '0',
-                hrsCargaBase: data.hrs_carga_base || '2',
-                hrsMinTec: data.hrs_min_tec || '14',
-                hrsFuegosSuplem: data.hrs_fuegos_suplem || '0'
+                ...data,
+                esDeServidor: true
               };
             }
           } catch (_) {}
@@ -1288,17 +1289,17 @@ ${extraHtml}
             if (res.ok) {
               const resData = await res.json();
               if (resData && resData.status !== 'error') {
-                datosCargados = resData;
+                datosCargados = {
+                  ...resData,
+                  esDeServidor: true
+                };
               }
             }
           } catch (_) {}
         }
 
         const datosFinales = calcularMatrizDinamica(datosCargados || {});
-        const guardados = localStorage.getItem('bitacora_parametros');
-        if (!guardados) {
-          aplicarDatos(datosFinales);
-        }
+        aplicarDatos(datosFinales);
         setEstadoCarga('ok');
         setMensajeCarga('Datos cargados');
       } catch (err) {
@@ -1314,8 +1315,29 @@ ${extraHtml}
     try {
       let rawData = null;
 
-      // 1. Consultar Supabase directamente en la nube
-      if (supabase) {
+      try {
+        const resCen = await fetch(getApiUrl('/api/auto-sync-coordinador'));
+        if (resCen.ok) {
+          const resData = await resCen.json();
+          if (resData && resData.status !== 'error') {
+            rawData = { ...resData, esDeServidor: true };
+          }
+        }
+      } catch (_) {}
+
+      if (!rawData) {
+        try {
+          const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+          if (res.ok) {
+            const resData = await res.json();
+            if (resData && resData.status !== 'error') {
+              rawData = { ...resData, esDeServidor: true };
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (!rawData && supabase) {
         try {
           const { data } = await supabase
             .from('turnos_generacion')
@@ -1326,37 +1348,16 @@ ${extraHtml}
 
           if (data) {
             rawData = {
-              despachoCNR: data.despacho_cnr,
-              sistemaProm: data.sistema_prom || data.generacion_promedio,
-              potEspera: data.pot_espera,
-              costoMarginal: data.costo_marginal,
-              fuegosSuplemen: data.fuegos_suplemen,
-              hrsCargaBase: data.hrs_carga_base,
-              hrsMinTec: data.hrs_min_tec,
-              hrsFuegosSuplem: data.hrs_fuegos_suplem
+              ...data,
+              esDeServidor: true
             };
           }
         } catch (_) {}
       }
 
-      // 2. Si no hay Supabase, intentar la API remota
-      if (!rawData) {
-        try {
-          const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
-          if (res.ok) {
-            const resData = await res.json();
-            if (resData && resData.status !== 'error') {
-              rawData = resData;
-            }
-          }
-        } catch (_) {}
-      }
-
-      // 3. Procesamiento dinámico
-      const datosCalculados = calcularMatrizDinamica(rawData || parametros);
+      const datosCalculados = calcularMatrizDinamica(rawData || {});
       aplicarDatos(datosCalculados);
 
-      // 4. Actualizar en turnoActivo
       if (onCambiarPersonal) {
         onCambiarPersonal({
           ...equipoTurno,
@@ -1367,7 +1368,6 @@ ${extraHtml}
         });
       }
 
-      // 5. Guardar en Supabase para sincronización en la nube
       if (supabase) {
         try {
           const folioUsar = equipoTurno?.folio || '01';
@@ -1390,7 +1390,7 @@ ${extraHtml}
       setMensajeCarga('Generación actualizada');
     } catch (err) {
       console.error('Error actualizando Matriz:', err);
-      const fallbackCalculado = calcularMatrizDinamica(parametros);
+      const fallbackCalculado = calcularMatrizDinamica({});
       aplicarDatos(fallbackCalculado);
       setEstadoCarga('ok');
       setMensajeCarga('Generación actualizada');
@@ -1420,7 +1420,7 @@ ${extraHtml}
         }
       } catch (_) {}
 
-      const datosCalculados = calcularMatrizDinamica(dataExcel || {});
+      const datosCalculados = calcularMatrizDinamica(dataExcel ? { ...dataExcel, esDeServidor: true } : {});
       aplicarDatos(datosCalculados);
 
       if (onCambiarPersonal) {

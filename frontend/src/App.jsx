@@ -200,40 +200,98 @@ export default function App() {
     { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
   ]);
 
-  const [parametrosGeneracion, setParametrosGeneracion] = useState({
-    despachoCNR: 'En servicio',
-    sistemaProm: '52.9',
-    potEspera: '5046',
-    fuegosSuplemen: '0',
-    hrsCargaBase: '2',
-    hrsMinTec: '14',
-    hrsFuegosSuplem: '0',
-    milesM3Gas: '0',
-    m3FA: '0',
-    m3Diesel: '0',
-    kgGasGLP: '0',
-    costoMarginal: '40.3'
+  const [parametrosGeneracion, setParametrosGeneracion] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bitacora_parametros');
+      return saved ? JSON.parse(saved) : {
+        despachoCNR: 'En servicio',
+        sistemaProm: '53.4',
+        potEspera: '5046',
+        fuegosSuplemen: '0',
+        hrsCargaBase: '2',
+        hrsMinTec: '14',
+        hrsFuegosSuplem: '0',
+        milesM3Gas: '0',
+        m3FA: '0',
+        m3Diesel: '0',
+        kgGasGLP: '0',
+        costoMarginal: '40.3'
+      };
+    } catch {
+      return {
+        despachoCNR: 'En servicio',
+        sistemaProm: '53.4',
+        potEspera: '5046',
+        fuegosSuplemen: '0',
+        hrsCargaBase: '2',
+        hrsMinTec: '14',
+        hrsFuegosSuplem: '0',
+        milesM3Gas: '0',
+        m3FA: '0',
+        m3Diesel: '0',
+        kgGasGLP: '0',
+        costoMarginal: '40.3'
+      };
+    }
   });
 
   useEffect(() => {
-    fetch(getApiUrl('/api/resumen-generacion-diaria'))
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status !== 'error') {
-          setParametrosGeneracion(prev => ({
-            ...prev,
-            despachoCNR: data.despachoCNR ?? prev.despachoCNR,
-            sistemaProm: data.sistemaProm ?? prev.sistemaProm,
-            potEspera: data.potEspera ?? prev.potEspera,
-            fuegosSuplemen: data.fuegosSuplemen ?? prev.fuegosSuplemen,
-            hrsCargaBase: data.hrsCargaBase ?? prev.hrsCargaBase,
-            hrsMinTec: data.hrsMinTec ?? prev.hrsMinTec,
-            hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev.hrsFuegosSuplem,
-            costoMarginal: data.costoMarginal ?? prev.costoMarginal
-          }));
-        }
-      })
-      .catch(err => console.error("Error al cargar resumen generacion inicial en App:", err));
+    const cargarParametrosGeneracion = async () => {
+      let datosGeneracion = null;
+      if (supabase) {
+        try {
+          const { data } = await supabase
+            .from('turnos_generacion')
+            .select('*')
+            .order('creado_el', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (data) {
+            datosGeneracion = {
+              despachoCNR: data.despacho_cnr || 'En servicio',
+              sistemaProm: String(data.sistema_prom || data.generacion_promedio || '53.4'),
+              potEspera: String(data.pot_espera || '5046'),
+              costoMarginal: String(data.costo_marginal || '40.3'),
+              fuegosSuplemen: String(data.fuegos_suplemen || '0'),
+              hrsCargaBase: String(data.hrs_carga_base || '2'),
+              hrsMinTec: String(data.hrs_min_tec || '14'),
+              hrsFuegosSuplem: String(data.hrs_fuegos_suplem || '0')
+            };
+          }
+        } catch (_) {}
+      }
+
+      if (!datosGeneracion) {
+        try {
+          const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.status !== 'error') {
+              datosGeneracion = {
+                despachoCNR: data.despachoCNR || 'En servicio',
+                sistemaProm: String(data.sistemaProm || data.sistema_prom_mw || '53.4'),
+                potEspera: String(data.potEspera || data.potencia_esperada_mw || '5046'),
+                costoMarginal: String(data.costoMarginal || data.costo_marginal_usd_mw || '40.3'),
+                fuegosSuplemen: String(data.fuegosSuplemen || '0'),
+                hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '2'),
+                hrsMinTec: String(data.hrsMinTec || data.hrs_minimo_tecnico || '14'),
+                hrsFuegosSuplem: String(data.hrsFuegosSuplem || data.hrs_fuegos_suplementarios || '0')
+              };
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (datosGeneracion) {
+        setParametrosGeneracion(prev => ({
+          ...prev,
+          ...datosGeneracion
+        }));
+      }
+    };
+
+    cargarParametrosGeneracion();
   }, []);
 
   // ── ESTADO COMPARTIDO: Instrucciones Operacionales ──────────────────────
