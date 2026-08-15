@@ -55,10 +55,10 @@ const PUNTOS_MUESTREO = [
       { id: 'VAPOR_SAT_BAJA', nombre: 'Vapor Saturado Baja' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH', min: 8.8, max: 9.5, unit: '' },
-      { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.2, unit: 'µS/cm' },
-      { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.015, unit: 'ppm' },
-      { key: 'sodio', label: 'Sodio (Na)', min: 0.0, max: 5.0, unit: 'ppb' }
+      { key: 'ph', label: 'pH', min: 8.8, max: 9.5, unit: '', textRango: '8,8 - 9,5' },
+      { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.2, unit: 'µS/cm', textRango: '< 0,2 µS/cm' },
+      { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.015, unit: 'ppm', textRango: '< 0,015 ppm' },
+      { key: 'sodio', label: 'Dureza (Na)', min: 0.0, max: 5.0, unit: 'ppb', textRango: '< 5 ppb' }
     ]
   },
   {
