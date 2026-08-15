@@ -111,16 +111,18 @@ const PUNTOS_MUESTREO = [
   },
   {
     id: 'CIRCULACION_CLORACION',
-    nombre: 'Circulación y Cloración',
+    nombre: 'Sistema de Circulación',
     subpuntos: [
-      { id: 'AGUA_CIRCULACION', nombre: 'Agua de Circulación Torre' },
-      { id: 'CLORACION', nombre: 'Sistema de Cloración / Hipoclorito' }
+      { id: 'AGUA_CIRCULACION', nombre: 'Sistema de Circulación' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH', min: 7.2, max: 8.2, unit: '' },
-      { key: 'cloroLibre', label: 'Cloro Libre (Cl2)', min: 0.2, max: 1.0, unit: 'ppm' },
-      { key: 'turbidez', label: 'Turbidez', min: 0.0, max: 5.0, unit: 'NTU' },
-      { key: 'conductividad', label: 'Conductividad', min: 0.0, max: 1500.0, unit: 'µS/cm' }
+      { key: 'ph', label: 'pH', min: 8.0, max: 8.3, textRango: '8,0 - 8,3' },
+      { key: 'conductividad', label: 'Conductividad', min: 2800.0, max: 3000.0, unit: 'uS/cm', textRango: '2800 - 3000 uS/cm' },
+      { key: 'cloroLibre', label: 'Cloro Libre', min: 0.1, max: 0.3, unit: 'ppm', textRango: '0,1 - 0,3 ppm' },
+      { key: 'fosfato', label: 'Fosfato', min: 2.0, max: 5.0, unit: 'ppm', textRango: '2 - 5 ppm' },
+      { key: 'durezaTotal', label: 'Dureza Total', maxStrict: 1500.0, unit: 'ppm', textRango: '< 1500 ppm' },
+      { key: 'durezaCalcica', label: 'Dureza Cálcica', maxStrict: 1200.0, unit: 'ppm', textRango: '< 1200 ppm' },
+      { key: 'sulfatos', label: 'Sulfatos', maxStrict: 1000.0, unit: 'ppm', textRango: '< 1000 ppm' }
     ]
   }
 ];
@@ -374,6 +376,9 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   };
 
   const obtenerHorasSubpunto = (subpuntoId) => {
+    if (subpuntoId === 'AGUA_CIRCULACION') {
+      return ['05:00'];
+    }
     if (subpuntoId === 'PLANTA_DESMI' || subpuntoId === 'PLANTA_VIGAFLOW' || subpuntoId === 'PLANTA_VEOLIA') {
       return HORAS_DEFECTO_PLANTAS;
     }
