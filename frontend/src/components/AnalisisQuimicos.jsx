@@ -65,7 +65,7 @@ const PUNTOS_MUESTREO = [
     id: 'CONDENSADO',
     nombre: 'Condensado y Caldera Baja',
     subpuntos: [
-      { id: 'CONDENSADO', nombre: 'Condensado Bomba Extracción' },
+      { id: 'CONDENSADO', nombre: 'Condensado' },
       { id: 'CALDERA_BAJA', nombre: 'Caldera Baja Presión' }
     ],
     parametros: [
