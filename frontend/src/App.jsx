@@ -42,7 +42,14 @@ import {
 
 export default function App() {
   const [vistaActual, setVistaActual] = useState('PORTADA'); // 'PORTADA', 'LOGIN_BITACORA', 'LOGIN_QUIMICO', 'DASHBOARD_QUIMICO'
-  const [sesionQuimicaActual, setSesionQuimicaActual] = useState(null);
+  const [sesionQuimicaActual, setSesionQuimicaActual] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sesion_modulo_quimico');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [tabInicialDashboard, setTabInicialDashboard] = useState('EQUIPOS');
   const [modoNocturno, setModoNocturno] = useState(true);
   const [vistaAnteriorCambioPersonal, setVistaAnteriorCambioPersonal] = useState('ABRIR_TURNO_MENU');

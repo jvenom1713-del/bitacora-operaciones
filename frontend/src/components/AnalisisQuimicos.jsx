@@ -137,8 +137,16 @@ const IMAGENES_CARRUSEL = [
 ];
 
 export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: onLogoutProp, onVolver, modoNocturno, setModoNocturno }) {
-  // 1. Estado de Autenticación de Módulo Químico (Forzar login explícito)
-  const [sesionQuimica, setSesionQuimica] = useState(sesionProp || null);
+  // 1. Estado de Autenticación de Módulo Químico (Soporte Modo Demo y Persistencia)
+  const [sesionQuimica, setSesionQuimica] = useState(() => {
+    if (sesionProp) return sesionProp;
+    try {
+      const saved = localStorage.getItem('sesion_modulo_quimico');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     if (sesionProp) {

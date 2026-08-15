@@ -1,10 +1,24 @@
 import React, { useState } from 'react';
-import { FlaskConical, Lock, Mail, ShieldCheck, AlertCircle, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { FlaskConical, Lock, Mail, ShieldCheck, AlertCircle, ArrowLeft, Sun, Moon, Zap } from 'lucide-react';
 
 export default function LoginQuimico({ onLoginExitoso, onVolver, modoNocturno, setModoNocturno }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const handleIngresoDemo = (rolDemo, emailDemo) => {
+    const usuarioSesion = {
+      email: emailDemo,
+      rol: rolDemo,
+      loginAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem('sesion_modulo_quimico', JSON.stringify(usuarioSesion));
+    } catch (_) {}
+
+    onLoginExitoso(usuarioSesion);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -230,6 +244,37 @@ export default function LoginQuimico({ onLoginExitoso, onVolver, modoNocturno, s
                 <span>Ingresar a Análisis Químicos</span>
               </button>
             </form>
+
+            {/* Acceso Rápido Modo Demo (1-Click) */}
+            <div className="mt-4 p-3 rounded-xl border border-cyan-500/30 bg-cyan-950/40 shadow-inner">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 mb-2 flex items-center justify-center gap-1">
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-bounce" />
+                <span>Acceso Rápido Modo Demo</span>
+              </span>
+              <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => handleIngresoDemo('Químico', 'quimico.demo@generadora.cl')}
+                  className="py-2 px-2 rounded-lg bg-teal-900/60 border border-teal-500/40 text-teal-200 font-bold hover:bg-teal-700/80 transition-all text-center cursor-pointer"
+                >
+                  🧪 Químico
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleIngresoDemo('Operador Terreno', 'operador.demo@generadora.cl')}
+                  className="py-2 px-2 rounded-lg bg-cyan-900/60 border border-cyan-500/40 text-cyan-200 font-bold hover:bg-cyan-700/80 transition-all text-center cursor-pointer"
+                >
+                  🔧 Terreno
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleIngresoDemo('Veolia', 'veolia.demo@generadora.cl')}
+                  className="py-2 px-2 rounded-lg bg-emerald-900/60 border border-emerald-500/40 text-emerald-200 font-bold hover:bg-emerald-700/80 transition-all text-center cursor-pointer"
+                >
+                  💧 Veolia
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Enlace Discreto: Volver al Portal Principal */}
