@@ -1672,15 +1672,6 @@ ${extraHtml}
             modoNocturno ? 'bg-[#0e3563] text-blue-200 border-blue-800' : 'bg-slate-200/90 text-slate-800 border-slate-300 font-black'
           }`}>
             <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
-            <button
-              type="button"
-              onClick={() => onAbrirModalCambioPersonal ? onAbrirModalCambioPersonal() : (onCambiarPersonal && onCambiarPersonal(equipoTurno))}
-              title="Cambiar o elegir personal en turno"
-              className="flex items-center gap-1.5 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-extrabold text-[11px] py-1 px-3 rounded-lg shadow-md transition-all transform hover:scale-[1.02] cursor-pointer"
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Elegir / Cambiar Personal</span>
-            </button>
           </div>
           {(() => {
             const oficialGuardia = MATRIZ_GUARDIAS[equipoTurno.rotacion || 'TIGRES'] || MATRIZ_GUARDIAS.TIGRES;
@@ -2364,14 +2355,6 @@ ${extraHtml}
                   </div>
                   <div className="bg-blue-100 text-blue-900 font-black text-[11px] sm:text-xs py-1 px-3 uppercase tracking-wider border-b border-blue-200 print:bg-blue-100 print:text-blue-900 flex items-center justify-between">
                     <span>EQUIPO DE TURNO</span>
-                    <button
-                      type="button"
-                      onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}
-                      className="print:hidden text-[11px] bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-0.5 rounded font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-1"
-                    >
-                      <UserCheck className="w-3 h-3" />
-                      <span>Elegir Personal</span>
-                    </button>
                   </div>
                   <div className="grid grid-cols-4 text-center font-bold text-xs py-2 divide-x divide-slate-300 bg-white">
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
