@@ -35,7 +35,7 @@ const PUNTOS_MUESTREO = [
       { id: 'DOMO_MEDIA', nombre: 'Domo Media Presión' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH (25°C)', min: 9.0, max: 9.8, unit: '' },
+      { key: 'ph', label: 'pH', min: 9.0, max: 9.8, unit: '' },
       { key: 'conductividad', label: 'Cond. Específica', min: 2.0, max: 10.0, unit: 'µS/cm' },
       { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.02, unit: 'ppm' },
       { key: 'fosfato', label: 'Fosfato (PO4)', min: 1.0, max: 6.0, unit: 'ppm' }
@@ -51,7 +51,7 @@ const PUNTOS_MUESTREO = [
       { id: 'VAPOR_SAT_BAJA', nombre: 'Vapor Saturado Baja' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH (25°C)', min: 8.8, max: 9.5, unit: '' },
+      { key: 'ph', label: 'pH', min: 8.8, max: 9.5, unit: '' },
       { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.2, unit: 'µS/cm' },
       { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.015, unit: 'ppm' },
       { key: 'sodio', label: 'Sodio (Na)', min: 0.0, max: 5.0, unit: 'ppb' }
@@ -65,7 +65,7 @@ const PUNTOS_MUESTREO = [
       { id: 'CALDERA_BAJA', nombre: 'Caldera Baja Presión' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH (25°C)', min: 8.8, max: 9.4, unit: '' },
+      { key: 'ph', label: 'pH', min: 8.8, max: 9.4, unit: '' },
       { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.25, unit: 'µS/cm' },
       { key: 'oxigeno', label: 'Oxígeno Disuelto', min: 0.0, max: 10.0, unit: 'ppb' },
       { key: 'hidrazina', label: 'Hidrazina (N2H4)', min: 10.0, max: 50.0, unit: 'ppb' }
@@ -78,7 +78,7 @@ const PUNTOS_MUESTREO = [
       { id: 'AGUA_ALIMENTACION', nombre: 'Agua de Alimentación Caldera' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH (25°C)', min: 8.8, max: 9.5, unit: '' },
+      { key: 'ph', label: 'pH', min: 8.8, max: 9.5, unit: '' },
       { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.2, unit: 'µS/cm' },
       { key: 'oxigeno', label: 'Oxígeno Disuelto', min: 0.0, max: 5.0, unit: 'ppb' },
       { key: 'hierro', label: 'Hierro (Fe)', min: 0.0, max: 10.0, unit: 'ppb' },
@@ -108,7 +108,7 @@ const PUNTOS_MUESTREO = [
       { id: 'CLORACION', nombre: 'Sistema de Cloración / Hipoclorito' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH (25°C)', min: 7.2, max: 8.2, unit: '' },
+      { key: 'ph', label: 'pH', min: 7.2, max: 8.2, unit: '' },
       { key: 'cloroLibre', label: 'Cloro Libre (Cl2)', min: 0.2, max: 1.0, unit: 'ppm' },
       { key: 'turbidez', label: 'Turbidez', min: 0.0, max: 5.0, unit: 'NTU' },
       { key: 'conductividad', label: 'Conductividad', min: 0.0, max: 1500.0, unit: 'µS/cm' }
@@ -249,6 +249,15 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     if (paramConfig.min !== undefined && num < paramConfig.min) return true;
     if (paramConfig.max !== undefined && num > paramConfig.max) return true;
     return false;
+  };
+
+  const obtenerMotivoFueraRango = (paramConfig, valor) => {
+    if (valor === undefined || valor === null || valor === '') return null;
+    const num = parseFloat(String(valor).replace(',', '.'));
+    if (isNaN(num)) return null;
+    if (paramConfig.min !== undefined && num < paramConfig.min) return `⚠️ Bajo norma (< ${paramConfig.min})`;
+    if (paramConfig.max !== undefined && num > paramConfig.max) return `⚠️ Sobre norma (> ${paramConfig.max})`;
+    return null;
   };
 
   // Obtener la fila de muestra para un punto y hora específicos
@@ -715,7 +724,9 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                       {categoriaObjActiva.parametros.map((p) => (
                         <th key={p.key} className="p-3.5 text-center border-r border-slate-800">
                           <span className="block font-bold">{p.label}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">({p.unit || 'Límite norma'})</span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            {p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`}
+                          </span>
                         </th>
                       ))}
                       <th className="p-3.5 text-center w-36">Acciones / Guardar</th>
@@ -765,8 +776,8 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                   }`}
                                 />
                                 {fueraRango && (
-                                  <span className="text-[9px] font-bold text-red-400 block mt-0.5">
-                                    ⚠️ Fuera de norma
+                                  <span className="text-[9px] font-bold text-red-400 block mt-0.5 whitespace-nowrap">
+                                    {obtenerMotivoFueraRango(param, valActual)}
                                   </span>
                                 )}
                               </td>
