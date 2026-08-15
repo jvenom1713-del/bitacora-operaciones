@@ -1769,78 +1769,6 @@ ${extraHtml}
             </div>
           </div>
 
-          {/* SECCIÓN DE CONTINGENCIA / REEMPLAZO DETECTADO REACTIVAMENTE */}
-          {(() => {
-            const contingenciaInfo = detectarContingenciasGuardia(equipoTurno);
-            if (contingenciaInfo.hayContingencia) {
-              return (
-                <div className={`px-4 py-3 border-t space-y-2 text-xs ${
-                  modoNocturno ? 'bg-[#1c1402] border-amber-800/80 text-amber-100' : 'bg-amber-50 border-amber-300 text-amber-950'
-                }`}>
-                  <div className="flex items-start gap-2 font-black text-amber-700 dark:text-amber-300 text-xs sm:text-sm">
-                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0 animate-pulse" />
-                    <div>
-                      <span>⚠️ Reemplazo / Contingencia Detectada:</span>
-                      <ul className="list-disc list-inside font-bold text-xs mt-0.5 text-amber-900 dark:text-amber-200">
-                        {contingenciaInfo.reemplazos.map((r, idx) => (
-                          <li key={idx}>
-                            <strong className="text-black dark:text-white font-black">{r.actual}</strong> reemplaza a <strong className="text-amber-800 dark:text-amber-300 font-extrabold">{r.original}</strong> ({r.cargo})
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 border-t border-amber-300/50 dark:border-amber-800/50">
-                    <div className="flex flex-col space-y-1">
-                      <label className="font-extrabold uppercase tracking-wider text-[11px] text-amber-900 dark:text-amber-200">
-                        * Motivo de Contingencia (Obligatorio):
-                      </label>
-                      <select
-                        value={equipoTurno.motivoContingencia || 'Licencia'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, motivoContingencia: e.target.value })}
-                        className={`equipo-turno-select font-black border rounded px-2.5 py-1.5 focus:outline-none cursor-pointer text-xs shadow-md ${
-                          modoNocturno ? 'border-amber-700/60 bg-[#06152a] text-amber-300' : 'border-amber-400 bg-white text-slate-950 font-black'
-                        }`}
-                      >
-                        {MOTIVOS_CONTINGENCIA.map((motivo) => (
-                          <option key={motivo} value={motivo} className="equipo-turno-opcion bg-white text-black font-bold">
-                            {motivo}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col space-y-1">
-                      <label className="font-extrabold uppercase tracking-wider text-[11px] text-amber-900 dark:text-amber-200">
-                        {equipoTurno.motivoContingencia === 'Otro' ? '* Especifique Motivo (Requerido):' : 'Detalle de Reemplazo / Notas:'}
-                      </label>
-                      <input
-                        type="text"
-                        value={equipoTurno.detalleContingencia || ''}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, detalleContingencia: e.target.value })}
-                        placeholder={equipoTurno.motivoContingencia === 'Otro' ? 'Escriba el motivo del reemplazo...' : 'Ej: Reemplaza a Eric Godoy'}
-                        className={`font-bold border rounded px-2.5 py-1.5 text-xs focus:outline-none shadow-md ${
-                          modoNocturno ? 'border-amber-700/60 bg-[#06152a] text-white placeholder-slate-400' : 'border-amber-400 bg-white text-slate-950 placeholder-slate-400 font-black'
-                        }`}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div className={`px-4 py-2 border-t flex items-center justify-between text-xs font-bold ${
-                modoNocturno ? 'bg-[#061e16] border-emerald-900/60 text-emerald-300' : 'bg-emerald-50 border-emerald-300 text-emerald-900'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Dotación Normal / Sin contingencia — Guardia {equipoTurno.rotacion || 'TIGRES'} completa sin reemplazos.</span>
-                </div>
-              </div>
-            );
-          })()}
         </div>
 
         {/* VISTA 2: SEÑALES FORZADAS Y/O MANUAL & INSTRUCCIONES ESPECIALES */}
@@ -2456,12 +2384,6 @@ ${extraHtml}
                       <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.ot || 'Matias Cisternas'}</span>
                     </div>
                   </div>
-                  {equipoTurno.motivoContingencia && equipoTurno.motivoContingencia !== 'Sin contingencia' && (
-                    <div className="bg-amber-50 text-amber-900 px-3 py-1 text-xs border-t border-amber-200 font-extrabold flex items-center justify-between">
-                      <span>CONTINGENCIA: {equipoTurno.motivoContingencia}</span>
-                      {equipoTurno.detalleContingencia && <span className="font-semibold text-slate-700">"{equipoTurno.detalleContingencia}"</span>}
-                    </div>
-                  )}
                 </div>
 
                 {/* 1. CENTRAL NUEVA RENCA */}
