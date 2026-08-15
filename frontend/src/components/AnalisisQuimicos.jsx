@@ -750,16 +750,16 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                     <tr className={`border-b ${
                       modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-300 text-slate-700 bg-slate-100'
                     }`}>
-                      <th className="p-3.5 border-r border-slate-800 w-24">Hora</th>
+                      <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
                       {categoriaObjActiva.parametros.map((p) => (
-                        <th key={p.key} className="p-3.5 text-center border-r border-slate-800">
+                        <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
                           <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
                           <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
                             {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
                           </span>
                         </th>
                       ))}
-                      <th className="p-3.5 text-center w-36">Acciones / Guardar</th>
+                      <th className="p-3.5 text-center w-36 shrink-0">Acciones / Guardar</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
@@ -775,7 +775,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                       return (
                         <tr key={hora} className={modoNocturno ? 'hover:bg-slate-950/40' : 'hover:bg-slate-50'}>
                           {/* Hora */}
-                          <td className="p-3.5 font-bold text-cyan-400 border-r border-slate-800/80 bg-slate-950/20">
+                          <td className="p-3.5 font-bold text-cyan-400 border-r border-slate-800/80 bg-slate-950/20 w-24">
                             <div className="flex items-center gap-1.5">
                               <Clock className="w-3.5 h-3.5 text-cyan-400" />
                               <span>{hora} hrs</span>
@@ -784,11 +784,26 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
 
                           {/* Inputs por cada Parámetro Químico */}
                           {categoriaObjActiva.parametros.map((param) => {
+                            // Regla: Dureza y Hierro SOLO se analizan a las 10:00 hrs. En otros horarios queda deshabilitado (-)
+                            const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
+                            if (esDurezaOHierro && hora !== '10:00') {
+                              return (
+                                <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
+                                  <div 
+                                    className="w-full py-2 px-2 rounded-lg border border-slate-800/30 bg-slate-950/50 text-slate-600 font-mono font-bold text-xs select-none cursor-not-allowed flex items-center justify-center"
+                                    title={`${param.label} solo se mide a las 10:00 hrs`}
+                                  >
+                                    -
+                                  </div>
+                                </td>
+                              );
+                            }
+
                             const valActual = paramsLocal[param.key] ?? '';
                             const fueraRango = esFueraDeRango(param, valActual);
 
                             return (
-                              <td key={param.key} className="p-2 border-r border-slate-800/60 text-center">
+                              <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
                                 <input
                                   type="text"
                                   value={valActual}
@@ -796,7 +811,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                     const v = e.target.value;
                                     setParamsLocal(prev => ({ ...prev, [param.key]: v }));
                                   }}
-                                  placeholder={param.textRango || (param.min !== undefined ? `${param.min} - ${param.max}` : `${param.min} - ${param.max}`)}
+                                  placeholder=""
                                   className={`w-full text-center px-2 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
                                     fueraRango
                                       ? 'bg-red-950/80 border-red-500 text-red-300 font-extrabold focus:ring-red-500 animate-pulse'
