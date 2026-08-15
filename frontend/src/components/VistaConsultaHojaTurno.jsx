@@ -1605,14 +1605,32 @@ ${senalesForzadasTexto}
                   </div>
                 </button>
               ) : (
-                /* Alerta Informativa Operador de Sala en REVISION */
-                <div className="p-5 rounded-xl border border-amber-500/60 bg-amber-950/60 text-amber-200 flex items-center gap-4 shadow-xl">
-                  <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
-                    <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
-                  </div>
-                  <div>
-                    <span className="block font-black text-sm uppercase text-amber-300">Esperando aprobación del Jefe de Turno</span>
-                    <span className="text-xs text-amber-200/90 font-medium">La bitácora ha sido enviada a revisión y se encuentra bloqueada para edición en espera de la firma de jefatura.</span>
+                /* Alerta e Indicación Bloqueada para Operador de Sala en REVISION */
+                <div className="space-y-3">
+                  <button
+                    disabled
+                    title="La bitácora ha sido enviada a revisión y el botón permanecerá bloqueado hasta que el Jefe de Turno la apruebe"
+                    className="w-full p-5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex items-center justify-center gap-3 font-black cursor-not-allowed opacity-90"
+                  >
+                    <Lock className="w-5 h-5 text-amber-400 animate-pulse" />
+                    <div className="text-left">
+                      <span className="block font-black text-sm uppercase text-amber-300">
+                        🔒 Enviar a Revisión de Jefe de Turno (Bloqueado)
+                      </span>
+                      <span className="text-[11px] font-medium text-amber-200/90 block">
+                        La bitácora se encuentra en revisión. El botón permanecerá bloqueado hasta que el Jefe de Turno apruebe la bitácora.
+                      </span>
+                    </div>
+                  </button>
+
+                  <div className="p-5 rounded-xl border border-amber-500/60 bg-amber-950/60 text-amber-200 flex items-center gap-4 shadow-xl">
+                    <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
+                      <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
+                    </div>
+                    <div>
+                      <span className="block font-black text-sm uppercase text-amber-300">Esperando aprobación del Jefe de Turno</span>
+                      <span className="text-xs text-amber-200/90 font-medium">La bitácora ha sido enviada a revisión y se encuentra bloqueada para edición en espera de la firma de jefatura.</span>
+                    </div>
                   </div>
                 </div>
               )}

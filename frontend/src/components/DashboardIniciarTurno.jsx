@@ -2962,13 +2962,34 @@ ${extraHtml}
                         <span className="text-[11px] text-emerald-100 font-medium">Firmar y cerrar turno oficialmente</span>
                       </button>
                     ) : (
-                      <div className="p-6 rounded-2xl border border-amber-500/60 bg-amber-950/60 text-amber-200 shadow-xl flex items-center gap-4">
-                        <div className="p-3.5 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
-                          <Clock className="w-8 h-8 text-amber-400 animate-pulse" />
-                        </div>
-                        <div className="text-left">
-                          <span className="font-black text-base uppercase block text-amber-300">Esperando aprobación del Jefe de Turno</span>
-                          <p className="text-xs text-amber-200/90 font-medium mt-1">La solicitud de cierre ha sido enviada. La bitácora se encuentra en revisión.</p>
+                      <div className="space-y-4">
+                        {/* BOTÓN BLOQUEADO DE ENVÍO */}
+                        <button
+                          disabled
+                          title="El botón se encuentra bloqueado hasta que el Jefe de Turno apruebe la bitácora"
+                          className="w-full p-6 rounded-2xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex flex-col items-center text-center gap-3 cursor-not-allowed opacity-90"
+                        >
+                          <div className="p-3.5 rounded-xl bg-amber-500/20 border border-amber-500/40">
+                            <Lock className="w-8 h-8 text-amber-400 animate-pulse" />
+                          </div>
+                          <div>
+                            <span className="font-black text-base sm:text-lg block uppercase tracking-wide text-amber-300">
+                              🔒 1. Enviar a Revisión de Jefe de Turno (Bloqueado)
+                            </span>
+                            <p className="text-xs text-amber-200/90 font-medium mt-1">
+                              La bitácora ya ha sido enviada. El botón permanecerá bloqueado hasta que el Jefe de Turno apruebe la bitácora.
+                            </p>
+                          </div>
+                        </button>
+
+                        <div className="p-4 rounded-xl border border-amber-500/60 bg-amber-950/60 text-amber-200 shadow-xl flex items-center gap-4">
+                          <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
+                            <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
+                          </div>
+                          <div className="text-left">
+                            <span className="font-black text-sm uppercase block text-amber-300">Esperando aprobación del Jefe de Turno</span>
+                            <p className="text-xs text-amber-200/90 font-medium mt-1">La solicitud de cierre ha sido enviada. La bitácora se encuentra en revisión.</p>
+                          </div>
                         </div>
                       </div>
                     )}

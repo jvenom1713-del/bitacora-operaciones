@@ -185,8 +185,10 @@ export default function MenuOperador({
 
           {/* Botón Principal Naranja Dinámico */}
           {(() => {
-            const estadoEval = (turnoActivo?.estado || turnoActual?.estado || estadoTurnoLocal || 'ABIERTO').toUpperCase();
+            const storedState = localStorage.getItem('estado_turno_activo');
+            const estadoEval = (storedState || turnoActivo?.estado || turnoActual?.estado || estadoTurnoLocal || 'ABIERTO').toUpperCase();
             const estaCerradoOAprobado = estadoEval === 'CERRADO' || estadoEval === 'APROBADO';
+            const estaEnRevision = estadoEval === 'EN_REVISION';
 
             if (estaCerradoOAprobado) {
               return (
@@ -195,6 +197,22 @@ export default function MenuOperador({
                   className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
                 >
                   <span>🚀 Abrir Siguiente Turno</span>
+                </button>
+              );
+            } else if (estaEnRevision && !esJefeOAdmin) {
+              return (
+                <button
+                  disabled
+                  title="La bitácora ya fue enviada a revisión y se encuentra bloqueada hasta que el Jefe de Turno la apruebe"
+                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg flex flex-col items-center justify-center gap-1 cursor-not-allowed bg-slate-800/90 text-amber-300 border border-amber-500/50 opacity-90 shadow-black/40"
+                >
+                  <div className="flex items-center gap-2 font-black text-sm uppercase">
+                    <Lock className="w-5 h-5 text-amber-400 animate-pulse" />
+                    <span>🔒 Bitácora Enviada — Bloqueada en Revisión</span>
+                  </div>
+                  <span className="text-[11px] text-amber-200/80 font-medium">
+                    El botón permanecerá bloqueado hasta que el Jefe de Turno apruebe la bitácora.
+                  </span>
                 </button>
               );
             } else {
