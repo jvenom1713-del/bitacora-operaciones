@@ -504,6 +504,11 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     const num = parseFloat(String(valor).replace(',', '.'));
     if (isNaN(num)) return false;
 
+    // Regla Específica Hierro: Alerta SOLO si es estrictamente mayor a 0.02 (> 0.02)
+    if (paramConfig.key === 'hierro') {
+      return num > 0.02;
+    }
+
     // Validación por límites máximos estrictos (>= o >)
     if (paramConfig.maxStrict !== undefined) {
       if (paramConfig.maxStrict === 0 && num > 0) return true;
@@ -519,6 +524,10 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     if (valor === undefined || valor === null || valor === '') return null;
     const num = parseFloat(String(valor).replace(',', '.'));
     if (isNaN(num)) return null;
+
+    if (paramConfig.key === 'hierro' && num > 0.02) {
+      return `⚠️ Sobre norma (> 0,02)`;
+    }
 
     if (paramConfig.maxStrict !== undefined) {
       if (paramConfig.maxStrict === 0 && num > 0) return `⚠️ Fuera de norma (> 0)`;
