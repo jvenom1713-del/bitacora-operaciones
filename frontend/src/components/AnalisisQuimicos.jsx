@@ -16,12 +16,14 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
   Layers,
   Activity,
   Droplets
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import LoginQuimico from './LoginQuimico';
+import GraficosTendenciaModal from './GraficosTendenciaModal';
 
 // =======================================================
 // CONFIGURACIÓN DE PUNTOS Y RANGOS OPERACIONALES DE CONTROL QUÍMICO
@@ -169,6 +171,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   const [subpuntoActivo, setSubpuntoActivo] = useState('DOMO_ALTA');
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date().toISOString().split('T')[0]);
   const [mostrarAuditoria, setMostrarAuditoria] = useState(false);
+  const [modalGraficoAbierto, setModalGraficoAbierto] = useState(false);
 
   // 3. Estado de Datos de Muestreo y Auditoría
   const [muestras, setMuestras] = useState([]);
@@ -446,6 +449,15 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
             </div>
 
             <button
+              onClick={() => setModalGraficoAbierto(true)}
+              className="px-3.5 py-2 rounded-xl font-bold border border-cyan-400/50 bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white shadow-lg shadow-cyan-900/40 transition-all flex items-center gap-1.5 cursor-pointer transform hover:scale-[1.02]"
+              title="Visualizar gráfico de tendencias históricas de hasta 1 Año"
+            >
+              <TrendingUp className="w-4 h-4 text-white animate-pulse" />
+              <span>Ver Tendencias 📈</span>
+            </button>
+
+            <button
               onClick={() => setMostrarAuditoria(!mostrarAuditoria)}
               className={`px-3.5 py-2 rounded-xl font-bold border transition-all flex items-center gap-1.5 ${
                 mostrarAuditoria
@@ -688,7 +700,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {categoriaObjActiva.subpuntos.map((sub) => (
                     <button
                       key={sub.id}
@@ -704,6 +716,15 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                       {sub.nombre}
                     </button>
                   ))}
+
+                  <button
+                    onClick={() => setModalGraficoAbierto(true)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+                    title={`Ver gráfico de tendencia histórica de ${categoriaObjActiva.nombre}`}
+                  >
+                    <TrendingUp className="w-3.5 h-3.5 text-white" />
+                    <span>Ver Tendencias 📈</span>
+                  </button>
                 </div>
               </div>
 
@@ -827,6 +848,16 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
           )}
         </div>
       )}
+
+      {/* MODAL DE GRÁFICOS DE TENDENCIA HISTÓRICA DE HASTA 1 AÑO */}
+      <GraficosTendenciaModal
+        isOpen={modalGraficoAbierto}
+        onClose={() => setModalGraficoAbierto(false)}
+        puntoMuestreoId={subpuntoActivo}
+        puntoNombre={categoriaObjActiva?.subpuntos?.find(s => s.id === subpuntoActivo)?.nombre || categoriaObjActiva?.nombre || 'Control Químico'}
+        parametrosDisponibles={categoriaObjActiva?.parametros || []}
+        modoNocturno={modoNocturno}
+      />
     </div>
   );
 }
