@@ -96,17 +96,17 @@ const PUNTOS_MUESTREO = [
   },
   {
     id: 'PLANTAS_AGUA',
-    nombre: 'Plantas de Agua (Desmineralizada, Vigaflow, Veolia)',
+    nombre: 'Plantas de Agua (Estanque Desmineralizada, Vigaflow, Veolia)',
     subpuntos: [
-      { id: 'PLANTA_DESMI', nombre: 'Planta Desmineralizada' },
+      { id: 'PLANTA_DESMI', nombre: 'Estanque Agua Desmineralizada' },
       { id: 'PLANTA_VIGAFLOW', nombre: 'Planta Vigaflow' },
       { id: 'PLANTA_VEOLIA', nombre: 'Planta Veolia' }
     ],
     parametros: [
-      { key: 'conductividad', label: 'Conductividad', min: 0.0, max: 0.1, unit: 'µS/cm' },
-      { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.01, unit: 'ppm' },
-      { key: 'dureza', label: 'Dureza Total', min: 0.0, max: 0.5, unit: 'ppm' },
-      { key: 'cloruros', label: 'Cloruros (Cl-)', min: 0.0, max: 1.0, unit: 'ppm' }
+      { key: 'ph', label: 'pH', min: 6.0, max: 8.5, textRango: '6,0 - 8,5' },
+      { key: 'conductividad', label: 'Conductividad', maxStrict: 1.0, unit: 'uS/cm', textRango: '< 1 uS/cm' },
+      { key: 'silice', label: 'Silice', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' },
+      { key: 'dureza', label: 'Dureza', maxStrict: 0.0, unit: 'ppm', textRango: '0 ppm' }
     ]
   },
   {
