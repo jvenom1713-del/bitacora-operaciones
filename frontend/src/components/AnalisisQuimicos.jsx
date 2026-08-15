@@ -230,8 +230,13 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     }
   };
 
-  // Eliminar una fila extra o muestra guardada
+  // Eliminar únicamente una fila extra agregada o muestra extra guardada
   const handleEliminarFilaRow = async (subpuntoId, filaObj) => {
+    if (filaObj.esDefault) {
+      alert('Las filas por defecto (10:00, 16:00, 22:00, 05:00) son obligatorias y no se pueden eliminar.');
+      return;
+    }
+
     const horaStr = filaObj.hora;
     const muestra = muestras.find(m => m.punto_muestreo === subpuntoId && m.hora === horaStr);
 
@@ -922,14 +927,18 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                 <span>Guardar</span>
                               </button>
 
-                              <button
-                                onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
-                                disabled={guardando}
-                                className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer"
-                                title="Eliminar fila / registro de análisis"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              {!filaObj.esDefault ? (
+                                <button
+                                  onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
+                                  disabled={guardando}
+                                  className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer shrink-0"
+                                  title="Eliminar esta fila extra"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <div className="w-8 shrink-0" />
+                              )}
                             </div>
                           </td>
                         </tr>
