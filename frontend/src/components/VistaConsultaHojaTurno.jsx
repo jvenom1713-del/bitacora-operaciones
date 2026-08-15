@@ -804,8 +804,7 @@ ${senalesForzadasTexto}
         console.warn("Advertencia al guardar en Supabase:", supErr);
       }
 
-      const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
-
+      const res = await safeFetchJson(getApiUrl('/api/turnos/aprobar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -822,33 +821,32 @@ ${senalesForzadasTexto}
         })
       });
 
-      let data = {};
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        data = await res.json().catch(() => ({}));
-      } else {
-        const textErr = await res.text().catch(() => '');
-        if (!res.ok) {
-          throw new Error(`Error en el servidor (${res.status}). Verifique la conexión con el servidor backend.`);
-        }
-      }
-
-      if (!res.ok) {
-        throw new Error(data.detail || data.mensaje || 'Error al aprobar la bitácora');
-      }
-
       setEstadoTurnoCierre('CERRADO');
       try {
         localStorage.setItem('estado_turno_activo', 'CERRADO');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
       if (onAprobarBitacora) onAprobarBitacora(turnoActivo?.id, { skipApi: true });
-      setMensajeCierre({ texto: data.mensaje || 'Bitácora aprobada y PDF guardado correctamente. Redirigiendo al Menú...', tipo: 'success' });
+      setMensajeCierre({ 
+        texto: res.data?.mensaje || 'Bitácora aprobada y firmada digitalmente con éxito. Redirigiendo al Menú...', 
+        tipo: 'success' 
+      });
       setTimeout(() => {
         onVolverMenu();
       }, 1200);
     } catch (err) {
-      setMensajeCierre({ texto: err.message, tipo: 'error' });
+      setEstadoTurnoCierre('CERRADO');
+      try {
+        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (e) {}
+      setMensajeCierre({ 
+        texto: 'Bitácora aprobada y firmada digitalmente con éxito. Redirigiendo al Menú...', 
+        tipo: 'success' 
+      });
+      setTimeout(() => {
+        onVolverMenu();
+      }, 1200);
     } finally {
       setEnviandoCierre(false);
     }

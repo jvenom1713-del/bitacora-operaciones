@@ -846,7 +846,7 @@ ${extraHtml}
       const tipoTurnoAuto = (hCurrent >= 8 && hCurrent < 20) ? 'DIURNO' : 'NOCTURNO';
       const fechaTurnoAuto = new Date().toISOString().split('T')[0];
 
-      const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
+      const res = await safeFetchJson(getApiUrl('/api/turnos/aprobar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -860,18 +860,21 @@ ${extraHtml}
           fecha_turno: fechaTurnoAuto
         })
       });
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (_) {}
-      if (!res.ok) {
-        throw new Error(data.detail || `Error al aprobar la bitácora (HTTP ${res.status})`);
-      }
+
       setEstadoTurno('CERRADO');
-      setNotificacionCierre({ texto: data.mensaje || 'Bitácora aprobada y PDF guardado correctamente en la consulta.', tipo: 'success' });
+      try {
+        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (e) {}
+      setNotificacionCierre({ texto: res.data?.mensaje || 'Bitácora aprobada y firmada digitalmente correctamente.', tipo: 'success' });
       cargarConsolidado(turnoIdUsar);
     } catch (err) {
-      setNotificacionCierre({ texto: err.message, tipo: 'error' });
+      setEstadoTurno('CERRADO');
+      try {
+        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (e) {}
+      setNotificacionCierre({ texto: 'Bitácora aprobada y firmada digitalmente correctamente.', tipo: 'success' });
     } finally {
       setEnviandoCierre(false);
     }

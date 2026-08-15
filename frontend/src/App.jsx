@@ -879,7 +879,7 @@ export default function App() {
   const handleAprobarBitacora = async (turnoId, datosAprobacion = {}) => {
     try {
       if (!datosAprobacion?.skipApi) {
-        const res = await fetch(getApiUrl('/api/turnos/aprobar'), {
+        await safeFetchJson(getApiUrl('/api/turnos/aprobar'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -888,9 +888,6 @@ export default function App() {
             ...datosAprobacion
           })
         });
-        if (!res.ok) {
-          console.warn("Respuesta al aprobar turno:", res.status);
-        }
       }
       await cargarTurnoActivo();
     } catch (e) {
