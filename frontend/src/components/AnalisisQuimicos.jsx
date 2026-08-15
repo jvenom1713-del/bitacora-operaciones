@@ -639,37 +639,53 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     setGuardando(true);
     setMensajeFeedback(null);
 
-    const keys = Object.keys(paramsBorrador);
-
-    // Recopilar todos los datos presentes en los borradores y muestras locales
-    const registrosGuardar = [];
     const timestamp = new Date().toISOString();
+    const mapRegistros = new Map();
 
-    if (keys.length > 0) {
-      for (const k of keys) {
-        const { subpuntoId, hora, paramsObj } = paramsBorrador[k];
-        const tieneDatos = Object.values(paramsObj).some(v => v !== undefined && v !== null && String(v).trim() !== '');
-        if (!tieneDatos) continue;
+    // 1. Recopilar de muestras locales/cargadas que tengan al menos 1 dato
+    muestras.forEach(m => {
+      const tieneDatos = m.parametros && Object.values(m.parametros).some(v => v !== undefined && v !== null && String(v).trim() !== '');
+      if (tieneDatos) {
+        const key = `${m.punto_muestreo}_${m.hora}`;
+        mapRegistros.set(key, {
+          id: m.id && !String(m.id).startsWith('draft_') ? m.id : undefined,
+          fecha: fechaSeleccionada,
+          hora: m.hora,
+          punto_muestreo: m.punto_muestreo,
+          parametros: m.parametros,
+          usuario_email: sesionQuimica?.email || 'Operador',
+          rol: sesionQuimica?.rol || 'Químico',
+          created_at: timestamp
+        });
+      }
+    });
 
+    // 2. Sobrecribir o incorporar borradores activos
+    Object.keys(paramsBorrador).forEach(k => {
+      const { subpuntoId, hora, paramsObj } = paramsBorrador[k];
+      const tieneDatos = paramsObj && Object.values(paramsObj).some(v => v !== undefined && v !== null && String(v).trim() !== '');
+      if (tieneDatos) {
+        const key = `${subpuntoId}_${hora}`;
         const muestraExistente = muestras.find(m => m.punto_muestreo === subpuntoId && m.hora === hora);
-
-        registrosGuardar.push({
-          id: muestraExistente?.id || undefined,
+        mapRegistros.set(key, {
+          id: muestraExistente?.id && !String(muestraExistente.id).startsWith('draft_') ? muestraExistente.id : undefined,
           fecha: fechaSeleccionada,
           hora: hora,
           punto_muestreo: subpuntoId,
           parametros: paramsObj,
-          usuario_email: sesionQuimica.email,
-          rol: sesionQuimica.rol,
+          usuario_email: sesionQuimica?.email || 'Operador',
+          rol: sesionQuimica?.rol || 'Químico',
           created_at: timestamp
         });
       }
-    }
+    });
+
+    const registrosGuardar = Array.from(mapRegistros.values());
 
     if (registrosGuardar.length === 0) {
       setMensajeFeedback({
         tipo: 'info',
-        texto: 'Por favor ingrese o modifique algún valor en las tablas antes de guardar la planilla.'
+        texto: 'Por favor ingrese algún valor en las celdas antes de guardar la planilla.'
       });
       setGuardando(false);
       return;
