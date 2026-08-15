@@ -346,11 +346,9 @@ function FilaMuestraRow({
               onPaste={(e) => handleInputPaste(e, rowIndex, colIndex)}
               onChange={(e) => {
                 const v = e.target.value;
-                setParamsLocal(prev => {
-                  const updated = { ...prev, [param.key]: v };
-                  if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
-                  return updated;
-                });
+                const updated = { ...paramsLocal, [param.key]: v };
+                setParamsLocal(updated);
+                if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
               }}
               placeholder=""
               className={`w-full text-center px-2 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
@@ -505,11 +503,9 @@ function TablaCirculacionVertical({
                     onPaste={(e) => handlePaste(e, pIdx)}
                     onChange={(e) => {
                       const v = e.target.value;
-                      setParamsLocal(prev => {
-                        const updated = { ...prev, [param.key]: v };
-                        if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
-                        return updated;
-                      });
+                      const updated = { ...paramsLocal, [param.key]: v };
+                      setParamsLocal(updated);
+                      if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
                     }}
                     placeholder=""
                     className={`w-full text-center px-3 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
@@ -930,6 +926,11 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       return num > 0.02;
     }
 
+    // Regla Específica Cobre: Alerta SOLO si es estrictamente mayor a 2.0 (> 2.0)
+    if (paramConfig.key === 'cobre') {
+      return num > 2.0;
+    }
+
     // Validación por límites máximos estrictos (>= o >)
     if (paramConfig.maxStrict !== undefined) {
       if (paramConfig.maxStrict === 0 && num > 0) return true;
@@ -948,6 +949,10 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
 
     if (paramConfig.key === 'hierro' && num > 0.02) {
       return `⚠️ Sobre norma (> 0,02)`;
+    }
+
+    if (paramConfig.key === 'cobre' && num > 2.0) {
+      return `⚠️ Sobre norma (> 2)`;
     }
 
     if (paramConfig.maxStrict !== undefined) {
