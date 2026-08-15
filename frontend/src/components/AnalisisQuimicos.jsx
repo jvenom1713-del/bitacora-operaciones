@@ -42,7 +42,8 @@ const PUNTOS_MUESTREO = [
       { key: 'conductividad', label: 'Cond', maxStrict: 150.0, unit: 'uS/cm', textRango: '< 150 uS/cm' },
       { key: 'silice', label: 'Silice', maxStrict: 1.0, unit: 'ppm', textRango: '< 1 ppm' },
       { key: 'dureza', label: 'Dureza', maxStrict: 0.0, unit: 'ppm', textRango: '0 ppm' },
-      { key: 'hierro', label: 'Hierro', maxStrict: 0.02, unit: 'ppm', textRango: '< 0,02 ppm' }
+      { key: 'hierro', label: 'Hierro', maxStrict: 0.02, unit: 'ppm', textRango: '< 0,02 ppm' },
+      { key: 'blowdown', label: 'Blowdown', textRango: '-' }
     ]
   },
   {
