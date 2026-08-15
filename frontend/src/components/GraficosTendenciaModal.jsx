@@ -25,6 +25,8 @@ import {
 import { supabase } from '../supabaseClient';
 
 const RANGOS_TIEMPO = [
+  { id: '24H', label: '24 Horas', dias: 1 },
+  { id: '48H', label: '48 Horas', dias: 2 },
   { id: '7D', label: '7 Días', dias: 7 },
   { id: '1M', label: '1 Mes', dias: 30 },
   { id: '3M', label: '3 Meses', dias: 90 },
@@ -41,7 +43,7 @@ export default function GraficosTendenciaModal({
   modoNocturno = true
 }) {
   const [paramKey, setParamKey] = useState(parametrosDisponibles[0]?.key || 'ph');
-  const [rangoId, setRangoId] = useState('7D');
+  const [rangoId, setRangoId] = useState('24H');
   const [datosGrafico, setDatosGrafico] = useState([]);
   const [cargando, setCargando] = useState(false);
 
