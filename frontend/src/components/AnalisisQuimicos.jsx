@@ -743,20 +743,6 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                 </div>
               </div>
 
-              {/* RANGOS DE CONTROL INFORMADO */}
-              <div className={`p-3.5 rounded-xl border text-xs font-mono grid grid-cols-2 sm:grid-cols-6 gap-3 ${
-                modoNocturno ? 'bg-slate-950/80 border-slate-800/80' : 'bg-slate-50 border-slate-200'
-              }`}>
-                {categoriaObjActiva.parametros.map((p) => (
-                  <div key={p.key} className="space-y-0.5">
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">{p.label}:</span>
-                    <span className="text-cyan-300 font-bold">
-                      {p.textRango || (p.unit ? `${p.min} - ${p.max} ${p.unit}` : `${p.min} - ${p.max}`)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
               {/* TABLA DE TOMA DE MUESTRAS POR HORARIOS */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono border-collapse">
