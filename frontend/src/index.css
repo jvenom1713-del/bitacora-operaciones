@@ -101,3 +101,15 @@ div[style*="power_plant_bg.png"]::after {
   0%, 35% { opacity: 0; }
   65%, 100% { opacity: 1; }
 }
+
+/* Legibilidad de nombres de Personal de Turno en celdas y selectores */
+.equipo-turno-celda select option,
+select.equipo-turno-select option,
+option.equipo-turno-opcion,
+.printable-page select,
+.printable-page select option {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  font-weight: 800 !important;
+}
+

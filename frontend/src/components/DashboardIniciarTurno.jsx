@@ -1684,74 +1684,74 @@ ${extraHtml}
           <div className={`grid grid-cols-4 text-center font-bold text-xs sm:text-sm py-2 divide-x ${
             modoNocturno ? 'bg-[#091b33] divide-blue-800 text-white' : 'bg-slate-100/90 divide-slate-300/80 text-slate-900'
           }`}>
-            <div className="py-1 px-1 flex flex-col items-center justify-center">
+            <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>TURNO</span>
               <select
                 value={equipoTurno.rotacion || 'TIGRES'}
                 onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, rotacion: e.target.value })}
-                className={`font-black text-xs bg-transparent border rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer ${
+                className={`equipo-turno-select font-black text-xs border rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer ${
                   modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-amber-400' : 'border-slate-300 bg-white text-amber-600'
                 }`}
               >
-                <option value="TIGRES">TIGRES</option>
-                <option value="JAGUAR">JAGUAR</option>
-                <option value="HALCONES">HALCONES</option>
-                <option value="LEONES">LEONES</option>
-                <option value="ÁGUILAS">ÁGUILAS</option>
+                <option value="TIGRES" className="equipo-turno-opcion bg-white text-black font-bold">TIGRES</option>
+                <option value="JAGUAR" className="equipo-turno-opcion bg-white text-black font-bold">JAGUAR</option>
+                <option value="HALCONES" className="equipo-turno-opcion bg-white text-black font-bold">HALCONES</option>
+                <option value="LEONES" className="equipo-turno-opcion bg-white text-black font-bold">LEONES</option>
+                <option value="ÁGUILAS" className="equipo-turno-opcion bg-white text-black font-bold">ÁGUILAS</option>
               </select>
             </div>
 
-            <div className="py-1 px-1 flex flex-col items-center justify-center">
+            <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>JDT (Jefe)</span>
               <select
                 value={equipoTurno.jdt || 'Ariel Torres'}
                 onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, jdt: e.target.value })}
-                className={`w-full max-w-[190px] font-black text-xs bg-transparent border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
-                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900'
+                className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900 font-black'
                 }`}
               >
-                <option value="Ariel Torres">Ariel Torres</option>
-                <option value="Javier San Martín">Javier San Martín</option>
-                <option value="Pablo Flores Vásquez">Pablo Flores Vásquez</option>
-                <option value="Norman Galaz">Norman Galaz</option>
-                <option value="Cristian Valdivia Maldonado">Cristian Valdivia Maldonado</option>
-                <option value="Rodrigo Troncoso">Rodrigo Troncoso (Contingencia)</option>
+                <option value="Ariel Torres" className="equipo-turno-opcion bg-white text-black font-bold">Ariel Torres</option>
+                <option value="Javier San Martín" className="equipo-turno-opcion bg-white text-black font-bold">Javier San Martín</option>
+                <option value="Pablo Flores Vásquez" className="equipo-turno-opcion bg-white text-black font-bold">Pablo Flores Vásquez</option>
+                <option value="Norman Galaz" className="equipo-turno-opcion bg-white text-black font-bold">Norman Galaz</option>
+                <option value="Cristian Valdivia Maldonado" className="equipo-turno-opcion bg-white text-black font-bold">Cristian Valdivia Maldonado</option>
+                <option value="Rodrigo Troncoso" className="equipo-turno-opcion bg-white text-black font-bold">Rodrigo Troncoso (Contingencia)</option>
               </select>
             </div>
 
-            <div className="py-1 px-1 flex flex-col items-center justify-center">
+            <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OSC (Operador)</span>
               <select
                 value={equipoTurno.osc || 'Jorge Albornoz'}
                 onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, osc: e.target.value })}
-                className={`w-full max-w-[190px] font-black text-xs bg-transparent border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
-                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900'
+                className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900 font-black'
                 }`}
               >
-                <option value="Jorge Albornoz">Jorge Albornoz</option>
-                <option value="Humberto Barra Tapia">Humberto Barra Tapia</option>
-                <option value="Luis Morales">Luis Morales</option>
-                <option value="Eduardo Armijo Retamal">Eduardo Armijo Retamal</option>
-                <option value="Arístides Toledo Peña">Arístides Toledo Peña</option>
-                <option value="Máximo Cortés">Máximo Cortés (Contingencia)</option>
+                <option value="Jorge Albornoz" className="equipo-turno-opcion bg-white text-black font-bold">Jorge Albornoz</option>
+                <option value="Humberto Barra Tapia" className="equipo-turno-opcion bg-white text-black font-bold">Humberto Barra Tapia</option>
+                <option value="Luis Morales" className="equipo-turno-opcion bg-white text-black font-bold">Luis Morales</option>
+                <option value="Eduardo Armijo Retamal" className="equipo-turno-opcion bg-white text-black font-bold">Eduardo Armijo Retamal</option>
+                <option value="Arístides Toledo Peña" className="equipo-turno-opcion bg-white text-black font-bold">Arístides Toledo Peña</option>
+                <option value="Máximo Cortés" className="equipo-turno-opcion bg-white text-black font-bold">Máximo Cortés (Contingencia)</option>
               </select>
             </div>
 
-            <div className="py-1 px-1 flex flex-col items-center justify-center">
+            <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OT (Personal Turno)</span>
               <select
                 value={equipoTurno.ot || 'Matías Cisternas'}
                 onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, ot: e.target.value })}
-                className={`w-full max-w-[190px] font-black text-xs bg-transparent border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
-                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900'
+                className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900 font-black'
                 }`}
               >
-                <option value="Matías Cisternas">Matías Cisternas</option>
-                <option value="Eric Godoy Díaz">Eric Godoy Díaz</option>
-                <option value="Gerson Cofré">Gerson Cofré</option>
-                <option value="Carlos Vivero">Carlos Vivero</option>
-                <option value="Claudio Garrido San Martín">Claudio Garrido San Martín</option>
-                <option value="Enzo Cornejo">Enzo Cornejo (Contingencia)</option>
+                <option value="Matías Cisternas" className="equipo-turno-opcion bg-white text-black font-bold">Matías Cisternas</option>
+                <option value="Eric Godoy Díaz" className="equipo-turno-opcion bg-white text-black font-bold">Eric Godoy Díaz</option>
+                <option value="Gerson Cofré" className="equipo-turno-opcion bg-white text-black font-bold">Gerson Cofré</option>
+                <option value="Carlos Vivero" className="equipo-turno-opcion bg-white text-black font-bold">Carlos Vivero</option>
+                <option value="Claudio Garrido San Martín" className="equipo-turno-opcion bg-white text-black font-bold">Claudio Garrido San Martín</option>
+                <option value="Enzo Cornejo" className="equipo-turno-opcion bg-white text-black font-bold">Enzo Cornejo (Contingencia)</option>
               </select>
             </div>
           </div>
@@ -2291,69 +2291,69 @@ ${extraHtml}
                     </button>
                   </div>
                   <div className="grid grid-cols-4 text-center font-bold text-xs py-2 divide-x divide-slate-300 bg-white">
-                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
-                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">TURNO</span>
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
+                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">TURNO</span>
                       <select
                         value={equipoTurno.rotacion || 'TIGRES'}
                         onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, rotacion: e.target.value })}
-                        className="print:hidden font-black text-xs text-amber-600 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer shadow-sm"
+                        className="print:hidden equipo-turno-select font-black text-xs text-amber-700 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer shadow-sm"
                       >
-                        <option value="TIGRES">TIGRES</option>
-                        <option value="JAGUAR">JAGUAR</option>
-                        <option value="HALCONES">HALCONES</option>
-                        <option value="LEONES">LEONES</option>
-                        <option value="ÁGUILAS">ÁGUILAS</option>
+                        <option value="TIGRES" className="equipo-turno-opcion bg-white text-black font-bold">TIGRES</option>
+                        <option value="JAGUAR" className="equipo-turno-opcion bg-white text-black font-bold">JAGUAR</option>
+                        <option value="HALCONES" className="equipo-turno-opcion bg-white text-black font-bold">HALCONES</option>
+                        <option value="LEONES" className="equipo-turno-opcion bg-white text-black font-bold">LEONES</option>
+                        <option value="ÁGUILAS" className="equipo-turno-opcion bg-white text-black font-bold">ÁGUILAS</option>
                       </select>
-                      <span className="hidden print:inline text-amber-600 font-black text-xs">Día - {equipoTurno.rotacion || 'TIGRES'}</span>
+                      <span className="hidden print:inline text-amber-700 font-black text-xs">Día - {equipoTurno.rotacion || 'TIGRES'}</span>
                     </div>
 
-                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
-                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">JDT</span>
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
+                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">JDT</span>
                       <select
                         value={equipoTurno.jdt || 'Ariel Torres'}
                         onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, jdt: e.target.value })}
-                        className="print:hidden font-black text-xs text-slate-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
+                        className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
                       >
-                        <option value="Ariel Torres">Ariel Torres</option>
-                        <option value="Javier San Martín">Javier San Martín</option>
-                        <option value="Pablo Flores Vásquez">Pablo Flores Vásquez</option>
-                        <option value="Norman Galaz">Norman Galaz</option>
-                        <option value="Cristian Valdivia Maldonado">Cristian Valdivia Maldonado</option>
-                        <option value="Rodrigo Troncoso">Rodrigo Troncoso (Contingencia)</option>
+                        <option value="Ariel Torres" className="equipo-turno-opcion bg-white text-black font-bold">Ariel Torres</option>
+                        <option value="Javier San Martín" className="equipo-turno-opcion bg-white text-black font-bold">Javier San Martín</option>
+                        <option value="Pablo Flores Vásquez" className="equipo-turno-opcion bg-white text-black font-bold">Pablo Flores Vásquez</option>
+                        <option value="Norman Galaz" className="equipo-turno-opcion bg-white text-black font-bold">Norman Galaz</option>
+                        <option value="Cristian Valdivia Maldonado" className="equipo-turno-opcion bg-white text-black font-bold">Cristian Valdivia Maldonado</option>
+                        <option value="Rodrigo Troncoso" className="equipo-turno-opcion bg-white text-black font-bold">Rodrigo Troncoso (Contingencia)</option>
                       </select>
                       <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.jdt || 'Ariel Torres'}</span>
                     </div>
 
-                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
-                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OSC</span>
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
+                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OSC</span>
                       <select
                         value={equipoTurno.osc || 'Jorge Albornoz'}
                         onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, osc: e.target.value })}
-                        className="print:hidden font-black text-xs text-slate-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
+                        className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
                       >
-                        <option value="Jorge Albornoz">Jorge Albornoz</option>
-                        <option value="Humberto Barra Tapia">Humberto Barra Tapia</option>
-                        <option value="Luis Morales">Luis Morales</option>
-                        <option value="Eduardo Armijo Retamal">Eduardo Armijo Retamal</option>
-                        <option value="Arístides Toledo Peña">Arístides Toledo Peña</option>
-                        <option value="Máximo Cortés">Máximo Cortés (Contingencia)</option>
+                        <option value="Jorge Albornoz" className="equipo-turno-opcion bg-white text-black font-bold">Jorge Albornoz</option>
+                        <option value="Humberto Barra Tapia" className="equipo-turno-opcion bg-white text-black font-bold">Humberto Barra Tapia</option>
+                        <option value="Luis Morales" className="equipo-turno-opcion bg-white text-black font-bold">Luis Morales</option>
+                        <option value="Eduardo Armijo Retamal" className="equipo-turno-opcion bg-white text-black font-bold">Eduardo Armijo Retamal</option>
+                        <option value="Arístides Toledo Peña" className="equipo-turno-opcion bg-white text-black font-bold">Arístides Toledo Peña</option>
+                        <option value="Máximo Cortés" className="equipo-turno-opcion bg-white text-black font-bold">Máximo Cortés (Contingencia)</option>
                       </select>
                       <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.osc || 'Jorge Albornoz'}</span>
                     </div>
 
-                    <div className="py-1 px-1.5 flex flex-col items-center justify-center">
-                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OT / Personal</span>
+                    <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
+                      <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OT / Personal</span>
                       <select
                         value={equipoTurno.ot || 'Matías Cisternas'}
                         onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, ot: e.target.value })}
-                        className="print:hidden font-black text-xs text-slate-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
+                        className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
                       >
-                        <option value="Matías Cisternas">Matías Cisternas</option>
-                        <option value="Eric Godoy Díaz">Eric Godoy Díaz</option>
-                        <option value="Gerson Cofré">Gerson Cofré</option>
-                        <option value="Carlos Vivero">Carlos Vivero</option>
-                        <option value="Claudio Garrido San Martín">Claudio Garrido San Martín</option>
-                        <option value="Enzo Cornejo">Enzo Cornejo (Contingencia)</option>
+                        <option value="Matías Cisternas" className="equipo-turno-opcion bg-white text-black font-bold">Matías Cisternas</option>
+                        <option value="Eric Godoy Díaz" className="equipo-turno-opcion bg-white text-black font-bold">Eric Godoy Díaz</option>
+                        <option value="Gerson Cofré" className="equipo-turno-opcion bg-white text-black font-bold">Gerson Cofré</option>
+                        <option value="Carlos Vivero" className="equipo-turno-opcion bg-white text-black font-bold">Carlos Vivero</option>
+                        <option value="Claudio Garrido San Martín" className="equipo-turno-opcion bg-white text-black font-bold">Claudio Garrido San Martín</option>
+                        <option value="Enzo Cornejo" className="equipo-turno-opcion bg-white text-black font-bold">Enzo Cornejo (Contingencia)</option>
                       </select>
                       <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.ot || 'Matías Cisternas'}</span>
                     </div>
