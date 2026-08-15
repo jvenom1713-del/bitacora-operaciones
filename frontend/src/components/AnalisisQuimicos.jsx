@@ -347,6 +347,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
 
   // 3.5. Estado de Filas Dinámicas e Inmutabilidad por Subpunto
   const HORAS_DEFECTO = ['10:00', '16:00', '22:00', '05:00'];
+  const HORAS_DEFECTO_PLANTAS = ['09:00', '16:00', '05:00'];
   const [filasExtra, setFilasExtra] = useState({});
 
   // Map de subpuntos activos por cada categoría en la vista continua
@@ -370,6 +371,13 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       ...prev,
       [key]: { subpuntoId, hora, paramsObj }
     }));
+  };
+
+  const obtenerHorasSubpunto = (subpuntoId) => {
+    if (subpuntoId === 'PLANTA_DESMI' || subpuntoId === 'PLANTA_VIGAFLOW' || subpuntoId === 'PLANTA_VEOLIA') {
+      return HORAS_DEFECTO_PLANTAS;
+    }
+    return HORAS_DEFECTO;
   };
 
   // Guardar Todos los Análisis (Planilla Completa)
@@ -462,7 +470,8 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   };
 
   const obtenerFilasSubpunto = (subpuntoId) => {
-    const base = HORAS_DEFECTO.map(h => ({
+    const horasLista = obtenerHorasSubpunto(subpuntoId);
+    const base = horasLista.map(h => ({
       id: `default_${subpuntoId}_${h}`,
       hora: h,
       esDefault: true,
@@ -472,7 +481,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     const muestrasSub = muestras.filter(m => m.punto_muestreo === subpuntoId);
     const horasGuardadasExtra = muestrasSub
       .map(m => m.hora)
-      .filter(h => !HORAS_DEFECTO.includes(h));
+      .filter(h => !horasLista.includes(h));
 
     const extrasLocales = (filasExtra[subpuntoId] || []);
 
