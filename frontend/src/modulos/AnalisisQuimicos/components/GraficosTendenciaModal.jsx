@@ -22,7 +22,7 @@ import {
   Legend,
   ReferenceLine
 } from 'recharts';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../../shared/supabaseClient';
 
 const RANGOS_TIEMPO = [
   { id: '24H', label: '24 Horas', dias: 1 },

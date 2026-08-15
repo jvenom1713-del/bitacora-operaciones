@@ -21,9 +21,9 @@ import {
   Activity,
   Droplets
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
-import LoginQuimico from './LoginQuimico';
-import GraficosTendenciaModal from './GraficosTendenciaModal';
+import { supabase } from '../../../shared/supabaseClient';
+import LoginQuimico from '../../Portal/LoginQuimico';
+import GraficosTendenciaModal from '../components/GraficosTendenciaModal';
 
 // =======================================================
 // CONFIGURACIÓN DE PUNTOS Y RANGOS OPERACIONALES DE CONTROL QUÍMICO

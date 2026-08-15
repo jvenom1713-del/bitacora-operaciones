@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, LogOut, Lock, Clock, AlertCircle, X, FileText, FileCheck, ShieldAlert, Flame, FlaskConical } from 'lucide-react';
-import { isBorrador, isEnviado, isAprobada } from '../apiConfig';
+import { isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 
 export default function MenuOperador({ 
   usuarioActual, 

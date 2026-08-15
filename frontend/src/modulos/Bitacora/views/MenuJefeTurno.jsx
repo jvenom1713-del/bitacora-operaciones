@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, LogOut, FileText, Search, FlaskConical } from 'lucide-react';
-import { getApiUrl, safeFetchJson, isBorrador, isEnviado, isAprobada } from '../apiConfig';
+import { getApiUrl, safeFetchJson, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 
 export default function MenuJefeTurno({ 
   usuarioActual, 

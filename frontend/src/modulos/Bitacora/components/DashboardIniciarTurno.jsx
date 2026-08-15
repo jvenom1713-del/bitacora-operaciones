@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../apiConfig';
-import { supabase } from '../supabaseClient';
-import { MATRIZ_GUARDIAS, MOTIVOS_CONTINGENCIA, detectarContingenciasGuardia } from '../constants/guardias';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
+import { supabase } from '../../../shared/supabaseClient';
+import { MATRIZ_GUARDIAS, MOTIVOS_CONTINGENCIA, detectarContingenciasGuardia } from '../../../shared/constants/guardias';
 import { 
   RefreshCw, 
   MessageSquare, 

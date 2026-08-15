@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo, isBorrador, isEnviado, isAprobada } from '../apiConfig';
-import { supabase } from '../supabaseClient';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
+import { supabase } from '../../../shared/supabaseClient';
 
 // Componente de Edición de Texto Enriquecido
 function RichTextEditorField({ value, onChange, placeholder, className, style }) {

@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import LoginPortada from './components/LoginPortada';
-import PortalAcceso from './components/PortalAcceso';
-import MenuOperador from './components/MenuOperador';
-import MenuJefeTurno from './components/MenuJefeTurno';
-import AbrirTurnoMenu from './components/AbrirTurnoMenu';
-import CambioPersonalModal from './components/CambioPersonalModal';
-import DashboardIniciarTurno from './components/DashboardIniciarTurno';
-import VistaConsultaHojaTurno from './components/VistaConsultaHojaTurno';
-import VistaConsultaBitacora from './components/VistaConsultaBitacora';
-import VistaPermisosCaliente from './components/VistaPermisosCaliente';
-import AnalisisQuimicos from './components/AnalisisQuimicos';
-import LoginQuimico from './components/LoginQuimico';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo } from './apiConfig';
-import { supabase } from './supabaseClient';
-import { detectarContingenciasGuardia } from './constants/guardias';
+import LoginPortada from './modulos/Portal/LoginPortada';
+import PortalAcceso from './modulos/Portal/PortalAcceso';
+import LoginQuimico from './modulos/Portal/LoginQuimico';
+import MenuOperador from './modulos/Bitacora/views/MenuOperador';
+import MenuJefeTurno from './modulos/Bitacora/views/MenuJefeTurno';
+import AbrirTurnoMenu from './modulos/Bitacora/components/AbrirTurnoMenu';
+import CambioPersonalModal from './modulos/Bitacora/components/CambioPersonalModal';
+import DashboardIniciarTurno from './modulos/Bitacora/components/DashboardIniciarTurno';
+import VistaConsultaHojaTurno from './modulos/Bitacora/components/VistaConsultaHojaTurno';
+import VistaConsultaBitacora from './modulos/Bitacora/components/VistaConsultaBitacora';
+import VistaPermisosCaliente from './modulos/Bitacora/components/VistaPermisosCaliente';
+import AnalisisQuimicos from './modulos/AnalisisQuimicos/views/AnalisisQuimicos';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo } from './shared/apiConfig';
+import { supabase } from './shared/supabaseClient';
+import { detectarContingenciasGuardia } from './shared/constants/guardias';
 
 import { 
   ShieldCheck, 

@@ -4,8 +4,8 @@ import {
   Search, Calendar, Filter, FileText, Download, ArrowLeft, 
   Sun, Moon, ShieldCheck, RefreshCw, Eye, X, ChevronRight, FileDown
 } from 'lucide-react';
-import { getApiUrl } from '../apiConfig';
-import { supabase } from '../supabaseClient';
+import { getApiUrl } from '../../../shared/apiConfig';
+import { supabase } from '../../../shared/supabaseClient';
 
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
   const [fechaInicio, setFechaInicio] = useState('');
