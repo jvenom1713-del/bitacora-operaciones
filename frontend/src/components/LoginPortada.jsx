@@ -52,12 +52,12 @@ export default function LoginPortada({
     // Operadores Sala de Control: 1234
     if (esJefeOAdmin) {
       if (passTrim !== '12345') {
-        setErrorMsg('Contraseña incorrecta para Jefe de Turno. (La contraseña es 12345)');
+        setErrorMsg('Contraseña equivocada.');
         return;
       }
     } else {
       if (passTrim !== '1234') {
-        setErrorMsg('Contraseña incorrecta para Operador Sala de Control. (La contraseña es 1234)');
+        setErrorMsg('Contraseña equivocada.');
         return;
       }
     }
