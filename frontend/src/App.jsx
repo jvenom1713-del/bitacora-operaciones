@@ -8,6 +8,7 @@ import DashboardIniciarTurno from './components/DashboardIniciarTurno';
 import VistaConsultaHojaTurno from './components/VistaConsultaHojaTurno';
 import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
+import AnalisisQuimicos from './components/AnalisisQuimicos';
 import { getApiUrl, formatearEventosParaBitacora } from './apiConfig';
 import { supabase } from './supabaseClient';
 import { detectarContingenciasGuardia } from './constants/guardias';
@@ -960,6 +961,7 @@ export default function App() {
           turnoActivo={turnoActivo}
           onVerBitacoraEnCurso={() => setVistaActual('CONSULTA_HOJA_TURNO')}
           onBuscarBitacoras={() => setVistaActual('CONSULTA_BITACORA')}
+          onNavegarAnalisisQuimicos={() => setVistaActual('ANALISIS_QUIMICOS')}
           onSalir={() => setVistaActual('PORTADA')}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
@@ -978,7 +980,9 @@ export default function App() {
           turnoActual={turnoActual}
           onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE'); }}
           onNavegarBitacora={(accion) => {
-            if (accion === 'MENU_JEFE') {
+            if (accion === 'ANALISIS_QUIMICOS') {
+              setVistaActual('ANALISIS_QUIMICOS');
+            } else if (accion === 'MENU_JEFE') {
               setVistaActual('MENU_JEFE');
             } else if (accion === 'ABRIR_TURNO') {
               setTabInicialDashboard('EQUIPOS');
@@ -1188,6 +1192,15 @@ export default function App() {
         usuarioActual={usuarioActual}
         modoNocturno={modoNocturno}
         onVolver={() => setVistaActual(vistaAnteriorPermisos || 'MENU_OPERADOR')}
+      />
+    );
+  }
+
+  if (vistaActual === 'ANALISIS_QUIMICOS') {
+    return (
+      <AnalisisQuimicos
+        modoNocturno={modoNocturno}
+        onVolver={() => setVistaActual(usuarioActual?.rol_codigo === 'JEFE_TURNO' ? 'MENU_JEFE' : 'MENU_OPERADOR')}
       />
     );
   }
