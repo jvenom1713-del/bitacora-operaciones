@@ -930,46 +930,50 @@ ${senalesForzadasTexto}
       modoNocturno ? 'bg-[#040d1a] text-slate-100' : 'bg-slate-100 text-slate-900'
     }`}>
 
-      {/* BARRA SUPERIOR */}
-      <header className={`sticky top-0 z-40 border-b shadow-lg backdrop-blur-md px-6 py-4 transition-colors ${
-        modoNocturno ? 'bg-[#06162d]/95 border-blue-900/60' : 'bg-white/95 border-slate-300'
+      {/* BARRA SUPERIOR ESTRUCTURADA */}
+      <header className={`sticky top-0 z-40 border-b shadow-2xl backdrop-blur-xl px-6 py-3.5 transition-colors ${
+        modoNocturno ? 'bg-slate-950/95 border-slate-800' : 'bg-white/95 border-slate-200'
       }`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <FileText className="w-8 h-8 text-orange-500 shrink-0" />
+            <div className="p-2.5 bg-gradient-to-tr from-orange-600 to-amber-600 rounded-xl shadow-md">
+              <FileText className="w-6 h-6 text-white shrink-0" />
+            </div>
             <div>
-              <h1 className="text-xl font-black text-orange-500 tracking-tight"><span className="text-white">G</span>METROPOLITANA</h1>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
-                Hoja de Turno Consolidada • Fecha: {fechaStr}
+              <h1 className="text-lg font-black text-orange-500 tracking-tight leading-none">
+                <span className="text-white">G</span>METROPOLITANA
+              </h1>
+              <p className="text-xs text-slate-400 font-medium mt-1">
+                Hoja de Turno Consolidada • Fecha: <strong className="text-cyan-400 font-mono">{fechaStr}</strong>
               </p>
             </div>
           </div>
 
           {/* Badge Centrado CENTRAL NUEVA RENCA */}
-          <div className="flex-1 flex justify-center px-2">
-            <span className="text-sm sm:text-base md:text-lg px-4 py-1.5 rounded-xl bg-orange-600 text-white font-black uppercase tracking-wider shadow-md text-center">
+          <div className="hidden sm:flex flex-1 justify-center px-2">
+            <span className="text-xs sm:text-sm px-4 py-1.5 rounded-xl bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white font-black uppercase tracking-wider shadow-lg text-center border border-orange-400/40">
               CENTRAL NUEVA RENCA
             </span>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            {/* Badge de Estado en la parte derecha */}
+            {/* Badge de Estado */}
             {estadoTurnoCierre === 'CERRADO' ? (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/30 text-red-300 border border-red-500/60 text-xs font-black shadow-md">
-                <Lock className="w-4 h-4 text-red-500 shrink-0" />
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/80 text-red-300 border border-red-500/60 text-xs font-black shadow-md">
+                <Lock className="w-4 h-4 text-red-400 shrink-0" />
                 <span>BITÁCORA CERRADA</span>
               </span>
             ) : estadoTurnoCierre === 'EN_REVISION' ? (
-              <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black shadow-md animate-pulse ${
+              <span className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black shadow-md animate-pulse ${
                 esJefeTurnoEfectivo
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50'
-                  : 'bg-red-600/30 text-red-300 border border-red-500/60'
+                  ? 'bg-amber-950/90 text-amber-300 border border-amber-400/60'
+                  : 'bg-red-950/90 text-red-300 border border-red-500/60'
               }`}>
                 <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>{esJefeTurnoEfectivo ? 'EN REVISIÓN JDT — PENDIENTE DE APROBACIÓN' : 'EN REVISIÓN POR JEFE DE TURNO'}</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black shadow-md">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 text-xs font-black shadow-md">
                 <Unlock className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>BITÁCORA ABIERTA</span>
               </span>
@@ -982,9 +986,9 @@ ${senalesForzadasTexto}
             )}
             <button
               onClick={onVolverMenu}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 border border-blue-400/40 cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 border border-blue-400/40 cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ArrowLeft className="w-4 h-4" />
               <span>Volver al Menú</span>
             </button>
           </div>
@@ -993,11 +997,11 @@ ${senalesForzadasTexto}
 
       {/* BANNER JDT */}
       {esJefeTurno && (
-        <div className="bg-emerald-900/40 border-b border-emerald-700/40 px-6 py-2">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-emerald-300">
+        <div className="bg-emerald-950/80 border-b border-emerald-800/80 px-6 py-2.5">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-emerald-300 font-medium">
             <AlertTriangle className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>
-              <strong>Jefe de Turno:</strong> Puede editar cualquier campo de esta hoja. Los cambios se sincronizan automáticamente con la bitácora del operador de sala de control.
+              <strong className="font-extrabold text-white">Jefe de Turno:</strong> Puede editar y personalizar cualquier campo de esta hoja consolidada. Los cambios se sincronizarán automáticamente.
             </span>
           </div>
         </div>
@@ -1005,96 +1009,98 @@ ${senalesForzadasTexto}
 
       <main id="hoja-turno-container" className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
-        {/* TARJETA DOTACIÓN */}
-        <div className={`rounded-xl border shadow-md overflow-hidden ${modoNocturno ? 'bg-[#091b33] border-blue-900/60' : 'bg-white border-slate-300'}`}>
-          <div className="bg-gradient-to-r from-blue-800 to-blue-900 px-4 py-2 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-between">
-            <span>CENTRAL NUEVA RENCA — INFORMACIÓN DEL TURNO Y DOTACIÓN</span>
-            <span className="font-mono text-[11px] text-cyan-300">FOLIO: {folioStr}</span>
+        {/* TARJETA DOTACIÓN DE PERSONAL */}
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+            <span className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-orange-400" />
+              CENTRAL NUEVA RENCA — INFORMACIÓN DEL TURNO Y DOTACIÓN
+            </span>
+            <span className="font-mono text-xs text-cyan-400 font-bold bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">FOLIO: {folioStr}</span>
           </div>
-          <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 p-4 text-xs font-semibold text-center ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 text-xs font-semibold">
             {[
-              { label: 'Rotación Guardia', value: equipoTurno?.rotacion || 'TIGRES', color: modoNocturno ? 'text-amber-400' : 'text-amber-700' },
-              { label: 'Jefe de Turno (JDT)', value: equipoTurno?.jdt || 'Norman Galaz', color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
-              { label: 'Operador Sala Control (OSC)', value: equipoTurno?.osc || 'Jorge Albornoz', color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
-              { label: 'Operador Turno (OT)', value: equipoTurno?.ot || 'Matías Cisternas', color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
+              { label: 'Rotación Guardia', value: equipoTurno?.rotacion || 'TIGRES', color: 'text-amber-400' },
+              { label: 'Jefe de Turno (JDT)', value: equipoTurno?.jdt || 'Norman Galaz', color: 'text-cyan-300' },
+              { label: 'Operador Sala Control (OSC)', value: equipoTurno?.osc || 'Jorge Albornoz', color: 'text-emerald-300' },
+              { label: 'Operador Turno (OT)', value: equipoTurno?.ot || 'Matías Cisternas', color: 'text-purple-300' },
             ].map((item, i) => (
-              <div key={i} className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <span className={`${modoNocturno ? 'text-slate-400' : 'text-slate-500'} block text-[10px] uppercase`}>{item.label}:</span>
-                <strong className={`${item.color} font-black text-sm`}>{item.value}</strong>
+              <div key={i} className={`p-3.5 rounded-xl border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">{item.label}</span>
+                <strong className={`${item.color} font-black text-sm block`}>{item.value}</strong>
               </div>
             ))}
           </div>
         </div>
 
         {/* ─── SECCIÓN 1: GENERACIÓN DIARIA ─────────────────────────── */}
-        <div className={`rounded-xl border shadow-xl overflow-hidden ${modoNocturno ? 'bg-[#091b33] border-blue-900/60' : 'bg-white border-slate-300'}`}>
-          <div className="bg-slate-800/90 px-4 py-3 border-b border-slate-700 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-cyan-400" />
+              <Layers className="w-4 h-4 text-cyan-400" />
               1. RESUMEN DE GENERACIÓN DIARIA — CENTRAL NUEVA RENCA
             </span>
           </div>
-          <div className={`p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+          <div className="p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs font-semibold">
             {[
-              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '52.9'} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
-              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4004'} MW`, color: modoNocturno ? 'text-emerald-400' : 'text-emerald-800' },
-              { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: modoNocturno ? 'text-amber-400' : 'text-amber-800' },
-              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '0'} hrs`, color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
-              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '22'} hrs`, color: modoNocturno ? 'text-purple-300' : 'text-purple-900' },
+              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '52.9'} USD/MWh`, color: 'text-cyan-300' },
+              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4004'} MW`, color: 'text-emerald-400' },
+              { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: 'text-amber-400' },
+              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '0'} hrs`, color: 'text-slate-100' },
+              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '22'} hrs`, color: 'text-purple-300' },
             ].map((item, i) => (
-              <div key={i} className={`p-3.5 rounded-xl border text-center ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <span className={`${modoNocturno ? 'text-slate-400' : 'text-slate-500'} block mb-1`}>{item.label}:</span>
-                <strong className={`${item.color} text-base font-mono font-black`}>{item.value}</strong>
+              <div key={i} className={`p-3.5 rounded-xl border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-1">{item.label}</span>
+                <strong className={`${item.color} text-base font-mono font-black block`}>{item.value}</strong>
               </div>
             ))}
           </div>
         </div>
 
         {/* ─── SECCIÓN 2: BITÁCORA OPERACIONAL DEL TURNO ─────────────── */}
-        <div className={`rounded-xl border shadow-xl overflow-hidden ${modoNocturno ? 'bg-[#091b33] border-blue-900/60' : 'bg-white border-slate-300'}`}>
-          <div className="bg-gradient-to-r from-blue-900 via-blue-950 to-blue-900 px-4 py-3 border-b border-blue-800 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-amber-400" />
+              <FileText className="w-4 h-4 text-amber-400" />
               2. BITÁCORA DIARIA DEL TURNO OPERATIVO
             </span>
             <div className="flex items-center gap-2">
               {esJefeTurno && !editandoBitacora && (
                 <button onClick={iniciarEditarBitacora}
-                  className="text-xs px-2.5 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 flex items-center gap-1 cursor-pointer transition-all">
-                  <Edit3 className="w-3 h-3" /> Editar
+                  className="text-xs px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 flex items-center gap-1 cursor-pointer transition-all">
+                  <Edit3 className="w-3.5 h-3.5" /> Editar
                 </button>
               )}
               {esJefeTurno && editandoBitacora && (
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   <button onClick={guardarBitacora}
-                    className="text-xs px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer">
-                    <Save className="w-3 h-3" /> Guardar
+                    className="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <Save className="w-3.5 h-3.5" /> Guardar
                   </button>
                   <button onClick={cancelarBitacora}
-                    className="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer">
-                    <X className="w-3 h-3" /> Cancelar
+                    className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <X className="w-3.5 h-3.5" /> Cancelar
                   </button>
                 </div>
               )}
             </div>
           </div>
 
-          <div className={`p-5 space-y-4 ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
-            {/* Central Nueva Renca */}
-            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-blue-900/40' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <span className={`font-bold block text-xs uppercase pb-1 flex items-center gap-2 border-b ${modoNocturno ? 'text-cyan-400 border-slate-800' : 'text-blue-900 border-slate-200'}`}>
-                Central Nueva Renca — Día {new Date().getDate()}
+          <div className="p-5">
+            <div className={`p-5 rounded-xl space-y-3 border ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+              <span className="font-extrabold block text-xs uppercase pb-2 text-cyan-400 border-b border-slate-800/80 flex items-center gap-2">
+                Central Nueva Renca — Registro de Novedades del Turno
               </span>
               {editandoBitacora ? (
                 <RichTextEditorField
                   value={borradorBitacora.nuevaRencaDia1 ?? textos.nuevaRencaDia1}
                   onChange={val => setBorradorBitacora(prev => ({ ...prev, nuevaRencaDia1: val }))}
                   placeholder="Escriba aquí los eventos operacionales de Central Nueva Renca..."
-                  className={modoNocturno ? 'border-blue-700/60 text-slate-100 bg-slate-950/80' : 'border-slate-300 text-slate-900 bg-white'}
+                  className={modoNocturno ? 'border-slate-700 text-slate-100 bg-slate-950/90' : 'border-slate-300 text-slate-900 bg-white'}
                 />
               ) : (
                 <div
-                  className={`font-sans leading-relaxed text-sm sm:text-base pt-1 font-normal whitespace-pre-line ${
+                  className={`font-sans leading-relaxed text-sm pt-1 font-normal whitespace-pre-line ${
                     modoNocturno ? 'text-slate-100 [&_b]:font-black [&_b]:text-amber-400 [&_div]:my-1' : 'text-slate-900 [&_b]:font-black [&_b]:text-blue-900 [&_div]:my-1'
                   }`}
                   dangerouslySetInnerHTML={{ __html: ((textos.nuevaRencaDia1 && textos.nuevaRencaDia1 !== 'Operación normal según consigna del Coordinador Eléctrico Nacional (CEN).') ? textos.nuevaRencaDia1 : (formatearEventosParaBitacora(eventosTurno) || textos.nuevaRencaDia1 || 'Sin novedades registradas para el turno operativo.')).replace(/\n/g, '<br/>') }}
@@ -1105,38 +1111,38 @@ ${senalesForzadasTexto}
         </div>
 
         {/* ─── SECCIÓN 3: FRAGILIDADES OPERACIONALES ─────────────────── */}
-        <div className={`rounded-xl border shadow-xl overflow-hidden ${modoNocturno ? 'bg-[#091b33] border-blue-900/60' : 'bg-white border-slate-300'}`}>
-          <div className="bg-amber-900/80 px-4 py-3 border-b border-amber-800 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-amber-400" />
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
               3. FRAGILIDADES OPERACIONALES (BOP & TURBINA VAPOR)
             </span>
             <div className="flex items-center gap-2">
               {esJefeTurno && !editandoFragilidades && (
                 <button onClick={iniciarEditarBitacora}
-                  className="text-xs px-2.5 py-1 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 rounded-lg border border-amber-500/40 flex items-center gap-1 cursor-pointer transition-all">
-                  <Edit3 className="w-3 h-3" /> Editar
+                  className="text-xs px-3 py-1 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 rounded-lg border border-amber-500/40 flex items-center gap-1 cursor-pointer transition-all">
+                  <Edit3 className="w-3.5 h-3.5" /> Editar
                 </button>
               )}
               {esJefeTurno && editandoFragilidades && (
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   <button onClick={guardarBitacora}
-                    className="text-xs px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer">
-                    <Save className="w-3 h-3" /> Guardar
+                    className="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <Save className="w-3.5 h-3.5" /> Guardar
                   </button>
                   <button onClick={cancelarBitacora}
-                    className="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer">
-                    <X className="w-3 h-3" /> Cancelar
+                    className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <X className="w-3.5 h-3.5" /> Cancelar
                   </button>
                 </div>
               )}
             </div>
           </div>
 
-          <div className={`p-5 space-y-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+          <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
             {/* BOP */}
-            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-amber-900/40' : 'bg-white border-amber-200 shadow-sm'}`}>
-              <span className={`font-bold block text-xs uppercase pb-1 border-b ${modoNocturno ? 'text-amber-400 border-slate-800' : 'text-amber-900 border-amber-200 font-extrabold'}`}>Sistemas Auxiliares BOP:</span>
+            <div className={`p-4 rounded-xl space-y-2 border transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+              <span className="font-extrabold block text-xs uppercase pb-2 text-amber-400 border-b border-slate-800/80">Sistemas Auxiliares BOP:</span>
               {editandoFragilidades ? (
                 <RichTextEditorField
                   value={borradorBitacora.bop ?? textos.bop}
@@ -1154,8 +1160,8 @@ ${senalesForzadasTexto}
               )}
             </div>
             {/* Turbina Vapor */}
-            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-amber-900/40' : 'bg-white border-amber-200 shadow-sm'}`}>
-              <span className={`font-bold block text-xs uppercase pb-1 border-b ${modoNocturno ? 'text-amber-400 border-slate-800' : 'text-amber-900 border-amber-200 font-extrabold'}`}>Turbina de Vapor (TV):</span>
+            <div className={`p-4 rounded-xl space-y-2 border transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+              <span className="font-extrabold block text-xs uppercase pb-2 text-amber-400 border-b border-slate-800/80">Turbina de Vapor (TV):</span>
               {editandoFragilidades ? (
                 <RichTextEditorField
                   value={borradorBitacora.turbinaVapor ?? textos.turbinaVapor}
@@ -1176,38 +1182,38 @@ ${senalesForzadasTexto}
         </div>
 
         {/* ─── SECCIÓN 4: INSTRUCCIONES OPERACIONALES Y SEÑALES FORZADAS ── */}
-        <div className={`rounded-xl border shadow-xl overflow-hidden ${modoNocturno ? 'bg-[#091b33] border-blue-900/60' : 'bg-white border-slate-300'}`}>
-          <div className="bg-slate-800/90 px-4 py-3 border-b border-slate-700 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-amber-400" />
+              <Zap className="w-4 h-4 text-amber-400" />
               4. INSTRUCCIONES OPERACIONALES Y SEÑALES FORZADAS
             </span>
             <div className="flex items-center gap-2">
               {esJefeTurno && !editandoInstrucciones && (
                 <button onClick={() => setEditandoInstrucciones(true)}
-                  className="text-xs px-2.5 py-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 rounded-lg border border-blue-500/40 flex items-center gap-1 cursor-pointer transition-all">
-                  <Edit3 className="w-3 h-3" /> Editar
+                  className="text-xs px-3 py-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 rounded-lg border border-blue-500/40 flex items-center gap-1 cursor-pointer transition-all">
+                  <Edit3 className="w-3.5 h-3.5" /> Editar
                 </button>
               )}
               {esJefeTurno && editandoInstrucciones && (
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   <button onClick={() => { setEditandoInstrucciones(false); mostrarGuardado(); }}
-                    className="text-xs px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer">
-                    <Save className="w-3 h-3" /> Guardar
+                    className="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <Save className="w-3.5 h-3.5" /> Guardar
                   </button>
                   <button onClick={() => setEditandoInstrucciones(false)}
-                    className="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer">
-                    <X className="w-3 h-3" /> Cancelar
+                    className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <X className="w-3.5 h-3.5" /> Cancelar
                   </button>
                 </div>
               )}
             </div>
           </div>
 
-          <div className={`p-5 space-y-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
-            {/* BLOQUE 1 (ARRIBA): SEÑALES FORZADAS Y/O MANUALES EN PLANTA */}
-            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-amber-200 shadow-sm'}`}>
-              <strong className={`block text-xs uppercase pb-1.5 flex items-center gap-2 border-b ${modoNocturno ? 'text-amber-400 border-slate-800' : 'text-amber-900 border-amber-200 font-extrabold'}`}>
+          <div className="p-5 space-y-4 text-xs font-semibold">
+            {/* BLOQUE 1: SEÑALES FORZADAS Y/O MANUALES EN PLANTA */}
+            <div className={`p-4 rounded-xl space-y-2 border transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+              <strong className="block text-xs uppercase pb-2 text-amber-400 border-b border-slate-800/80 flex items-center gap-2 font-extrabold">
                 <ShieldCheck className="w-4 h-4 text-amber-400" />
                 Señales Forzadas y/o Manuales en Planta
               </strong>
@@ -1219,10 +1225,10 @@ ${senalesForzadasTexto}
                   className={modoNocturno ? 'border-amber-700/60 text-amber-200 bg-slate-950/80' : 'border-slate-300 text-slate-900 bg-white'}
                 />
               ) : senalesEstructuradas && senalesEstructuradas.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
                   {/* MKVI CTG */}
-                  <div className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-[#040d1a] border-blue-900/60' : 'bg-slate-50 border-slate-200'}`}>
-                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b pb-1 mb-1.5 tracking-wider">MKVI CTG</div>
+                  <div className={`p-3 rounded-xl border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b border-slate-800 pb-1 mb-2 tracking-wider">MKVI CTG</div>
                     {senalesEstructuradas.filter(s => s.ctg && s.ctg !== '—' && String(s.ctg).trim() !== '').length === 0 ? (
                       <span className="italic opacity-50 text-[11px]">Sin registros</span>
                     ) : (
@@ -1232,8 +1238,8 @@ ${senalesForzadasTexto}
                     )}
                   </div>
                   {/* MKVI STG */}
-                  <div className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-[#040d1a] border-blue-900/60' : 'bg-slate-50 border-slate-200'}`}>
-                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b pb-1 mb-1 tracking-wider">MKVI STG</div>
+                  <div className={`p-3 rounded-xl border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b border-slate-800 pb-1 mb-2 tracking-wider">MKVI STG</div>
                     {senalesEstructuradas.filter(s => s.stg && s.stg !== '—' && String(s.stg).trim() !== '').length === 0 ? (
                       <span className="italic opacity-50 text-[11px]">Sin registros</span>
                     ) : (
@@ -1243,8 +1249,8 @@ ${senalesForzadasTexto}
                     )}
                   </div>
                   {/* BOP */}
-                  <div className={`p-2.5 rounded-lg border ${modoNocturno ? 'bg-[#040d1a] border-blue-900/60' : 'bg-slate-50 border-slate-200'}`}>
-                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b pb-1 mb-1 tracking-wider">BOP</div>
+                  <div className={`p-3 rounded-xl border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="font-black text-[11px] text-cyan-400 uppercase border-b border-slate-800 pb-1 mb-2 tracking-wider">BOP</div>
                     {senalesEstructuradas.filter(s => s.bop1 && s.bop1 !== '—' && String(s.bop1).trim() !== '').length === 0 ? (
                       <span className="italic opacity-50 text-[11px]">Sin registros</span>
                     ) : (
@@ -1264,9 +1270,9 @@ ${senalesForzadasTexto}
               )}
             </div>
 
-            {/* BLOQUE 2 (ABAJO): INSTRUCCIONES OPERACIONALES */}
-            <div className={`p-4 rounded-xl space-y-2 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-blue-200 shadow-sm'}`}>
-              <strong className={`block text-xs uppercase pb-1.5 flex items-center gap-2 border-b ${modoNocturno ? 'text-cyan-400 border-slate-800' : 'text-blue-900 border-blue-200 font-extrabold'}`}>
+            {/* BLOQUE 2: INSTRUCCIONES OPERACIONALES */}
+            <div className={`p-4 rounded-xl space-y-2 border transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
+              <strong className="block text-xs uppercase pb-2 text-cyan-400 border-b border-slate-800/80 flex items-center gap-2 font-extrabold">
                 <CheckCircle2 className="w-4 h-4 text-cyan-400" />
                 Instrucciones Operacionales
               </strong>
@@ -1282,7 +1288,7 @@ ${senalesForzadasTexto}
                 <div className="space-y-1.5 pt-1">
                   {listaInstruccionesLocales.map((inst, idx) => (
                     <div key={inst.id || idx} className={`flex items-start gap-2 text-sm font-normal ${ modoNocturno ? 'text-slate-200' : 'text-slate-800'}`}>
-                      <span className={`shrink-0 mt-0.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black border ${
+                      <span className={`shrink-0 mt-0.5 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-black border ${
                         inst.estado === 'Activa'
                           ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                           : inst.estado === 'Pendiente'
@@ -1303,28 +1309,28 @@ ${senalesForzadasTexto}
         </div>
 
         {/* ─── SECCIÓN 5: MATRIZ DE EQUIPOS EN OPERACIÓN (EDITABLE JDT) ── */}
-        <div className={`rounded-xl border shadow-xl overflow-hidden ${modoNocturno ? 'bg-[#091b33] border-blue-900/60' : 'bg-white border-slate-300'}`}>
-          <div className="bg-slate-800/90 px-4 py-3 border-b border-slate-700 font-extrabold text-sm text-white uppercase tracking-wider flex items-center justify-between">
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-amber-400" />
+              <CheckCircle2 className="w-4 h-4 text-amber-400" />
               5. EQUIPOS CON INDISPONIBILIDAD — CENTRAL NUEVA RENCA
             </span>
             <div className="flex items-center gap-2">
               {esJefeTurno && !editandoEquipos && (
                 <button onClick={iniciarEditarEquipos}
-                  className="text-xs px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded-lg border border-emerald-500/40 flex items-center gap-1 cursor-pointer transition-all">
-                  <Edit3 className="w-3 h-3" /> Editar Estados
+                  className="text-xs px-3 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded-lg border border-emerald-500/40 flex items-center gap-1 cursor-pointer transition-all">
+                  <Edit3 className="w-3.5 h-3.5" /> Editar Estados
                 </button>
               )}
               {esJefeTurno && editandoEquipos && (
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   <button onClick={guardarEquipos}
-                    className="text-xs px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer">
-                    <Save className="w-3 h-3" /> Guardar
+                    className="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <Save className="w-3.5 h-3.5" /> Guardar
                   </button>
                   <button onClick={cancelarEquipos}
-                    className="text-xs px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer">
-                    <X className="w-3 h-3" /> Cancelar
+                    className="text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg flex items-center gap-1 cursor-pointer font-bold">
+                    <X className="w-3.5 h-3.5" /> Cancelar
                   </button>
                 </div>
               )}
@@ -1439,14 +1445,14 @@ ${senalesForzadasTexto}
         </div>
 
         {/* ─── SECCIÓN 5.5: PERMISOS EN CALIENTE SIN CERRAR ─────────────────── */}
-        <div className={`rounded-2xl shadow-xl border overflow-hidden ${modoNocturno ? 'bg-slate-900/90 border-orange-900/60' : 'bg-white border-orange-300'}`}>
+        <div className={`rounded-2xl border shadow-xl overflow-hidden backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
           {/* Header */}
-          <div className={`flex items-center justify-between px-6 py-4 border-b ${modoNocturno ? 'bg-orange-950/60 border-orange-900/40' : 'bg-orange-50 border-orange-200'}`}>
-            <span className={`font-bold text-sm flex items-center gap-2 ${modoNocturno ? 'text-orange-300' : 'text-orange-800'}`}>
-              <Flame className="w-5 h-5 text-orange-500" />
+          <div className={`px-6 py-3.5 border-b font-black text-xs uppercase tracking-wider flex items-center justify-between ${modoNocturno ? 'bg-slate-950/80 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+            <span className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-500" />
               5.5. PERMISOS DE TRABAJO EN CALIENTE — SIN CERRAR AL CIERRE DE TURNO
             </span>
-            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${
+            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-black border ${
               permisosAbiertos.length === 0
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                 : 'bg-orange-500/20 text-orange-300 border-orange-500/50 animate-pulse'
@@ -1460,17 +1466,17 @@ ${senalesForzadasTexto}
             </span>
           </div>
 
-          <div className="p-4 sm:p-6">
+          <div className="p-5">
             {permisosAbiertos.length === 0 ? (
               /* Sin permisos abiertos */
-              <div className={`flex items-center gap-3 p-4 rounded-xl border ${modoNocturno ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-                <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
-                <span className="text-sm font-semibold">No hay permisos de trabajo en caliente activos sin cerrar. Turno en orden.</span>
+              <div className={`flex items-center gap-3 p-4 rounded-xl border ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span className="text-xs font-bold">No hay permisos de trabajo en caliente activos sin cerrar. Turno en orden.</span>
               </div>
             ) : (
               <>
                 {/* Alerta de advertencia */}
-                <div className={`flex items-center gap-3 p-3 rounded-xl border mb-4 ${modoNocturno ? 'bg-orange-950/50 border-orange-700/50 text-orange-200' : 'bg-orange-50 border-orange-300 text-orange-800'}`}>
+                <div className={`flex items-center gap-3 p-3.5 rounded-xl border mb-4 ${modoNocturno ? 'bg-orange-950/60 border-orange-800/60 text-orange-200' : 'bg-orange-50 border-orange-300 text-orange-800'}`}>
                   <AlertTriangle className="w-5 h-5 text-orange-400 shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-wide">
                     Atención: existen {permisosAbiertos.length} permiso(s) de trabajo en caliente sin cierre formal al momento del término del turno. Verificar y gestionar con el equipo entrante.
@@ -1478,10 +1484,10 @@ ${senalesForzadasTexto}
                 </div>
 
                 {/* Tabla de permisos abiertos */}
-                <div className="overflow-x-auto rounded-xl border border-orange-500/30">
+                <div className="overflow-x-auto rounded-xl border border-slate-800">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className={`text-left ${modoNocturno ? 'bg-orange-950/70 text-orange-300' : 'bg-orange-100 text-orange-800'}`}>
+                      <tr className={`text-left border-b ${modoNocturno ? 'bg-slate-950 text-slate-300 border-slate-800' : 'bg-slate-100 text-slate-800 border-slate-200'}`}>
                         <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">N° Permiso</th>
                         <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Ubicación Técnica</th>
                         <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Solicitado Por</th>
@@ -1494,10 +1500,10 @@ ${senalesForzadasTexto}
                       {permisosAbiertos.map((p, idx) => (
                         <tr
                           key={p.id || idx}
-                          className={`border-t ${modoNocturno ? 'border-slate-800 odd:bg-orange-950/20 even:bg-slate-900/40' : 'border-orange-100 odd:bg-orange-50/60 even:bg-white'}`}
+                          className={`border-t ${modoNocturno ? 'border-slate-800/80 odd:bg-slate-900/50 even:bg-slate-950/50' : 'border-slate-200 odd:bg-slate-50 even:bg-white'}`}
                         >
                           <td className="px-4 py-3">
-                            <span className={`font-black text-sm ${modoNocturno ? 'text-orange-300' : 'text-orange-700'}`}>{p.numero || '—'}</span>
+                            <span className={`font-black text-xs ${modoNocturno ? 'text-orange-400' : 'text-orange-700'}`}>{p.numero || '—'}</span>
                           </td>
                           <td className={`px-4 py-3 font-medium ${modoNocturno ? 'text-slate-200' : 'text-slate-800'}`}>
                             {p.ubicacion || '—'}
@@ -1512,7 +1518,7 @@ ${senalesForzadasTexto}
                             {p.fecha_apertura || '—'}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black border bg-orange-500/20 text-orange-300 border-orange-500/50">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black border bg-orange-500/20 text-orange-300 border-orange-500/50">
                               <Flame className="w-3 h-3" />
                               ABIERTO
                             </span>
@@ -1533,27 +1539,27 @@ ${senalesForzadasTexto}
         </div>
 
         {/* SECCIÓN 6: CIERRE DE TURNO Y RESUMEN OPERATIVO */}
-        <div id="seccion-6-aprobacion" className={`rounded-2xl p-6 shadow-xl space-y-6 border ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-300'}`}>
+        <div id="seccion-6-aprobacion" className={`rounded-2xl p-6 shadow-xl space-y-5 border backdrop-blur-md ${modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'}`}>
           <div className={`flex items-center justify-between border-b pb-4 ${modoNocturno ? 'border-slate-800' : 'border-slate-200'}`}>
-            <span className={`font-bold text-sm flex items-center gap-2 ${modoNocturno ? 'text-emerald-400' : 'text-emerald-800'}`}>
-              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+            <span className={`font-black text-xs uppercase tracking-wider flex items-center gap-2 ${modoNocturno ? 'text-emerald-400' : 'text-emerald-800'}`}>
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
               6. FIRMA Y APROBACIÓN DE CIERRE DE TURNO
             </span>
 
-            {/* Badge de Estado en el lado derecho */}
+            {/* Badge de Estado */}
             <div className="flex items-center gap-2">
               {estadoTurnoCierre === 'CERRADO' ? (
-                <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/30 text-red-300 border border-red-500/60 text-xs font-black shadow-md">
-                  <Lock className="w-4 h-4 text-red-500 shrink-0" />
+                <span className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-950/80 text-red-300 border border-red-500/60 text-xs font-black shadow-md">
+                  <Lock className="w-4 h-4 text-red-400 shrink-0" />
                   <span>BITÁCORA CERRADA</span>
                 </span>
               ) : estadoTurnoCierre === 'EN_REVISION' ? (
-                <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-xs font-black shadow-md animate-pulse">
+                <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-950/90 text-amber-300 border border-amber-400/60 text-xs font-black shadow-md animate-pulse">
                   <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>EN REVISIÓN POR JEFE DE TURNO</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black shadow-md">
+                <span className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 text-xs font-black shadow-md">
                   <Unlock className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>BITÁCORA ABIERTA</span>
                 </span>
@@ -1567,7 +1573,7 @@ ${senalesForzadasTexto}
               <button
                 onClick={handleSolicitarCierreOperador}
                 disabled={enviandoCierre}
-                className="p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.02] active:scale-95 transition-all"
+                className="p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all"
               >
                 <Send className="w-5 h-5 text-cyan-300" />
                 <div className="text-left">
@@ -1586,7 +1592,7 @@ ${senalesForzadasTexto}
                 <button
                   onClick={handleAbrirModalPassword}
                   disabled={enviandoCierre}
-                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.02] active:scale-95 transition-all"
+                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all"
                 >
                   <ShieldCheck className="w-5 h-5 text-white" />
                   <div className="text-left">
