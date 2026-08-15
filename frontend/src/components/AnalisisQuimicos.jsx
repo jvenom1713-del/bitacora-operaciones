@@ -288,32 +288,18 @@ function FilaMuestraRow({
         );
       })}
 
-      {/* Acciones CRUD */}
-      <td className="p-2 text-center">
-        <div className="flex items-center justify-center gap-2">
+      {/* Acciones / Eliminar Fila Extra */}
+      <td className="p-2 text-center w-16">
+        {isDeletable && (
           <button
-            onClick={() => handleGuardarMuestra(subpuntoActivo, hora, paramsLocal)}
+            onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
             disabled={guardando}
-            className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center gap-1 shadow-md transition-all cursor-pointer"
-            title="Guardar Muestra y Auditar en Supabase"
+            className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer inline-flex items-center justify-center"
+            title="Eliminar esta fila extra"
           >
-            <Save className="w-3.5 h-3.5" />
-            <span>Guardar</span>
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
-
-          {isDeletable ? (
-            <button
-              onClick={() => handleEliminarFilaRow(subpuntoActivo, filaObj)}
-              disabled={guardando}
-              className="p-2 rounded-lg bg-red-950/60 border border-red-800 text-red-400 hover:bg-red-900 transition-all cursor-pointer shrink-0"
-              title="Eliminar esta fila extra"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <div className="w-8 shrink-0" />
-          )}
-        </div>
+        )}
       </td>
     </tr>
   );
@@ -1226,7 +1212,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                 </span>
                               </th>
                             ))}
-                          <th className="p-3.5 text-center w-36 shrink-0">Acciones / Guardar</th>
+                           <th className="p-3.5 text-center w-16 shrink-0">Acciones</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/60">
