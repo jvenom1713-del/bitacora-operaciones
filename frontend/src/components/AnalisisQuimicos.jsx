@@ -71,9 +71,11 @@ const PUNTOS_MUESTREO = [
     parametros: [
       { key: 'ph', label: 'pH', min: 8.8, max: 9.4, textRango: '8,8 - 9,4' },
       { key: 'conductividad', label: 'Conductividad', maxStrict: 20.0, unit: 'uS/cm', textRango: '< 20 uS/cm' },
-      { key: 'amoniaco', label: 'Amoniaco', maxStrict: 0.5, unit: 'ppm', textRango: '< 0,5 ppm' },
+      { key: 'silice', label: 'Silice', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' },
       { key: 'dureza', label: 'Dureza', maxStrict: 0.0, unit: 'ppm', textRango: '0 ppm' },
-      { key: 'dosisAminaBps', label: 'Dosis Amina BPS', textRango: '-' }
+      { key: 'amoniaco', label: 'Amoniaco', maxStrict: 0.5, unit: 'ppm', textRango: '< 0,5 ppm' },
+      { key: 'cobre', label: 'Cobre [Cu]', maxStrict: 2.0, unit: 'ppb', textRango: '< 2 ppb' },
+      { key: 'oxigeno', label: 'Oxigeno', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' }
     ]
   },
   {
@@ -195,7 +197,7 @@ function FilaMuestraRow({
       {/* Inputs por cada Parámetro Químico con valores controlados seguros */}
       {categoriaObjActiva.parametros
         .filter(param => {
-          if (subpuntoActivo === 'CALDERA_BAJA' && (param.key === 'amoniaco' || param.key === 'dosisAminaBps')) {
+          if (subpuntoActivo === 'CALDERA_BAJA' && (param.key === 'silice' || param.key === 'amoniaco' || param.key === 'cobre' || param.key === 'oxigeno')) {
             return false;
           }
           if (param.key === 'silice' && (subpuntoActivo === 'VAPOR_SAT_ALTA' || subpuntoActivo === 'VAPOR_SAT_MEDIA' || subpuntoActivo === 'VAPOR_SAT_BAJA')) {
@@ -204,10 +206,11 @@ function FilaMuestraRow({
           return true;
         })
         .map((param) => {
-          const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
+          const esCobreCondensado = (subpuntoActivo === 'CONDENSADO' && param.key === 'cobre');
+          const esDurezaOHierroDomos = ((subpuntoActivo === 'DOMO_ALTA' || subpuntoActivo === 'DOMO_MEDIA') && (param.key === 'dureza' || param.key === 'hierro'));
           const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
           const esSiliceVaporSC = (subpuntoActivo === 'VAPOR_SC_ALTA' && param.key === 'silice');
-          const deshabilitadoEnEsteHorario = (esDurezaOHierro || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00';
+          const deshabilitadoEnEsteHorario = (esCobreCondensado || esDurezaOHierroDomos || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00';
 
         if (deshabilitadoEnEsteHorario) {
           return (
@@ -1155,7 +1158,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                           <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
                           {catObj.parametros
                             .filter(p => {
-                              if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'amoniaco' || p.key === 'dosisAminaBps')) {
+                              if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'silice' || p.key === 'amoniaco' || p.key === 'cobre' || p.key === 'oxigeno')) {
                                 return false;
                               }
                               if (p.key === 'silice' && (subpuntoActivoEnCat === 'VAPOR_SAT_ALTA' || subpuntoActivoEnCat === 'VAPOR_SAT_MEDIA' || subpuntoActivoEnCat === 'VAPOR_SAT_BAJA')) {
