@@ -930,8 +930,8 @@ def upload_programacion_coordinador():
 
     return jsonify({
         "status": "ok", "archivo": file.filename, "despachoCNR": "En servicio",
-        "sistemaProm": str(resumen.get("sistema_prom_mw", "330.0")),
-        "potEspera": str(resumen.get("potencia_esperada_mw", "5046")),
+        "sistemaProm": str(resumen.get("sistema_prom_mw", "56.7")),
+        "potEspera": str(resumen.get("potencia_esperada_mw", "4004")),
         "fuegosSuplemen": str(resumen["mw_fuegos_suplementarios"]),
         "hrsCargaBase": str(resumen["hrs_carga_base"]),
         "hrsMinTec": str(resumen["hrs_minimo_tecnico"]),
@@ -951,8 +951,8 @@ def actualizar_datos_cen():
             "status": "ok",
             "fuente": resumen.get("fuente", "coordinador.cl"),
             "despachoCNR": "En servicio",
-            "sistemaProm": str(resumen.get("sistema_prom_mw", "330.0")),
-            "potEspera": str(resumen.get("potencia_esperada_mw", "5046")),
+            "sistemaProm": str(resumen.get("sistema_prom_mw", "56.7")),
+            "potEspera": str(resumen.get("potencia_esperada_mw", "4004")),
             "fuegosSuplemen": str(resumen["mw_fuegos_suplementarios"]),
             "hrsCargaBase": str(resumen["hrs_carga_base"]),
             "hrsMinTec": str(resumen["hrs_minimo_tecnico"]),

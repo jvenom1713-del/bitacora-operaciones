@@ -1187,7 +1187,7 @@ ${extraHtml}
       const sisProm = Number(sisPromVal) || 0;
       let potEspNum = Number(potEspVal);
       if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0) {
-        potEspNum = 5046;
+        potEspNum = 4004;
       }
 
       return {
@@ -1242,7 +1242,7 @@ ${extraHtml}
     return {
       despachoCNR: 'En servicio',
       sistemaProm: '56.7',
-      potEspera: '5046',
+      potEspera: '4004',
       fuegosSuplemen: '0',
       hrsCargaBase: '18',
       hrsMinTec: '6',

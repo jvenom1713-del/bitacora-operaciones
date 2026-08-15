@@ -1888,7 +1888,7 @@ ${senalesForzadasTexto}
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Potencia Esperada</span>
-                    <strong className="text-emerald-400 text-sm font-mono font-bold">{datosGen?.potEspera || '5046'} MW</strong>
+                    <strong className="text-emerald-400 text-sm font-mono font-bold">{datosGen?.potEspera || '4004'} MW</strong>
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Fuegos Suplementarios</span>

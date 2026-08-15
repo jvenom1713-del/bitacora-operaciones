@@ -169,12 +169,12 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 def calcular_resumen_simulado() -> Dict[str, Any]:
     """Valores de fallback en caso de no haber conexión al archivo"""
     return {
-        "sistema_prom_mw": 52.9,
+        "sistema_prom_mw": 56.7,
         "costo_marginal_usd_mw": 40.3,
-        "potencia_esperada_mw": 5046,
+        "potencia_esperada_mw": 4004,
         "mw_fuegos_suplementarios": 0,
-        "hrs_carga_base": 2,
-        "hrs_minimo_tecnico": 14,
+        "hrs_carga_base": 18,
+        "hrs_minimo_tecnico": 6,
         "hrs_fuegos_suplementarios": 0
     }
 
