@@ -40,12 +40,31 @@ export default function App() {
   const [vistaActual, setVistaActual] = useState('PORTADA'); // 'PORTADA', 'MENU_OPERADOR', 'ABRIR_TURNO_MENU', 'BITACORA_DASHBOARD'
   const [tabInicialDashboard, setTabInicialDashboard] = useState('EQUIPOS');
   const [modoNocturno, setModoNocturno] = useState(true);
-  const [equipoTurnoSeleccionado, setEquipoTurnoSeleccionado] = useState({
-    rotacion: 'TIGRES',
-    jdt: 'Ariel Torres',
-    osc: 'Jorge Albornoz',
-    ot: 'Matías Cisternas'
+  const [vistaAnteriorCambioPersonal, setVistaAnteriorCambioPersonal] = useState('ABRIR_TURNO_MENU');
+  const [equipoTurnoSeleccionado, setEquipoTurnoSeleccionado] = useState(() => {
+    try {
+      const saved = localStorage.getItem('equipo_turno_actual');
+      return saved ? JSON.parse(saved) : {
+        rotacion: 'TIGRES',
+        jdt: 'Ariel Torres',
+        osc: 'Jorge Albornoz',
+        ot: 'Matías Cisternas'
+      };
+    } catch {
+      return {
+        rotacion: 'TIGRES',
+        jdt: 'Ariel Torres',
+        osc: 'Jorge Albornoz',
+        ot: 'Matías Cisternas'
+      };
+    }
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('equipo_turno_actual', JSON.stringify(equipoTurnoSeleccionado));
+    } catch (e) {}
+  }, [equipoTurnoSeleccionado]);
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
 
@@ -968,8 +987,9 @@ export default function App() {
           onVolver={() => setVistaActual('MENU_OPERADOR')}
           onNavegarCambioPersonal={(datosEquipo) => {
             if (datosEquipo) {
-              setEquipoTurnoSeleccionado(datosEquipo);
+              setEquipoTurnoSeleccionado(prev => ({ ...prev, ...datosEquipo }));
             }
+            setVistaAnteriorCambioPersonal('ABRIR_TURNO_MENU');
             setVistaActual('CAMBIO_PERSONAL_MENU');
           }}
           modoNocturno={modoNocturno}
@@ -985,14 +1005,14 @@ export default function App() {
       <>
         <CambioPersonalModal 
           isOpen={true}
-          onClose={() => setVistaActual('ABRIR_TURNO_MENU')}
+          onClose={() => setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU')}
           usuarioActual={usuarioActual}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
           equipoTurno={equipoTurnoSeleccionado}
           onConfirmarReemplazo={(nuevoEquipo) => {
             setEquipoTurnoSeleccionado(prev => ({ ...prev, ...nuevoEquipo }));
-            setVistaActual('ABRIR_TURNO_MENU');
+            setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU');
           }}
         />
         {demoBarra}
@@ -1019,6 +1039,13 @@ export default function App() {
           onActualizarTurno={cargarTurnoActivo}
           onAprobarBitacora={handleAprobarBitacora}
           onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('BITACORA_DASHBOARD'); setVistaActual('PERMISOS_CALIENTE'); }}
+          onCambiarPersonal={(datosEquipo) => {
+            if (datosEquipo) {
+              setEquipoTurnoSeleccionado(prev => ({ ...prev, ...datosEquipo }));
+            }
+            setVistaAnteriorCambioPersonal('BITACORA_DASHBOARD');
+            setVistaActual('CAMBIO_PERSONAL_MENU');
+          }}
           equipoTurno={equipoTurnoSeleccionado}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}

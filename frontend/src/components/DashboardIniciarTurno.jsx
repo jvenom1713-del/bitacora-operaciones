@@ -142,6 +142,7 @@ export default function DashboardIniciarTurno({
   modoNocturno, 
   setModoNocturno,
   onVolver,
+  onCambiarPersonal,
   tabInicial = 'EQUIPOS',
   // Props compartidas desde App.jsx
   textoBitacora,
@@ -1665,29 +1666,38 @@ ${extraHtml}
               )}
             </div>
           </div>
-          <div className={`text-center font-black text-[11px] sm:text-xs py-1 uppercase tracking-wider border-b ${
+          <div className={`flex items-center justify-between px-4 py-1.5 uppercase tracking-wider border-b ${
             modoNocturno ? 'bg-[#0e3563] text-blue-200 border-blue-800' : 'bg-slate-200/90 text-slate-800 border-slate-300 font-black'
           }`}>
-            EQUIPO DE TURNO
+            <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
+            <button
+              type="button"
+              onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}
+              title="Cambiar o elegir personal en turno"
+              className="flex items-center gap-1.5 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-extrabold text-[11px] py-1 px-3 rounded-lg shadow-md transition-all transform hover:scale-[1.02] cursor-pointer"
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>Elegir / Cambiar Personal</span>
+            </button>
           </div>
           <div className={`grid grid-cols-4 text-center font-bold text-xs sm:text-sm py-2 divide-x ${
             modoNocturno ? 'bg-[#091b33] divide-blue-800 text-white' : 'bg-slate-100/90 divide-slate-300/80 text-slate-900'
           }`}>
-            <div>
+            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>TURNO</span>
               <span className="text-amber-500 font-black text-xs sm:text-sm">
                 {obtenerInfoTurnoActual().nombre} ({obtenerInfoTurnoActual().horario}) - {equipoTurno.rotacion || 'TIGRES'}
               </span>
             </div>
-            <div>
+            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>JDT</span>
               <span className={`font-black text-xs sm:text-sm ${modoNocturno ? 'text-white' : 'text-slate-900'}`}>{equipoTurno.jdt || 'Ariel Torres'}</span>
             </div>
-            <div>
+            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OSC</span>
               <span className={`font-black text-xs sm:text-sm ${modoNocturno ? 'text-white' : 'text-slate-900'}`}>{equipoTurno.osc || 'Jorge Albornoz'}</span>
             </div>
-            <div>
+            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OT</span>
               <span className={`font-black text-xs sm:text-sm ${modoNocturno ? 'text-white' : 'text-slate-900'}`}>{equipoTurno.ot || 'Matías Cisternas'}</span>
             </div>
@@ -2216,23 +2226,31 @@ ${extraHtml}
                   <div className="bg-blue-800 text-white text-center font-black text-xs sm:text-sm py-1 uppercase tracking-widest print:bg-blue-800 print:text-white">
                     BITACORA DIARIA
                   </div>
-                  <div className="bg-blue-100 text-blue-900 text-center font-black text-[11px] sm:text-xs py-0.5 uppercase tracking-wider border-b border-blue-200 print:bg-blue-100 print:text-blue-900">
-                    EQUIPO DE TURNO
+                  <div className="bg-blue-100 text-blue-900 font-black text-[11px] sm:text-xs py-1 px-3 uppercase tracking-wider border-b border-blue-200 print:bg-blue-100 print:text-blue-900 flex items-center justify-between">
+                    <span>EQUIPO DE TURNO</span>
+                    <button
+                      type="button"
+                      onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}
+                      className="print:hidden text-[11px] bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-0.5 rounded font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-1"
+                    >
+                      <UserCheck className="w-3 h-3" />
+                      <span>Elegir Personal</span>
+                    </button>
                   </div>
                   <div className="grid grid-cols-4 text-center font-bold text-xs py-2 divide-x divide-slate-300 bg-white">
-                    <div>
+                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">TURNO</span>
                       <span className="text-amber-600 font-black text-xs sm:text-sm">Día - {equipoTurno.rotacion || 'TIGRES'}</span>
                     </div>
-                    <div>
+                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">JDT</span>
                       <span className="font-black text-xs sm:text-sm text-black">{equipoTurno.jdt || 'Ariel Torres'}</span>
                     </div>
-                    <div>
+                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OSC</span>
                       <span className="font-black text-xs sm:text-sm text-black">{equipoTurno.osc || 'Jorge Albornoz'}</span>
                     </div>
-                    <div>
+                    <div className="cursor-pointer hover:bg-blue-50 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-700">OT</span>
                       <span className="font-black text-xs sm:text-sm text-black">{equipoTurno.ot || 'Matías Cisternas'}</span>
                     </div>

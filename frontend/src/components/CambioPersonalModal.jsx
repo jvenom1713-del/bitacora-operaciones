@@ -12,7 +12,7 @@ export default function CambioPersonalModal({
 }) {
   if (!isOpen) return null;
 
-  const [reemplazarCheck, setReemplazarCheck] = useState(false);
+  const [reemplazarCheck, setReemplazarCheck] = useState(true);
   const [cargoSeleccionado, setCargoSeleccionado] = useState('Jefe de Turno');
   
   // Reemplazos seleccionados por cargo (INICIALMENTE VACÍOS / NULL)
@@ -94,7 +94,7 @@ export default function CambioPersonalModal({
   const candidatoActivo = getCandidatoActual();
 
   const handleSeleccionarCandidato = (cand) => {
-    if (!reemplazarCheck) return;
+    if (!reemplazarCheck) setReemplazarCheck(true);
     const item = { nombre: cand.nombre, email: cand.email };
     if (cargoSeleccionado === 'Jefe de Turno') setReemplazoJDT(item);
     else if (cargoSeleccionado === 'Operador Sala Control') setReemplazoOSC(item);
@@ -104,7 +104,8 @@ export default function CambioPersonalModal({
   const handleSeleccionarContingencia = (e) => {
     const nombreSel = e.target.value;
     setGuardiaContingenciaSel(nombreSel);
-    if (!reemplazarCheck || !nombreSel) return;
+    if (!nombreSel) return;
+    if (!reemplazarCheck) setReemplazarCheck(true);
 
     const p = personalContingencia.find(x => x.nombre === nombreSel);
     if (p) {
