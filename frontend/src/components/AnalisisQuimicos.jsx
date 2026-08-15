@@ -363,6 +363,25 @@ function FilaMuestraRow({
         );
       })}
 
+      {/* Acción Realizada / Observación */}
+      <td className="p-2 border-r border-slate-800/60 text-center w-52 min-w-[180px]">
+        <input
+          type="text"
+          value={paramsActuales.accionTomada || ''}
+          onChange={(e) => {
+            const v = e.target.value;
+            const updated = { ...paramsActuales, accionTomada: v };
+            if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
+          }}
+          placeholder="Acción tomada / nota..."
+          className={`w-full px-2.5 py-2 rounded-lg border font-mono text-xs transition-all focus:outline-none focus:ring-2 ${
+            modoNocturno
+              ? 'bg-slate-950 border-slate-800 text-slate-200 focus:ring-cyan-500'
+              : 'bg-white border-slate-300 text-slate-800 focus:ring-cyan-500'
+          }`}
+        />
+      </td>
+
       {/* Acciones / Eliminar Fila Extra */}
       <td className="p-2 text-center w-16">
         {isDeletable && (
@@ -515,6 +534,33 @@ function TablaCirculacionVertical({
               </tr>
             );
           })}
+
+          {/* Fila para Acción Realizada / Observación */}
+          <tr className={modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}>
+            <td className="p-3.5 font-bold text-cyan-400 border-r border-slate-800/80 bg-slate-950/40">
+              Acción Realizada / Observación
+            </td>
+            <td className="p-3.5 text-center border-r border-slate-800/80 text-slate-400 font-mono text-[11px]">
+              Nota Operacional
+            </td>
+            <td className="p-2 text-center">
+              <input
+                type="text"
+                value={paramsActuales.accionTomada || ''}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const updated = { ...paramsActuales, accionTomada: v };
+                  if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
+                }}
+                placeholder="Escribir acción realizada o nota..."
+                className={`w-full px-3 py-2 rounded-lg border font-mono text-xs transition-all focus:outline-none focus:ring-2 ${
+                  modoNocturno
+                    ? 'bg-slate-950 border-slate-800 text-slate-200 focus:ring-cyan-500'
+                    : 'bg-white border-slate-300 text-slate-800 focus:ring-cyan-500'
+                }`}
+              />
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -1503,6 +1549,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                     </span>
                                   </th>
                                 ))}
+                               <th className="p-3.5 text-center border-r border-slate-800 w-52 min-w-[180px] font-bold">Acción Realizada / Observación</th>
                                <th className="p-3.5 text-center w-16 shrink-0">Acciones</th>
                             </tr>
                           </thead>
