@@ -260,7 +260,7 @@ export default function GraficosTendenciaModal({
             >
               {parametrosDisponibles.map((p) => (
                 <option key={p.key} value={p.key}>
-                  {p.label} ({p.min} - {p.max} {p.unit})
+                  {p.label} ({p.textRango || (p.unit ? `${p.min} - ${p.max} ${p.unit}` : `${p.min} - ${p.max}`)})
                 </option>
               ))}
             </select>

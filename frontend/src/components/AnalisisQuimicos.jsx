@@ -37,10 +37,12 @@ const PUNTOS_MUESTREO = [
       { id: 'DOMO_MEDIA', nombre: 'Domo Media Presión' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH', min: 9.0, max: 9.8, unit: '' },
-      { key: 'conductividad', label: 'Conductividad', min: 2.0, max: 10.0, unit: 'µS/cm' },
-      { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.02, unit: 'ppm' },
-      { key: 'fosfato', label: 'Fosfato (PO4)', min: 1.0, max: 6.0, unit: 'ppm' }
+      { key: 'ph', label: 'pH', min: 9.0, max: 9.8, textRango: '9,0 - 9,8' },
+      { key: 'fosfato', label: 'PO4', min: 0.2, max: 10.0, unit: 'ppm', textRango: '0,2 - 10 ppm' },
+      { key: 'conductividad', label: 'Cond', maxStrict: 150.0, unit: 'uS/cm', textRango: '< 150 uS/cm' },
+      { key: 'silice', label: 'Silice', maxStrict: 1.0, unit: 'ppm', textRango: '< 1 ppm' },
+      { key: 'dureza', label: 'Dureza', maxStrict: 0.0, unit: 'ppm', textRango: '0 ppm' },
+      { key: 'hierro', label: 'Hierro', maxStrict: 0.02, unit: 'ppm', textRango: '< 0,02 ppm' }
     ]
   },
   {
@@ -252,11 +254,18 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     if (onLogoutProp) onLogoutProp();
   };
 
-  // Validar si un parámetro ingresado sale del rango operacional
+  // Validar si un parámetro ingresado sale del rango operacional estricto
   const esFueraDeRango = (paramConfig, valor) => {
     if (valor === undefined || valor === null || valor === '') return false;
     const num = parseFloat(String(valor).replace(',', '.'));
     if (isNaN(num)) return false;
+
+    // Validación por límites máximos estrictos (>= o >)
+    if (paramConfig.maxStrict !== undefined) {
+      if (paramConfig.maxStrict === 0 && num > 0) return true;
+      if (paramConfig.maxStrict > 0 && num >= paramConfig.maxStrict) return true;
+    }
+
     if (paramConfig.min !== undefined && num < paramConfig.min) return true;
     if (paramConfig.max !== undefined && num > paramConfig.max) return true;
     return false;
@@ -266,6 +275,12 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
     if (valor === undefined || valor === null || valor === '') return null;
     const num = parseFloat(String(valor).replace(',', '.'));
     if (isNaN(num)) return null;
+
+    if (paramConfig.maxStrict !== undefined) {
+      if (paramConfig.maxStrict === 0 && num > 0) return `⚠️ Fuera de norma (> 0)`;
+      if (paramConfig.maxStrict > 0 && num >= paramConfig.maxStrict) return `⚠️ Fuera de norma (≥ ${paramConfig.maxStrict})`;
+    }
+
     if (paramConfig.min !== undefined && num < paramConfig.min) return `⚠️ Bajo norma (< ${paramConfig.min})`;
     if (paramConfig.max !== undefined && num > paramConfig.max) return `⚠️ Sobre norma (> ${paramConfig.max})`;
     return null;
@@ -729,14 +744,14 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
               </div>
 
               {/* RANGOS DE CONTROL INFORMADO */}
-              <div className={`p-3.5 rounded-xl border text-xs font-mono grid grid-cols-2 sm:grid-cols-4 gap-3 ${
+              <div className={`p-3.5 rounded-xl border text-xs font-mono grid grid-cols-2 sm:grid-cols-6 gap-3 ${
                 modoNocturno ? 'bg-slate-950/80 border-slate-800/80' : 'bg-slate-50 border-slate-200'
               }`}>
                 {categoriaObjActiva.parametros.map((p) => (
                   <div key={p.key} className="space-y-0.5">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">{p.label}:</span>
                     <span className="text-cyan-300 font-bold">
-                      {p.min} - {p.max} {p.unit}
+                      {p.textRango || (p.unit ? `${p.min} - ${p.max} ${p.unit}` : `${p.min} - ${p.max}`)}
                     </span>
                   </div>
                 ))}
@@ -752,9 +767,9 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                       <th className="p-3.5 border-r border-slate-800 w-24">Hora</th>
                       {categoriaObjActiva.parametros.map((p) => (
                         <th key={p.key} className="p-3.5 text-center border-r border-slate-800">
-                          <span className="block font-bold">{p.label}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">
-                            {p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`}
+                          <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
+                          <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
+                            {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
                           </span>
                         </th>
                       ))}
@@ -795,7 +810,7 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                                     const v = e.target.value;
                                     setParamsLocal(prev => ({ ...prev, [param.key]: v }));
                                   }}
-                                  placeholder={`${param.min} - ${param.max}`}
+                                  placeholder={param.textRango || (param.min !== undefined ? `${param.min} - ${param.max}` : `${param.min} - ${param.max}`)}
                                   className={`w-full text-center px-2 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
                                     fueraRango
                                       ? 'bg-red-950/80 border-red-500 text-red-300 font-extrabold focus:ring-red-500 animate-pulse'
