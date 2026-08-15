@@ -196,14 +196,19 @@ function FilaMuestraRow({
         const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
         const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
         const esSiliceVaporSC = (subpuntoActivo === 'VAPOR_SC_ALTA' && param.key === 'silice');
-        const deshabilitadoEnEsteHorario = (esDurezaOHierro || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00';
+        const esSiliceVaporSat = (
+          (subpuntoActivo === 'VAPOR_SAT_ALTA' || subpuntoActivo === 'VAPOR_SAT_MEDIA' || subpuntoActivo === 'VAPOR_SAT_BAJA') &&
+          param.key === 'silice'
+        );
+
+        const deshabilitadoEnEsteHorario = esSiliceVaporSat || ((esDurezaOHierro || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00');
 
         if (deshabilitadoEnEsteHorario) {
           return (
             <td key={param.key} className="p-2 border-r border-slate-800/60 text-center w-28 min-w-[110px]">
               <div 
                 className="w-full py-2 px-2 rounded-lg border border-slate-800/30 bg-slate-950/50 text-slate-600 font-mono font-bold text-xs select-none cursor-not-allowed flex items-center justify-center"
-                title={`${param.label} solo se mide a las 10:00 hrs`}
+                title={`${param.label} no se realiza en este horario o punto`}
               >
                 -
               </div>
