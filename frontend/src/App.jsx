@@ -480,14 +480,59 @@ export default function App() {
     }
   };
 
+  const handleActualizarEquipoTurno = (nuevoEquipo) => {
+    if (!nuevoEquipo) return;
+    setEquipoTurnoSeleccionado(prev => {
+      const actualizado = { ...prev, ...nuevoEquipo };
+      try {
+        localStorage.setItem('equipo_turno_actual', JSON.stringify(actualizado));
+      } catch (e) {}
+      return actualizado;
+    });
+
+    setTurnoActivo(prev => {
+      const objActualizado = {
+        ...(prev || {}),
+        equipoTurno: { ...(prev?.equipoTurno || {}), ...nuevoEquipo },
+        jdt: nuevoEquipo.jdt || prev?.jdt || 'Ariel Torres',
+        osc: nuevoEquipo.osc || prev?.osc || 'Jorge Albornoz',
+        ot: nuevoEquipo.ot || prev?.ot || 'Matías Cisternas',
+        rotacion: nuevoEquipo.rotacion || prev?.rotacion || 'TIGRES',
+        jefe_turno: nuevoEquipo.jdt || prev?.jefe_turno,
+        operador: nuevoEquipo.osc || prev?.operador,
+        personal_turno: nuevoEquipo.ot || prev?.personal_turno
+      };
+      try {
+        localStorage.setItem('turno_activo_guardado', JSON.stringify(objActualizado));
+      } catch (e) {}
+      return objActualizado;
+    });
+  };
+
   const cargarTurnoActivo = async () => {
     try {
       setCargando(true);
       const res = await fetch(getApiUrl('/api/turnos/activo'));
       const respuesta = res.ok ? await res.json() : null;
       const turnoData = respuesta?.turno || respuesta?.data || { estado: 'ABIERTO', eventos: [] };
-      setTurnoActivo(turnoData);
-      setTurnoActual(turnoData);
+      
+      const equipoGuardadoStr = localStorage.getItem('equipo_turno_actual');
+      const equipoObj = equipoGuardadoStr ? JSON.parse(equipoGuardadoStr) : equipoTurnoSeleccionado;
+
+      const turnoConEquipo = {
+        ...turnoData,
+        equipoTurno: equipoObj,
+        jdt: equipoObj.jdt,
+        osc: equipoObj.osc,
+        ot: equipoObj.ot,
+        rotacion: equipoObj.rotacion,
+        jefe_turno: equipoObj.jdt,
+        operador: equipoObj.osc,
+        personal_turno: equipoObj.ot
+      };
+
+      setTurnoActivo(turnoConEquipo);
+      setTurnoActual(turnoConEquipo);
       if ((turnoData?.estado === 'CERRADO' || turnoData?.estado === 'APROBADO') && vistaActual === 'BITACORA_DASHBOARD') {
         setVistaActual('MENU_OPERADOR');
       }
@@ -496,8 +541,22 @@ export default function App() {
       }
     } catch (err) {
       console.error('Error cargando turno:', err);
-      setTurnoActivo({ estado: 'ABIERTO', eventos: [] });
-      setTurnoActual({ estado: 'ABIERTO', eventos: [] });
+      const equipoGuardadoStr = localStorage.getItem('equipo_turno_actual');
+      const equipoObj = equipoGuardadoStr ? JSON.parse(equipoGuardadoStr) : equipoTurnoSeleccionado;
+      const turnoDefault = {
+        estado: 'ABIERTO',
+        eventos: [],
+        equipoTurno: equipoObj,
+        jdt: equipoObj.jdt,
+        osc: equipoObj.osc,
+        ot: equipoObj.ot,
+        rotacion: equipoObj.rotacion,
+        jefe_turno: equipoObj.jdt,
+        operador: equipoObj.osc,
+        personal_turno: equipoObj.ot
+      };
+      setTurnoActivo(turnoDefault);
+      setTurnoActual(turnoDefault);
     } finally {
       setCargando(false);
     }
@@ -1009,9 +1068,9 @@ export default function App() {
           usuarioActual={usuarioActual}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
-          equipoTurno={equipoTurnoSeleccionado}
+          equipoTurno={turnoActivo?.equipoTurno || equipoTurnoSeleccionado}
           onConfirmarReemplazo={(nuevoEquipo) => {
-            setEquipoTurnoSeleccionado(prev => ({ ...prev, ...nuevoEquipo }));
+            handleActualizarEquipoTurno(nuevoEquipo);
             setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU');
           }}
         />
@@ -1040,13 +1099,13 @@ export default function App() {
           onAprobarBitacora={handleAprobarBitacora}
           onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('BITACORA_DASHBOARD'); setVistaActual('PERMISOS_CALIENTE'); }}
           onCambiarPersonal={(datosEquipo) => {
-            if (datosEquipo) {
-              setEquipoTurnoSeleccionado(prev => ({ ...prev, ...datosEquipo }));
-            }
+            handleActualizarEquipoTurno(datosEquipo);
+          }}
+          onAbrirModalCambioPersonal={() => {
             setVistaAnteriorCambioPersonal('BITACORA_DASHBOARD');
             setVistaActual('CAMBIO_PERSONAL_MENU');
           }}
-          equipoTurno={equipoTurnoSeleccionado}
+          equipoTurno={turnoActivo?.equipoTurno || equipoTurnoSeleccionado}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
           onVolver={volverMenuGenerico}

@@ -143,6 +143,7 @@ export default function DashboardIniciarTurno({
   setModoNocturno,
   onVolver,
   onCambiarPersonal,
+  onAbrirModalCambioPersonal,
   tabInicial = 'EQUIPOS',
   // Props compartidas desde App.jsx
   textoBitacora,
@@ -1672,7 +1673,7 @@ ${extraHtml}
             <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
             <button
               type="button"
-              onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}
+              onClick={() => onAbrirModalCambioPersonal ? onAbrirModalCambioPersonal() : (onCambiarPersonal && onCambiarPersonal(equipoTurno))}
               title="Cambiar o elegir personal en turno"
               className="flex items-center gap-1.5 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-extrabold text-[11px] py-1 px-3 rounded-lg shadow-md transition-all transform hover:scale-[1.02] cursor-pointer"
             >
@@ -1683,23 +1684,75 @@ ${extraHtml}
           <div className={`grid grid-cols-4 text-center font-bold text-xs sm:text-sm py-2 divide-x ${
             modoNocturno ? 'bg-[#091b33] divide-blue-800 text-white' : 'bg-slate-100/90 divide-slate-300/80 text-slate-900'
           }`}>
-            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
+            <div className="py-1 px-1 flex flex-col items-center justify-center">
               <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>TURNO</span>
-              <span className="text-amber-500 font-black text-xs sm:text-sm">
-                {obtenerInfoTurnoActual().nombre} ({obtenerInfoTurnoActual().horario}) - {equipoTurno.rotacion || 'TIGRES'}
-              </span>
+              <select
+                value={equipoTurno.rotacion || 'TIGRES'}
+                onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, rotacion: e.target.value })}
+                className={`font-black text-xs bg-transparent border rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-amber-400' : 'border-slate-300 bg-white text-amber-600'
+                }`}
+              >
+                <option value="TIGRES">TIGRES</option>
+                <option value="JAGUAR">JAGUAR</option>
+                <option value="HALCONES">HALCONES</option>
+                <option value="LEONES">LEONES</option>
+                <option value="ÁGUILAS">ÁGUILAS</option>
+              </select>
             </div>
-            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
-              <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>JDT</span>
-              <span className={`font-black text-xs sm:text-sm ${modoNocturno ? 'text-white' : 'text-slate-900'}`}>{equipoTurno.jdt || 'Ariel Torres'}</span>
+
+            <div className="py-1 px-1 flex flex-col items-center justify-center">
+              <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>JDT (Jefe)</span>
+              <select
+                value={equipoTurno.jdt || 'Ariel Torres'}
+                onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, jdt: e.target.value })}
+                className={`w-full max-w-[190px] font-black text-xs bg-transparent border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900'
+                }`}
+              >
+                <option value="Ariel Torres">Ariel Torres</option>
+                <option value="Javier San Martín">Javier San Martín</option>
+                <option value="Pablo Flores Vásquez">Pablo Flores Vásquez</option>
+                <option value="Norman Galaz">Norman Galaz</option>
+                <option value="Cristian Valdivia Maldonado">Cristian Valdivia Maldonado</option>
+                <option value="Rodrigo Troncoso">Rodrigo Troncoso (Contingencia)</option>
+              </select>
             </div>
-            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
-              <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OSC</span>
-              <span className={`font-black text-xs sm:text-sm ${modoNocturno ? 'text-white' : 'text-slate-900'}`}>{equipoTurno.osc || 'Jorge Albornoz'}</span>
+
+            <div className="py-1 px-1 flex flex-col items-center justify-center">
+              <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OSC (Operador)</span>
+              <select
+                value={equipoTurno.osc || 'Jorge Albornoz'}
+                onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, osc: e.target.value })}
+                className={`w-full max-w-[190px] font-black text-xs bg-transparent border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900'
+                }`}
+              >
+                <option value="Jorge Albornoz">Jorge Albornoz</option>
+                <option value="Humberto Barra Tapia">Humberto Barra Tapia</option>
+                <option value="Luis Morales">Luis Morales</option>
+                <option value="Eduardo Armijo Retamal">Eduardo Armijo Retamal</option>
+                <option value="Arístides Toledo Peña">Arístides Toledo Peña</option>
+                <option value="Máximo Cortés">Máximo Cortés (Contingencia)</option>
+              </select>
             </div>
-            <div className="cursor-pointer hover:bg-blue-600/20 transition-colors py-1 px-1 rounded" onClick={() => onCambiarPersonal && onCambiarPersonal(equipoTurno)}>
-              <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OT</span>
-              <span className={`font-black text-xs sm:text-sm ${modoNocturno ? 'text-white' : 'text-slate-900'}`}>{equipoTurno.ot || 'Matías Cisternas'}</span>
+
+            <div className="py-1 px-1 flex flex-col items-center justify-center">
+              <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OT (Personal Turno)</span>
+              <select
+                value={equipoTurno.ot || 'Matías Cisternas'}
+                onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, ot: e.target.value })}
+                className={`w-full max-w-[190px] font-black text-xs bg-transparent border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
+                  modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white' : 'border-slate-300 bg-white text-slate-900'
+                }`}
+              >
+                <option value="Matías Cisternas">Matías Cisternas</option>
+                <option value="Eric Godoy Díaz">Eric Godoy Díaz</option>
+                <option value="Gerson Cofré">Gerson Cofré</option>
+                <option value="Carlos Vivero">Carlos Vivero</option>
+                <option value="Claudio Garrido San Martín">Claudio Garrido San Martín</option>
+                <option value="Enzo Cornejo">Enzo Cornejo (Contingencia)</option>
+              </select>
             </div>
           </div>
         </div>
