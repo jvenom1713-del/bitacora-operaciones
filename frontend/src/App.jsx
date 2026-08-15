@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import LoginPortada from './components/LoginPortada';
+import PortalAcceso from './components/PortalAcceso';
 import MenuOperador from './components/MenuOperador';
 import MenuJefeTurno from './components/MenuJefeTurno';
 import AbrirTurnoMenu from './components/AbrirTurnoMenu';
@@ -67,6 +68,20 @@ export default function App() {
       localStorage.setItem('equipo_turno_actual', JSON.stringify(equipoTurnoSeleccionado));
     } catch (e) {}
   }, [equipoTurnoSeleccionado]);
+
+  useEffect(() => {
+    const syncUrlPath = () => {
+      const href = window.location.href.toLowerCase();
+      if (href.includes('login-bitacora')) {
+        setVistaActual('LOGIN_BITACORA');
+      } else if (href.includes('login-quimico') || href.includes('quimico')) {
+        setVistaActual('ANALISIS_QUIMICOS');
+      }
+    };
+    syncUrlPath();
+    window.addEventListener('popstate', syncUrlPath);
+    return () => window.removeEventListener('popstate', syncUrlPath);
+  }, []);
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
 
@@ -940,12 +955,26 @@ export default function App() {
   if (vistaActual === 'PORTADA') {
     return (
       <>
+        <PortalAcceso
+          onIrABitacora={() => setVistaActual('LOGIN_BITACORA')}
+          onIrAQuimicos={() => setVistaActual('ANALISIS_QUIMICOS')}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+        />
+        {demoBarra}
+      </>
+    );
+  }
+
+  if (vistaActual === 'LOGIN_BITACORA') {
+    return (
+      <>
         <LoginPortada 
           usuarios={usuarios}
           usuarioActual={usuarioActual}
           setUsuarioActual={setUsuarioActual}
           onLogin={handleLogin}
-          onIngresoQuimico={() => setVistaActual('ANALISIS_QUIMICOS')}
+          onVolverPortal={() => setVistaActual('PORTADA')}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
         />

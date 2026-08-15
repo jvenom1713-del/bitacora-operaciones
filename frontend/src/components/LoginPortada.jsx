@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Sun, Moon, FlaskConical } from 'lucide-react';
+import { Sun, Moon, ArrowLeft } from 'lucide-react';
 
 export default function LoginPortada({ 
   usuarios = [], 
   usuarioActual, 
   setUsuarioActual, 
   onLogin, 
-  onIngresoQuimico,
+  onVolverPortal,
   modoNocturno, 
   setModoNocturno 
 }) {
@@ -240,19 +240,21 @@ export default function LoginPortada({
               type="submit"
               className="w-full mt-2 bg-gradient-to-r from-[#ea580c] to-[#d97706] hover:from-[#d97706] hover:to-[#ea580c] text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-orange-600/30 hover:shadow-orange-600/50 transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.99] text-sm"
             >
-              Iniciar Sesión
+              Iniciar Sesión Bitácora
             </button>
           </form>
 
-          {/* Acceso Independiente Externo a Módulo Análisis Químicos */}
-          <div className="mt-6 pt-5 border-t border-slate-700/40">
+          {/* Enlace Discreto: Volver al Portal Principal */}
+          <div className="mt-6 pt-4 border-t border-slate-700/40 text-center">
             <button
               type="button"
-              onClick={onIngresoQuimico}
-              className="w-full py-3.5 px-4 rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-teal-950/80 to-emerald-950/80 hover:from-cyan-900 hover:to-teal-900 text-cyan-200 hover:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-teal-950/50 transition-all cursor-pointer transform hover:scale-[1.01] active:scale-[0.99]"
+              onClick={onVolverPortal}
+              className={`inline-flex items-center gap-2 text-xs font-bold transition-all hover:underline ${
+                modoNocturno ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <FlaskConical className="w-5 h-5 text-cyan-400 animate-pulse" />
-              <span>Ingreso Módulo Análisis Químicos</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver al portal principal</span>
             </button>
           </div>
 
