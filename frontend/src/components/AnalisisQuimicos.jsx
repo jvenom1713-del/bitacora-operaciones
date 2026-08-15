@@ -36,7 +36,7 @@ const PUNTOS_MUESTREO = [
     ],
     parametros: [
       { key: 'ph', label: 'pH', min: 9.0, max: 9.8, unit: '' },
-      { key: 'conductividad', label: 'Cond. Específica', min: 2.0, max: 10.0, unit: 'µS/cm' },
+      { key: 'conductividad', label: 'Conductividad', min: 2.0, max: 10.0, unit: 'µS/cm' },
       { key: 'silice', label: 'Sílice (SiO2)', min: 0.0, max: 0.02, unit: 'ppm' },
       { key: 'fosfato', label: 'Fosfato (PO4)', min: 1.0, max: 6.0, unit: 'ppm' }
     ]
