@@ -1017,7 +1017,7 @@ ${senalesForzadasTexto}
           </div>
           <div className={`p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-xs font-semibold ${modoNocturno ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
             {[
-              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '40.3'} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
+              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '0'} USD/MWh`, color: modoNocturno ? 'text-cyan-300' : 'text-cyan-800' },
               { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '5046'} MW`, color: modoNocturno ? 'text-emerald-400' : 'text-emerald-800' },
               { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: modoNocturno ? 'text-amber-400' : 'text-amber-800' },
               { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '2'} hrs`, color: modoNocturno ? 'text-slate-100' : 'text-slate-900' },
