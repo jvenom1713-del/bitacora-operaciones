@@ -1186,8 +1186,8 @@ ${extraHtml}
     if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
       const sisProm = Number(sisPromVal) || 0;
       let potEspNum = Number(potEspVal);
-      if (isNaN(potEspNum) || potEspNum > 500 || potEspVal === undefined || potEspVal === '--') {
-        potEspNum = Math.max(0, 500 - sisProm);
+      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0) {
+        potEspNum = 5046;
       }
 
       return {
@@ -1222,12 +1222,10 @@ ${extraHtml}
           if (mw > 450) hrsFS++;
         });
 
-        const potEsp = Math.max(0, 500 - promMW);
-
         return {
           despachoCNR: promMW > 0 ? 'En servicio' : 'Fuera de servicio',
           sistemaProm: promMW.toFixed(1),
-          potEspera: String(Math.round(potEsp)),
+          potEspera: String(Math.round(sumaMW)),
           fuegosSuplemen: String(hrsFS > 0 ? 50 : 0),
           hrsCargaBase: String(hrsCB),
           hrsMinTec: String(hrsMT),
@@ -1244,7 +1242,7 @@ ${extraHtml}
     return {
       despachoCNR: 'En servicio',
       sistemaProm: '56.7',
-      potEspera: '130',
+      potEspera: '5046',
       fuegosSuplemen: '0',
       hrsCargaBase: '18',
       hrsMinTec: '6',
