@@ -63,9 +63,10 @@ const PUNTOS_MUESTREO = [
   },
   {
     id: 'CONDENSADO',
-    nombre: 'Condensado',
+    nombre: 'Condensado y Caldera Baja',
     subpuntos: [
-      { id: 'CONDENSADO', nombre: 'Condensado Bomba Extracción' }
+      { id: 'CONDENSADO', nombre: 'Condensado Bomba Extracción' },
+      { id: 'CALDERA_BAJA', nombre: 'Caldera Baja Presión' }
     ],
     parametros: [
       { key: 'ph', label: 'pH', min: 8.8, max: 9.4, textRango: '8,8 - 9,4' },
@@ -193,7 +194,15 @@ function FilaMuestraRow({
 
       {/* Inputs por cada Parámetro Químico con valores controlados seguros */}
       {categoriaObjActiva.parametros
-        .filter(param => !(param.key === 'silice' && (subpuntoActivo === 'VAPOR_SAT_ALTA' || subpuntoActivo === 'VAPOR_SAT_MEDIA' || subpuntoActivo === 'VAPOR_SAT_BAJA')))
+        .filter(param => {
+          if (subpuntoActivo === 'CALDERA_BAJA' && (param.key === 'amoniaco' || param.key === 'dosisAminaBps')) {
+            return false;
+          }
+          if (param.key === 'silice' && (subpuntoActivo === 'VAPOR_SAT_ALTA' || subpuntoActivo === 'VAPOR_SAT_MEDIA' || subpuntoActivo === 'VAPOR_SAT_BAJA')) {
+            return false;
+          }
+          return true;
+        })
         .map((param) => {
           const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
           const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
@@ -1145,7 +1154,15 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                         }`}>
                           <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
                           {catObj.parametros
-                            .filter(p => !(p.key === 'silice' && (subpuntoActivoEnCat === 'VAPOR_SAT_ALTA' || subpuntoActivoEnCat === 'VAPOR_SAT_MEDIA' || subpuntoActivoEnCat === 'VAPOR_SAT_BAJA')))
+                            .filter(p => {
+                              if (subpuntoActivoEnCat === 'CALDERA_BAJA' && (p.key === 'amoniaco' || p.key === 'dosisAminaBps')) {
+                                return false;
+                              }
+                              if (p.key === 'silice' && (subpuntoActivoEnCat === 'VAPOR_SAT_ALTA' || subpuntoActivoEnCat === 'VAPOR_SAT_MEDIA' || subpuntoActivoEnCat === 'VAPOR_SAT_BAJA')) {
+                                return false;
+                              }
+                              return true;
+                            })
                             .map((p) => (
                               <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
                                 <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
