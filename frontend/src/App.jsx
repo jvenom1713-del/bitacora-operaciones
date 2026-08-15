@@ -496,8 +496,10 @@ export default function App() {
         equipoTurno: { ...(prev?.equipoTurno || {}), ...nuevoEquipo },
         jdt: nuevoEquipo.jdt || prev?.jdt || 'Ariel Torres',
         osc: nuevoEquipo.osc || prev?.osc || 'Jorge Albornoz',
-        ot: nuevoEquipo.ot || prev?.ot || 'Matías Cisternas',
+        ot: nuevoEquipo.ot || prev?.ot || 'Matias Cisternas',
         rotacion: nuevoEquipo.rotacion || prev?.rotacion || 'TIGRES',
+        motivoContingencia: nuevoEquipo.motivoContingencia || prev?.motivoContingencia || 'Sin contingencia',
+        detalleContingencia: nuevoEquipo.detalleContingencia !== undefined ? nuevoEquipo.detalleContingencia : (prev?.detalleContingencia || ''),
         jefe_turno: nuevoEquipo.jdt || prev?.jefe_turno,
         operador: nuevoEquipo.osc || prev?.operador,
         personal_turno: nuevoEquipo.ot || prev?.personal_turno
@@ -516,6 +518,8 @@ export default function App() {
             jefe_turno: nuevoEquipo.jdt || objActualizado.jdt,
             operador_sala: nuevoEquipo.osc || objActualizado.osc,
             operador_terreno: nuevoEquipo.ot || objActualizado.ot,
+            motivo_contingencia: nuevoEquipo.motivoContingencia || objActualizado.motivoContingencia || 'Sin contingencia',
+            detalle_contingencia: nuevoEquipo.detalleContingencia || objActualizado.detalleContingencia || '',
             actualizado_el: new Date().toISOString()
           }, { onConflict: 'folio' }).then(() => {}).catch(() => {});
         }
