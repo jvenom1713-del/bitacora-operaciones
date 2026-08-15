@@ -480,6 +480,14 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   };
 
   const obtenerHorasSubpunto = (subpuntoId) => {
+    if (
+      subpuntoId === 'VAPOR_SC_ALTA' ||
+      subpuntoId === 'VAPOR_SAT_ALTA' ||
+      subpuntoId === 'VAPOR_SAT_MEDIA' ||
+      subpuntoId === 'VAPOR_SAT_BAJA'
+    ) {
+      return ['10:00'];
+    }
     if (subpuntoId === 'AGUA_CIRCULACION') {
       return ['05:00'];
     }
