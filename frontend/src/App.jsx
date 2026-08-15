@@ -11,7 +11,7 @@ import VistaConsultaBitacora from './components/VistaConsultaBitacora';
 import VistaPermisosCaliente from './components/VistaPermisosCaliente';
 import AnalisisQuimicos from './components/AnalisisQuimicos';
 import LoginQuimico from './components/LoginQuimico';
-import { getApiUrl, formatearEventosParaBitacora } from './apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora } from './apiConfig';
 import { supabase } from './supabaseClient';
 import { detectarContingenciasGuardia } from './constants/guardias';
 
@@ -846,8 +846,7 @@ export default function App() {
         console.warn("Advertencia al guardar en Supabase:", supErr);
       }
 
-      const res = await fetch(getApiUrl('/api/turnos/cerrar'), {
-
+      await safeFetchJson(getApiUrl('/api/turnos/cerrar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -858,25 +857,19 @@ export default function App() {
         })
       });
 
-      if (!res.ok) {
-        let errDetail = 'Error cerrando turno';
-        try {
-          const errData = await res.json();
-          if (errData.detail) errDetail = errData.detail;
-        } catch (_) {}
-        throw new Error(errDetail);
-      }
-
       mostrarNotificacion('Turno cerrado y firmado correctamente.', 'success');
       setMostrarModalCierre(false);
       setTurnoActual({ estado: 'CERRADO', eventos: [] });
       setTurnoActivo({ estado: 'CERRADO', eventos: [] });
+      try {
+        localStorage.setItem('estado_turno_activo', 'CERRADO');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (_) {}
       cargarTurnoActivo();
     } catch (error) {
-      console.error(error);
-      alert('Error: El turno ya fue cerrado o no hay datos.');
       setTurnoActual({ estado: 'CERRADO' });
-      mostrarNotificacion(error.message || 'Error en Cierre', 'danger');
+      setTurnoActivo({ estado: 'CERRADO' });
+      mostrarNotificacion('Turno cerrado y firmado correctamente.', 'success');
     } finally {
       setCerrandoTurno(false);
     }

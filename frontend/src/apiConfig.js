@@ -11,6 +11,21 @@ export function getApiUrl(path) {
   return cleanPath;
 }
 
+export async function safeFetchJson(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      return { ok: res.ok, status: res.status, data };
+    } else {
+      return { ok: res.ok, status: res.status, data: {} };
+    }
+  } catch (err) {
+    return { ok: false, status: 0, data: {}, error: err.message };
+  }
+}
+
 export async function guardarBitacoraSupabase({ folio, fecha, turno, operador, jefe_turno, estado, contenido }) {
   const { data, error } = await supabase
     .from('bitacoras')

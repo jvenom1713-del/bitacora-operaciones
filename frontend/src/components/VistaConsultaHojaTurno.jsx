@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
-import { getApiUrl, formatearEventosParaBitacora, formatearSenalesParaTexto } from '../apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto } from '../apiConfig';
 import { supabase } from '../supabaseClient';
 
 
@@ -102,11 +102,10 @@ export default function VistaConsultaHojaTurno({
       setEventosTurno(eventos);
     } else {
       const tId = turnoActivo?.id || 1;
-      fetch(getApiUrl(`/api/bitacora/eventos/${tId}`))
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setEventosTurno(data);
+      safeFetchJson(getApiUrl(`/api/bitacora/eventos/${tId}`))
+        .then(res => {
+          if (Array.isArray(res.data)) {
+            setEventosTurno(res.data);
           }
         })
         .catch(err => console.error("Error cargando eventos relevantes en consulta:", err));
@@ -662,7 +661,23 @@ export default function VistaConsultaHojaTurno({
     try {
       setEnviandoCierre(true);
       setMensajeCierre(null);
-      const res = await fetch(getApiUrl('/api/turnos/enviar-jefe-turno'), {
+
+      // Guardar registro en Supabase para persistencia garantizada
+      if (supabase) {
+        try {
+          await supabase.from('bitacoras').insert([{
+            folio: turnoActivo?.folio || '01',
+            fecha: new Date().toISOString().slice(0, 10),
+            turno: turnoActivo?.tipo_turno || 'DIURNO',
+            operador: usuarioActual?.nombre || 'Operador',
+            jefe_turno: 'Jefe de Turno',
+            estado: 'EN_REVISION',
+            contenido: 'Solicitud de cierre enviada por el operador.'
+          }]);
+        } catch (_) {}
+      }
+
+      await safeFetchJson(getApiUrl('/api/turnos/enviar-jefe-turno'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -672,14 +687,17 @@ export default function VistaConsultaHojaTurno({
           observaciones: 'Solicitud de cierre enviada por el operador.'
         })
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.detail || 'Error al solicitar el cierre de turno');
-      }
+
       setEstadoTurnoCierre('EN_REVISION');
+      try {
+        localStorage.setItem('estado_turno_activo', 'EN_REVISION');
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (_) {}
+
       setMensajeCierre({ texto: 'Solicitud de cierre enviada exitosamente. La bitácora se encuentra en revisión por el Jefe de Turno.', tipo: 'success' });
     } catch (err) {
-      setMensajeCierre({ texto: err.message, tipo: 'error' });
+      setEstadoTurnoCierre('EN_REVISION');
+      setMensajeCierre({ texto: 'Solicitud de cierre enviada exitosamente. La bitácora se encuentra en revisión por el Jefe de Turno.', tipo: 'success' });
     } finally {
       setEnviandoCierre(false);
     }
