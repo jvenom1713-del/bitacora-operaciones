@@ -192,16 +192,13 @@ function FilaMuestraRow({
       </td>
 
       {/* Inputs por cada Parámetro Químico con valores controlados seguros */}
-      {categoriaObjActiva.parametros.map((param) => {
-        const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
-        const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
-        const esSiliceVaporSC = (subpuntoActivo === 'VAPOR_SC_ALTA' && param.key === 'silice');
-        const esSiliceVaporSat = (
-          (subpuntoActivo === 'VAPOR_SAT_ALTA' || subpuntoActivo === 'VAPOR_SAT_MEDIA' || subpuntoActivo === 'VAPOR_SAT_BAJA') &&
-          param.key === 'silice'
-        );
-
-        const deshabilitadoEnEsteHorario = esSiliceVaporSat || ((esDurezaOHierro || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00');
+      {categoriaObjActiva.parametros
+        .filter(param => !(param.key === 'silice' && (subpuntoActivo === 'VAPOR_SAT_ALTA' || subpuntoActivo === 'VAPOR_SAT_MEDIA' || subpuntoActivo === 'VAPOR_SAT_BAJA')))
+        .map((param) => {
+          const esDurezaOHierro = (param.key === 'dureza' || param.key === 'hierro');
+          const esSiliceDomoMedia = (subpuntoActivo === 'DOMO_MEDIA' && param.key === 'silice');
+          const esSiliceVaporSC = (subpuntoActivo === 'VAPOR_SC_ALTA' && param.key === 'silice');
+          const deshabilitadoEnEsteHorario = (esDurezaOHierro || esSiliceDomoMedia || esSiliceVaporSC) && hora !== '10:00';
 
         if (deshabilitadoEnEsteHorario) {
           return (
@@ -1147,14 +1144,16 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
                           modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-300 text-slate-700 bg-slate-100'
                         }`}>
                           <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
-                          {catObj.parametros.map((p) => (
-                            <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
-                              <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
-                              <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
-                                {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
-                              </span>
-                            </th>
-                          ))}
+                          {catObj.parametros
+                            .filter(p => !(p.key === 'silice' && (subpuntoActivoEnCat === 'VAPOR_SAT_ALTA' || subpuntoActivoEnCat === 'VAPOR_SAT_MEDIA' || subpuntoActivoEnCat === 'VAPOR_SAT_BAJA')))
+                            .map((p) => (
+                              <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
+                                <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
+                                <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
+                                  {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
+                                </span>
+                              </th>
+                            ))}
                           <th className="p-3.5 text-center w-36 shrink-0">Acciones / Guardar</th>
                         </tr>
                       </thead>
