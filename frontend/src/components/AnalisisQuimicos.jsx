@@ -62,31 +62,31 @@ const PUNTOS_MUESTREO = [
     ]
   },
   {
-    id: 'CONDENSADO_CALDERA_BAJA',
-    nombre: 'Condensado y Caldera Baja',
+    id: 'CONDENSADO',
+    nombre: 'Condensado',
     subpuntos: [
-      { id: 'CONDENSADO_BOMBA', nombre: 'Condensado Bomba Extracción' },
-      { id: 'CALDERA_BAJA', nombre: 'Caldera Baja Presión' }
+      { id: 'CONDENSADO', nombre: 'Condensado Bomba Extracción' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH', min: 8.8, max: 9.4, unit: '' },
-      { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.25, unit: 'µS/cm' },
-      { key: 'oxigeno', label: 'Oxígeno Disuelto', min: 0.0, max: 10.0, unit: 'ppb' },
-      { key: 'hidrazina', label: 'Hidrazina (N2H4)', min: 10.0, max: 50.0, unit: 'ppb' }
+      { key: 'ph', label: 'pH', min: 8.8, max: 9.4, textRango: '8,8 - 9,4' },
+      { key: 'conductividad', label: 'Conductividad', maxStrict: 20.0, unit: 'uS/cm', textRango: '< 20 uS/cm' },
+      { key: 'amoniaco', label: 'Amoniaco', maxStrict: 0.5, unit: 'ppm', textRango: '< 0,5 ppm' },
+      { key: 'dureza', label: 'Dureza', maxStrict: 0.0, unit: 'ppm', textRango: '0 ppm' },
+      { key: 'dosisAminaBps', label: 'Dosis Amina BPS', textRango: '-' }
     ]
   },
   {
     id: 'ALIMENTACION',
-    nombre: 'Alimentación (Agua de Alimentadores)',
+    nombre: 'Agua de Alimentación',
     subpuntos: [
-      { id: 'AGUA_ALIMENTACION', nombre: 'Agua de Alimentación Caldera' }
+      { id: 'AGUA_ALIMENTACION', nombre: 'Agua de Alimentación' }
     ],
     parametros: [
-      { key: 'ph', label: 'pH', min: 8.8, max: 9.5, unit: '' },
-      { key: 'condCationica', label: 'Cond. Catiónica', min: 0.0, max: 0.2, unit: 'µS/cm' },
-      { key: 'oxigeno', label: 'Oxígeno Disuelto', min: 0.0, max: 5.0, unit: 'ppb' },
-      { key: 'hierro', label: 'Hierro (Fe)', min: 0.0, max: 10.0, unit: 'ppb' },
-      { key: 'cobre', label: 'Cobre (Cu)', min: 0.0, max: 2.0, unit: 'ppb' }
+      { key: 'ph', label: 'pH', min: 8.8, max: 9.4, textRango: '8,8 - 9,4' },
+      { key: 'conductividad', label: 'Conductividad', maxStrict: 20.0, unit: 'uS/cm', textRango: '< 20 uS/cm' },
+      { key: 'oxigeno', label: 'Oxigeno (O2)', maxStrict: 20.0, unit: 'ppb', textRango: '< 20 ppb' },
+      { key: 'cobre', label: 'Cobre', maxStrict: 2.0, unit: 'ppb', textRango: '< 2 ppb' },
+      { key: 'hierro', label: 'Hierro', maxStrict: 0.02, unit: 'ppm', textRango: '< 0,02 ppm' }
     ]
   },
   {
@@ -156,6 +156,7 @@ function FilaMuestraRow({
   handleGuardarMuestra,
   handleEliminarFilaRow,
   handleCambiarHoraFilaExtra,
+  onParamChange,
   guardando
 }) {
   const hora = filaObj.hora || '';
@@ -220,7 +221,11 @@ function FilaMuestraRow({
               value={valActual || ''}
               onChange={(e) => {
                 const v = e.target.value;
-                setParamsLocal(prev => ({ ...prev, [param.key]: v }));
+                setParamsLocal(prev => {
+                  const updated = { ...prev, [param.key]: v };
+                  if (onParamChange) onParamChange(subpuntoActivo, hora, updated);
+                  return updated;
+                });
               }}
               placeholder=""
               className={`w-full text-center px-2 py-2 rounded-lg border font-mono font-bold text-xs transition-all focus:outline-none focus:ring-2 ${
@@ -313,9 +318,121 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
   const [guardando, setGuardando] = useState(false);
   const [mensajeFeedback, setMensajeFeedback] = useState(null);
 
-  // 3.5. Estado de Filas Dinámicas Inmutables por Subpunto
+  // 3.5. Estado de Filas Dinámicas e Inmutabilidad por Subpunto
   const HORAS_DEFECTO = ['10:00', '16:00', '22:00', '05:00'];
   const [filasExtra, setFilasExtra] = useState({});
+
+  // Map de subpuntos activos por cada categoría en la vista continua
+  const [subpuntosActivosMap, setSubpuntosActivosMap] = useState({
+    DOMOS: 'DOMO_ALTA',
+    VAPOR: 'VAPOR_SC_ALTA',
+    CONDENSADO: 'CONDENSADO',
+    ALIMENTACION: 'AGUA_ALIMENTACION',
+    PLANTAS_AGUA: 'PLANTA_DESMI',
+    CIRCULACION_CLORACION: 'AGUA_CIRCULACION'
+  });
+
+  // Rastrear borradores no guardados para el Botón Maestro
+  const [paramsBorrador, setParamsBorrador] = useState({});
+  const [subpuntoParaGrafico, setSubpuntoParaGrafico] = useState('DOMO_ALTA');
+  const [catParaGrafico, setCatParaGrafico] = useState(PUNTOS_MUESTREO[0]);
+
+  const handleParamChange = (subpuntoId, hora, paramsObj) => {
+    const key = `${subpuntoId}_${hora}`;
+    setParamsBorrador(prev => ({
+      ...prev,
+      [key]: { subpuntoId, hora, paramsObj }
+    }));
+  };
+
+  // Guardar Todos los Análisis (Planilla Completa)
+  const handleGuardarTodo = async () => {
+    setGuardando(true);
+    setMensajeFeedback(null);
+
+    const keys = Object.keys(paramsBorrador);
+
+    // Recopilar todos los datos presentes en los borradores y muestras locales
+    const registrosGuardar = [];
+    const timestamp = new Date().toISOString();
+
+    if (keys.length > 0) {
+      for (const k of keys) {
+        const { subpuntoId, hora, paramsObj } = paramsBorrador[k];
+        const tieneDatos = Object.values(paramsObj).some(v => v !== undefined && v !== null && String(v).trim() !== '');
+        if (!tieneDatos) continue;
+
+        const muestraExistente = muestras.find(m => m.punto_muestreo === subpuntoId && m.hora === hora);
+
+        registrosGuardar.push({
+          id: muestraExistente?.id || undefined,
+          fecha: fechaSeleccionada,
+          hora: hora,
+          punto_muestreo: subpuntoId,
+          parametros: paramsObj,
+          usuario_email: sesionQuimica.email,
+          rol: sesionQuimica.rol,
+          created_at: timestamp
+        });
+      }
+    }
+
+    if (registrosGuardar.length === 0) {
+      setMensajeFeedback({
+        tipo: 'info',
+        texto: 'Por favor ingrese o modifique algún valor en las tablas antes de guardar la planilla.'
+      });
+      setGuardando(false);
+      return;
+    }
+
+    if (supabase) {
+      try {
+        const { error: errSave } = await supabase
+          .from('analisis_quimicos')
+          .upsert(registrosGuardar, { onConflict: 'id' });
+
+        if (!errSave) {
+          await supabase.from('auditoria_quimica').insert([{
+            timestamp: timestamp,
+            usuario_email: sesionQuimica.email,
+            rol: sesionQuimica.rol,
+            accion: 'INGRESO_MASIVO',
+            punto_muestreo: 'PLANILLA_COMPLETA',
+            detalle: {
+              fecha: fechaSeleccionada,
+              cantidad_registros: registrosGuardar.length
+            }
+          }]);
+        }
+      } catch (e) {
+        console.warn('Error guardando en Supabase:', e);
+      }
+    }
+
+    const copiaMuestras = [...muestras];
+    registrosGuardar.forEach(reg => {
+      const idx = copiaMuestras.findIndex(m => m.punto_muestreo === reg.punto_muestreo && m.hora === reg.hora);
+      if (idx >= 0) {
+        copiaMuestras[idx] = { ...copiaMuestras[idx], parametros: reg.parametros };
+      } else {
+        copiaMuestras.push(reg);
+      }
+    });
+
+    setMuestras(copiaMuestras);
+
+    try {
+      localStorage.setItem(`quimica_muestras_${fechaSeleccionada}`, JSON.stringify(copiaMuestras));
+    } catch (_) {}
+
+    setMensajeFeedback({
+      tipo: 'success',
+      texto: `✅ Planilla Completa Guardada Exitosamente: Se procesaron y auditaron ${registrosGuardar.length} muestra(s).`
+    });
+    setGuardando(false);
+    cargarAuditoria();
+  };
 
   const obtenerFilasSubpunto = (subpuntoId) => {
     const base = HORAS_DEFECTO.map(h => ({
@@ -933,127 +1050,173 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
             </div>
           </div>
 
-          {/* Pestañas Horizontales de Categorías */}
-          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none">
+          {/* Botones de Navegación Rápida por Secciones (Scroll Suave) */}
+          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none sticky top-16 z-30 py-2 bg-slate-950/80 backdrop-blur-md rounded-xl border border-slate-800/80 px-2">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-1 px-2 shrink-0">
+              <Layers className="w-3.5 h-3.5" />
+              <span>Vista Continua:</span>
+            </span>
             {PUNTOS_MUESTREO.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setCategoriaActiva(cat.id)}
-                className={`px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider shrink-0 transition-all border flex items-center gap-2 ${
-                  categoriaActiva === cat.id
-                    ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white border-cyan-400 shadow-lg shadow-cyan-900/40 scale-105'
-                    : modoNocturno
-                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById(`sec_${cat.id}`);
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs shrink-0 transition-all border flex items-center gap-1.5 cursor-pointer ${
+                  modoNocturno
+                    ? 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800'
+                    : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <FlaskConical className="w-4 h-4" />
+                <FlaskConical className="w-3.5 h-3.5 text-cyan-400" />
                 <span>{cat.nombre.split(' (')[0]}</span>
               </button>
             ))}
           </div>
 
-          {/* Sub-Pestañas / Subpuntos de Muestreo de la Categoría Activa */}
-          {categoriaObjActiva && (
-            <div className={`p-4 sm:p-6 rounded-2xl border shadow-xl space-y-6 backdrop-blur-md ${
-              modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'
-            }`}>
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-                <div>
-                  <h2 className="text-base font-black uppercase tracking-wider text-cyan-400">
-                    {categoriaObjActiva.nombre}
-                  </h2>
-                  <p className={`text-xs mt-0.5 ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Seleccione el equipo o subpunto de control químico para ingresar o auditar lecturas
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {categoriaObjActiva.subpuntos.map((sub) => (
-                    <button
-                      key={sub.id}
-                      onClick={() => setSubpuntoActivo(sub.id)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
-                        subpuntoActivo === sub.id
-                          ? 'bg-teal-600 text-white border-teal-400 shadow-md'
-                          : modoNocturno
-                          ? 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                          : 'bg-slate-100 border-slate-300 text-slate-700'
-                      }`}
-                    >
-                      {sub.nombre}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => setModalGraficoAbierto(true)}
-                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer ml-1"
-                    title={`Ver gráfico de tendencia histórica de ${categoriaObjActiva.nombre}`}
-                  >
-                    <TrendingUp className="w-3.5 h-3.5 text-white" />
-                    <span>Ver Tendencias 📈</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* TABLA DE TOMA DE MUESTRAS POR HORARIOS */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono border-collapse">
-                  <thead>
-                    <tr className={`border-b ${
-                      modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-300 text-slate-700 bg-slate-100'
-                    }`}>
-                      <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
-                      {categoriaObjActiva.parametros.map((p) => (
-                        <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
-                          <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
-                          <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
-                            {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
-                          </span>
-                        </th>
-                      ))}
-                      <th className="p-3.5 text-center w-36 shrink-0">Acciones / Guardar</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {obtenerFilasSubpunto(subpuntoActivo).map((filaObj) => (
-                      <FilaMuestraRow
-                        key={filaObj.id || `${subpuntoActivo}_${filaObj.hora}`}
-                        filaObj={filaObj}
-                        subpuntoActivo={subpuntoActivo}
-                        fechaSeleccionada={fechaSeleccionada}
-                        categoriaObjActiva={categoriaObjActiva}
-                        modoNocturno={modoNocturno}
-                        obtenerFilaMuestra={obtenerFilaMuestra}
-                        esFueraDeRango={esFueraDeRango}
-                        obtenerMotivoFueraRango={obtenerMotivoFueraRango}
-                        handleGuardarMuestra={handleGuardarMuestra}
-                        handleEliminarFilaRow={handleEliminarFilaRow}
-                        handleCambiarHoraFilaExtra={handleCambiarHoraFilaExtra}
-                        guardando={guardando}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Botón "+ Agregar Análisis" Extra */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
-                <button
-                  type="button"
-                  onClick={() => handleAgregarFilaExtra(subpuntoActivo)}
-                  className="px-4 py-2.5 rounded-xl border border-cyan-500/50 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer transform hover:scale-[1.01]"
+          {/* VISTA CONTINUA: TODAS LAS SECCIONES DE PLANILLA APILADAS VERTICALMENTE */}
+          <div className="space-y-8">
+            {PUNTOS_MUESTREO.map((catObj) => {
+              const subpuntoActivoEnCat = subpuntosActivosMap[catObj.id] || catObj.subpuntos[0].id;
+              return (
+                <div
+                  id={`sec_${catObj.id}`}
+                  key={catObj.id}
+                  className={`p-4 sm:p-6 rounded-2xl border shadow-xl space-y-5 backdrop-blur-md transition-all ${
+                    modoNocturno ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'
+                  }`}
                 >
-                  <Plus className="w-4 h-4 text-cyan-400" />
-                  <span>+ Agregar Análisis</span>
-                </button>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3.5">
+                    <div>
+                      <h2 className="text-base font-black uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+                        <FlaskConical className="w-5 h-5 text-teal-400" />
+                        <span>{catObj.nombre}</span>
+                      </h2>
+                      <p className={`text-xs mt-0.5 ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Planilla de control químico continuo para {catObj.nombre}
+                      </p>
+                    </div>
 
-                <span className="text-[11px] text-slate-400 font-mono">
-                  Total análisis cargados: <strong className="text-white">{obtenerFilasSubpunto(subpuntoActivo).length}</strong>
-                </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {catObj.subpuntos.map((sub) => (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => setSubpuntosActivosMap(prev => ({ ...prev, [catObj.id]: sub.id }))}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                            subpuntoActivoEnCat === sub.id
+                              ? 'bg-teal-600 text-white border-teal-400 shadow-md'
+                              : modoNocturno
+                              ? 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                              : 'bg-slate-100 border-slate-300 text-slate-700'
+                          }`}
+                        >
+                          {sub.nombre}
+                        </button>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSubpuntoParaGrafico(subpuntoActivoEnCat);
+                          setCatParaGrafico(catObj);
+                          setModalGraficoAbierto(true);
+                        }}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold border border-cyan-400/50 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+                        title={`Ver gráfico de tendencia histórica de ${catObj.nombre}`}
+                      >
+                        <TrendingUp className="w-3.5 h-3.5 text-white" />
+                        <span>Ver Tendencias 📈</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* TABLA DE TOMA DE MUESTRAS POR HORARIOS */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-mono border-collapse">
+                      <thead>
+                        <tr className={`border-b ${
+                          modoNocturno ? 'border-slate-800 text-slate-300 bg-slate-950' : 'border-slate-300 text-slate-700 bg-slate-100'
+                        }`}>
+                          <th className="p-3.5 border-r border-slate-800 w-24 shrink-0">Hora</th>
+                          {catObj.parametros.map((p) => (
+                            <th key={p.key} className="p-3.5 text-center border-r border-slate-800 w-28 min-w-[110px]">
+                              <span className="block font-bold text-slate-100 text-xs">{p.label}</span>
+                              <span className="text-[11px] text-amber-400 font-bold block mt-0.5">
+                                {p.textRango || (p.unit ? `(${p.unit})` : `(Norma: ${p.min} - ${p.max})`)}
+                              </span>
+                            </th>
+                          ))}
+                          <th className="p-3.5 text-center w-36 shrink-0">Acciones / Guardar</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60">
+                        {obtenerFilasSubpunto(subpuntoActivoEnCat).map((filaObj) => (
+                          <FilaMuestraRow
+                            key={filaObj.id || `${subpuntoActivoEnCat}_${filaObj.hora}`}
+                            filaObj={filaObj}
+                            subpuntoActivo={subpuntoActivoEnCat}
+                            fechaSeleccionada={fechaSeleccionada}
+                            categoriaObjActiva={catObj}
+                            modoNocturno={modoNocturno}
+                            obtenerFilaMuestra={obtenerFilaMuestra}
+                            esFueraDeRango={esFueraDeRango}
+                            obtenerMotivoFueraRango={obtenerMotivoFueraRango}
+                            handleGuardarMuestra={handleGuardarMuestra}
+                            handleEliminarFilaRow={handleEliminarFilaRow}
+                            handleCambiarHoraFilaExtra={handleCambiarHoraFilaExtra}
+                            onParamChange={handleParamChange}
+                            guardando={guardando}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Botón "+ Agregar Análisis" Extra */}
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+                    <button
+                      type="button"
+                      onClick={() => handleAgregarFilaExtra(subpuntoActivoEnCat)}
+                      className="px-4 py-2 rounded-xl border border-cyan-500/50 bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer transform hover:scale-[1.01]"
+                    >
+                      <Plus className="w-4 h-4 text-cyan-400" />
+                      <span>+ Agregar Análisis</span>
+                    </button>
+
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      Total análisis cargados: <strong className="text-white">{obtenerFilasSubpunto(subpuntoActivoEnCat).length}</strong>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* BARRA FLOTANTE MAESTRA: GUARDAR TODOS LOS ANÁLISIS AL FINAL DE LA PÁGINA */}
+          <div className="sticky bottom-4 z-40 mt-8 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 border-2 border-cyan-500/60 shadow-2xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 animate-pulse">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-wider">Guardado Maestro de Planilla Completa</h3>
+                <p className="text-xs text-cyan-300 font-mono">Guarda y audita todas las secciones de la planilla continua en 1 solo clic</p>
               </div>
             </div>
-          )}
+
+            <button
+              type="button"
+              onClick={handleGuardarTodo}
+              disabled={guardando}
+              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-400 hover:to-cyan-500 text-white font-black text-sm uppercase tracking-wider flex items-center gap-2 shadow-xl shadow-teal-900/50 transition-all cursor-pointer transform hover:scale-105"
+            >
+              <Save className="w-5 h-5" />
+              <span>Guardar Todos los Análisis</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -1061,9 +1224,9 @@ export default function AnalisisQuimicos({ sesionQuimica: sesionProp, onLogout: 
       <GraficosTendenciaModal
         isOpen={modalGraficoAbierto}
         onClose={() => setModalGraficoAbierto(false)}
-        puntoMuestreoId={subpuntoActivo}
-        puntoNombre={categoriaObjActiva?.subpuntos?.find(s => s.id === subpuntoActivo)?.nombre || categoriaObjActiva?.nombre || 'Control Químico'}
-        parametrosDisponibles={categoriaObjActiva?.parametros || []}
+        puntoMuestreoId={subpuntoParaGrafico}
+        puntoNombre={catParaGrafico?.subpuntos?.find(s => s.id === subpuntoParaGrafico)?.nombre || catParaGrafico?.nombre || 'Control Químico'}
+        parametrosDisponibles={catParaGrafico?.parametros || []}
         modoNocturno={modoNocturno}
       />
     </div>
