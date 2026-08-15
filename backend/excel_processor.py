@@ -175,8 +175,8 @@ def calcular_resumen_simulado() -> Dict[str, Any]:
         "costo_marginal_usd_mw": 40.3,
         "potencia_esperada_mw": 4004,
         "mw_fuegos_suplementarios": 0,
-        "hrs_carga_base": 18,
-        "hrs_minimo_tecnico": 6,
+        "hrs_carga_base": 0,
+        "hrs_minimo_tecnico": 22,
         "hrs_fuegos_suplementarios": 0
     }
 

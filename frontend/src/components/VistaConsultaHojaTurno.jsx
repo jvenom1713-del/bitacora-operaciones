@@ -1896,11 +1896,11 @@ ${senalesForzadasTexto}
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Horas Carga Base</span>
-                    <strong className="text-slate-100 text-sm font-mono font-bold">{datosGen?.hrsCargaBase || '2'} hrs</strong>
+                    <strong className="text-slate-100 text-sm font-mono font-bold">{datosGen?.hrsCargaBase || '0'} hrs</strong>
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Mínimo Técnico</span>
-                    <strong className="text-purple-300 text-sm font-mono font-bold">{datosGen?.hrsMinTec || '14'} hrs</strong>
+                    <strong className="text-purple-300 text-sm font-mono font-bold">{datosGen?.hrsMinTec || '22'} hrs</strong>
                   </div>
                 </div>
               </div>
