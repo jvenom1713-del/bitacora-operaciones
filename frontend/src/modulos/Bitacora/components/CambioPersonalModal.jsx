@@ -17,6 +17,19 @@ export default function CambioPersonalModal({
   const [reemplazarCheck, setReemplazarCheck] = useState(false);
   const [cargoSeleccionado, setCargoSeleccionado] = useState('Jefe de Turno');
   
+  // Estado local para Tipo de Turno (Diurno / Nocturno)
+  const [tipoTurno, setTipoTurno] = useState(() => {
+    const t = equipoTurno?.tipo_turno || equipoTurno?.turno || localStorage.getItem('tipo_turno_activo') || 'DIURNO';
+    return String(t).toUpperCase() === 'NOCTURNO' ? 'Nocturno' : 'Diurno';
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      const t = equipoTurno?.tipo_turno || equipoTurno?.turno || localStorage.getItem('tipo_turno_activo') || 'DIURNO';
+      setTipoTurno(String(t).toUpperCase() === 'NOCTURNO' ? 'Nocturno' : 'Diurno');
+    }
+  }, [isOpen, equipoTurno]);
+
   // Reemplazos seleccionados por cargo
   const [reemplazoJDT, setReemplazoJDT] = useState(null);
   const [reemplazoOSC, setReemplazoOSC] = useState(null);
@@ -157,9 +170,17 @@ export default function CambioPersonalModal({
 
   const handleConfirmar = () => {
     if (!esValidoParaConfirmar) return;
+    const tipoNorm = tipoTurno.toUpperCase();
+    try {
+      localStorage.setItem('tipo_turno_activo', tipoNorm);
+      window.dispatchEvent(new Event('turno_actualizado'));
+    } catch (_) {}
+
     if (onConfirmarReemplazo) {
       onConfirmarReemplazo({
         ...safeEquipo,
+        tipo_turno: tipoNorm,
+        turno: tipoNorm,
         jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || ''),
         osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || ''),
         ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || ''),
@@ -217,18 +238,48 @@ export default function CambioPersonalModal({
           </div>
         </div>
 
-        {/* SUBHEADER CORPORATIVO INFO */}
-        <div className="grid grid-cols-1 md:grid-cols-3 text-xs font-semibold bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 mb-4">
+        {/* SUBHEADER CORPORATIVO INFO CON TOGGLE DE TIPO DE TURNO */}
+        <div className="grid grid-cols-1 md:grid-cols-3 text-xs font-semibold bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 mb-4 gap-2 items-center">
           <div className="flex items-center">
             <span className="text-slate-400">Usuario:</span>
             <span className="ml-1.5 text-slate-200 font-bold">{usuarioActual?.nombre || 'Jorge Albornoz'}</span>
           </div>
+
+          {/* Selector Explícito Diurno / Nocturno */}
           <div className="flex items-center justify-center">
-            <span className="text-slate-400">Guardia / Rotación:</span>
-            <span className="ml-1.5 text-amber-400 font-bold uppercase">{safeEquipo?.rotacion || 'Guardia Activa'}</span>
+            <div className="flex gap-1.5 p-1 bg-slate-900 rounded-lg border border-slate-700 w-full max-w-[240px]">
+              <button
+                type="button"
+                onClick={() => setTipoTurno('Diurno')}
+                className={`flex-1 py-1 px-2.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  tipoTurno === 'Diurno'
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>Diurno</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTipoTurno('Nocturno')}
+                className={`flex-1 py-1 px-2.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  tipoTurno === 'Nocturno'
+                    ? 'bg-indigo-600 text-white shadow-md font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Moon className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+                <span>Nocturno</span>
+              </button>
+            </div>
           </div>
+
           <div className="flex items-center justify-end font-mono text-[11px]">
-            <span className="text-slate-400 mr-2">Folio:</span>
+            <span className="text-slate-400 mr-2">Guardia:</span>
+            <span className="text-amber-400 font-bold uppercase mr-3">{safeEquipo?.rotacion || 'Guardia Activa'}</span>
+            <span className="text-slate-400 mr-1.5">Folio:</span>
             <span className="bg-slate-800 text-amber-400 px-2 py-0.5 rounded border border-slate-700 font-bold">{folio || '01'}</span>
           </div>
         </div>

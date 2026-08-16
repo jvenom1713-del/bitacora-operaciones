@@ -4190,6 +4190,9 @@ ${extraHtml}
           equipoTurno={turnoActivo?.equipoTurno || turnoActivo?.personal || turnoActivo?.integrantes || equipoTurno}
           folio={folioStr}
           onConfirmarReemplazo={(nuevoEquipo) => {
+            if (nuevoEquipo?.tipo_turno) {
+              handleCambiarTipoTurno(nuevoEquipo.tipo_turno);
+            }
             if (onCambiarPersonal) {
               onCambiarPersonal(nuevoEquipo);
             }
