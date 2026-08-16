@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, ArrowLeft } from 'lucide-react';
+import { Sun, Moon, ArrowLeft, Zap, Activity, ShieldCheck } from 'lucide-react';
 
 export default function LoginPortada({ 
   usuarios = [], 
@@ -24,6 +24,29 @@ export default function LoginPortada({
   };
 
   const [turnoSeleccionado] = useState(calcularTurnoActual);
+
+  const handleAccesoDirecto = (tipoRol) => {
+    let userToUse;
+    if (tipoRol === 'OPERADOR') {
+      userToUse = usuarios.find(u => u.email?.toLowerCase()?.includes('albornoz') || u.rol_codigo === 'OPERADOR_SALA') || {
+        id: 2,
+        nombre: 'Jorge Albornoz',
+        email: 'jalbornoz@generadora.cl',
+        rol_codigo: 'OPERADOR_SALA',
+        rol_nombre: 'Operador Sala de Control'
+      };
+    } else {
+      userToUse = usuarios.find(u => u.email?.toLowerCase()?.includes('atorres') || u.rol_codigo === 'JEFE_TURNO') || {
+        id: 1,
+        nombre: 'Ariel Torres',
+        email: 'atorres@generadora.cl',
+        rol_codigo: 'JEFE_TURNO',
+        rol_nombre: 'Jefe de Turno'
+      };
+    }
+    setUsuarioActual(userToUse);
+    onLogin(userToUse);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -167,7 +190,7 @@ export default function LoginPortada({
           modoNocturno ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'
         }`}>
           
-          <div className="mb-6">
+          <div className="mb-5">
             <h2 className={`text-2xl font-bold tracking-tight mb-1 ${
               modoNocturno ? 'text-white' : 'text-slate-900'
             }`}>
@@ -176,8 +199,47 @@ export default function LoginPortada({
             <p className={`text-xs ${
               modoNocturno ? 'text-slate-400' : 'text-slate-500'
             }`}>
-              Utilice sus credenciales corporativas
+              Seleccione un acceso directo sin credenciales o ingrese con su cuenta
             </p>
+          </div>
+
+          {/* --- SECCIÓN INGRESOS SIN CREDENCIALES --- */}
+          <div className="mb-5 p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/40 shadow-lg space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                Ingreso Sin Credenciales
+              </span>
+              <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/90 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                1-Clic
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleAccesoDirecto('OPERADOR')}
+                className="p-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-xs transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02]"
+              >
+                <Activity className="w-4 h-4 text-emerald-200" />
+                <div className="flex flex-col text-left">
+                  <span className="leading-tight">Sala de Control</span>
+                  <span className="text-[9.5px] font-normal text-emerald-200">Operador</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleAccesoDirecto('JEFE')}
+                className="p-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-black text-xs transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 cursor-pointer transform hover:scale-[1.02]"
+              >
+                <ShieldCheck className="w-4 h-4 text-blue-200" />
+                <div className="flex flex-col text-left">
+                  <span className="leading-tight">Jefe de Turno</span>
+                  <span className="text-[9.5px] font-normal text-blue-200">Supervisión</span>
+                </div>
+              </button>
+            </div>
           </div>
 
           {errorMsg && (
