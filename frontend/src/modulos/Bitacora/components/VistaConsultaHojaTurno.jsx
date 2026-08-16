@@ -4,6 +4,7 @@ import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
+import { MATRIZ_GUARDIAS } from '../../../shared/constants/guardias';
 
 // Componente de Edición de Texto Enriquecido
 function RichTextEditorField({ value, onChange, placeholder, className, style }) {
@@ -116,7 +117,7 @@ export default function VistaConsultaHojaTurno({
 
       const rotRaw = saved?.rotacion || equipoTurno?.rotacion || turnoActivo?.rotacion || turnoActivo?.equipoTurno?.rotacion || 'TIGRES';
       const rot = String(rotRaw).toUpperCase().replace('Á', 'A');
-      const baseOficial = MATRIZ_GUARDIAS[rot] || MATRIZ_GUARDIAS.TIGRES;
+      const baseOficial = (MATRIZ_GUARDIAS && MATRIZ_GUARDIAS[rot]) ? MATRIZ_GUARDIAS[rot] : { rotacion: 'TIGRES', jdt: 'Norman Galaz', osc: 'Jorge Albornoz', ot: 'Matías Cisternas' };
 
       const jdt = saved?.jdt || equipoTurno?.jdt || turnoActivo?.jdt || turnoActivo?.jefe_turno || baseOficial.jdt;
       const osc = saved?.osc || equipoTurno?.osc || turnoActivo?.osc || turnoActivo?.operador || baseOficial.osc;
@@ -135,7 +136,7 @@ export default function VistaConsultaHojaTurno({
         hayContingencia: Boolean(saved?.hayContingencia || equipoTurno?.hayContingencia || saved?.motivoJDT || saved?.motivoOSC || saved?.motivoOT)
       };
     } catch {
-      return MATRIZ_GUARDIAS.TIGRES;
+      return { rotacion: 'TIGRES', jdt: 'Norman Galaz', osc: 'Jorge Albornoz', ot: 'Matías Cisternas' };
     }
   };
 

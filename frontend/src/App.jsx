@@ -1328,31 +1328,36 @@ export default function App() {
     );
     return (
       <>
-        <VistaConsultaHojaTurno 
-          usuarioActual={usuarioActual}
-          turnoActivo={turnoActivo}
-          turnoActual={turnoActual}
-          equipoTurno={equipoTurnoSeleccionado}
-          modoNocturno={modoNocturno}
-          onVolverMenu={volverMenuGenerico}
-          onAprobarBitacora={handleAprobarBitacora}
-          textoBitacora={textoBitacora}
-          setTextoBitacora={setTextoBitacora}
-          matrizEquipos={matrizEquipos}
-          setMatrizEquipos={setMatrizEquipos}
-          parametrosGeneracion={parametrosGeneracion}
-          setParametrosGeneracion={setParametrosGeneracion}
-          esJefeTurno={esJefeTurno}
-          rolActivo={esJefeTurno ? 'Jefe de Turno' : 'Operador'}
-          eventos={eventos}
-          onAbrirTurno={handleAbrirTurno}
-          instruccionesOperacionales={instruccionesOperacionales}
-          setInstruccionesOperacionales={setInstruccionesOperacionales}
-          senalesForzadas={senalesForzadas}
-          setSenalesForzadas={setSenalesForzadas}
-          instruccionesEspeciales={instruccionesEspeciales}
-          setInstruccionesEspeciales={setInstruccionesEspeciales}
-        />
+        <ErrorBoundary
+          title="Error al cargar la Hoja de Turno del Jefe de Turno"
+          onReset={volverMenuGenerico}
+        >
+          <VistaConsultaHojaTurno 
+            usuarioActual={usuarioActual}
+            turnoActivo={turnoActivo}
+            turnoActual={turnoActual}
+            equipoTurno={equipoTurnoSeleccionado}
+            modoNocturno={modoNocturno}
+            onVolverMenu={volverMenuGenerico}
+            onAprobarBitacora={handleAprobarBitacora}
+            textoBitacora={textoBitacora}
+            setTextoBitacora={setTextoBitacora}
+            matrizEquipos={matrizEquipos}
+            setMatrizEquipos={setMatrizEquipos}
+            parametrosGeneracion={parametrosGeneracion}
+            setParametrosGeneracion={setParametrosGeneracion}
+            esJefeTurno={esJefeTurno}
+            rolActivo={esJefeTurno ? 'Jefe de Turno' : 'Operador'}
+            eventos={eventos}
+            onAbrirTurno={handleAbrirTurno}
+            instruccionesOperacionales={instruccionesOperacionales}
+            setInstruccionesOperacionales={setInstruccionesOperacionales}
+            senalesForzadas={senalesForzadas}
+            setSenalesForzadas={setSenalesForzadas}
+            instruccionesEspeciales={instruccionesEspeciales}
+            setInstruccionesEspeciales={setInstruccionesEspeciales}
+          />
+        </ErrorBoundary>
         {demoBarra}
       </>
     );
