@@ -2738,21 +2738,23 @@ ${extraHtml}
 
 
 
-            {/* BOTÓN FLOTANTE DE HORA FIX EN PANTALLA (ALINEADO MÁS A LA IZQUIERDA) */}
-            <div className="fixed top-[135px] left-4 sm:left-6 md:left-8 xl:left-[calc(50%-540px)] z-[999] print:hidden">
-              <button
-                title="Click para insertar la Hora Actual [HH:MM] en la posición activa del texto"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  const ahoraStr = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
-                  aplicarFormatoASeleccion('insertHTML', `<b>${ahoraStr}</b>&nbsp;`);
-                }}
-                className="flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-black text-[11px] py-1 px-2.5 rounded-lg shadow-lg border border-emerald-400/50 backdrop-blur-md transition-all cursor-pointer ring-2 ring-emerald-500/30 transform hover:scale-105"
-              >
-                <Clock className="w-3.5 h-3.5 animate-pulse text-emerald-200" />
-                <span>+ Hora ({new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })})</span>
-              </button>
-            </div>
+            {/* BOTÓN FLOTANTE DE HORA FIX EN PANTALLA (SOLO EN BITÁCORA DIARIA Y CUANDO NO HAYA MODAL ABIERTO) */}
+            {!mostrarModalCambioPersonal && tabActivo === 'BITACORA' && (
+              <div className="fixed top-[135px] left-4 sm:left-6 md:left-8 xl:left-[calc(50%-540px)] z-30 print:hidden">
+                <button
+                  title="Click para insertar la Hora Actual [HH:MM] en la posición activa del texto"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    const ahoraStr = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    aplicarFormatoASeleccion('insertHTML', `<b>${ahoraStr}</b>&nbsp;`);
+                  }}
+                  className="flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-black text-[11px] py-1 px-2.5 rounded-lg shadow-lg border border-emerald-400/50 backdrop-blur-md transition-all cursor-pointer ring-2 ring-emerald-500/30 transform hover:scale-105"
+                >
+                  <Clock className="w-3.5 h-3.5 animate-pulse text-emerald-200" />
+                  <span>+ Hora ({new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })})</span>
+                </button>
+              </div>
+            )}
 
             {/* Hoja de Documento Bitácora Diaria */}
             <div className={`p-6 sm:p-10 rounded-lg shadow-2xl flex justify-center relative print:p-0 print:bg-white print:shadow-none print:w-full ${
