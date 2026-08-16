@@ -286,6 +286,11 @@ export default function DashboardIniciarTurno({
   const handleCambiarTipoTurno = (nuevoTipo) => {
     const norm = String(nuevoTipo).toUpperCase();
     setTipoTurnoState(norm);
+    if (norm === 'DIURNO') {
+      if (setModoNocturno) setModoNocturno(false);
+    } else if (norm === 'NOCTURNO') {
+      if (setModoNocturno) setModoNocturno(true);
+    }
     try {
       localStorage.setItem('tipo_turno_activo', norm);
       window.dispatchEvent(new Event('turno_actualizado'));

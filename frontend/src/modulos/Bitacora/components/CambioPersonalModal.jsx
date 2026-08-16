@@ -212,17 +212,23 @@ export default function CambioPersonalModal({
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
       
       {/* Tarjeta central del modal */}
-      <div className={`bg-slate-900 border border-slate-700 text-white rounded-2xl p-6 max-w-4xl w-full shadow-2xl relative z-10 overflow-hidden my-auto transition-all duration-300 ${
-        modoNocturno ? 'bg-slate-900/95 border-slate-800' : 'bg-slate-900 border-slate-700'
+      <div className={`rounded-2xl p-6 max-w-4xl w-full shadow-2xl relative z-10 overflow-hidden my-auto transition-all duration-300 ${
+        modoNocturno 
+          ? 'bg-slate-900 border border-slate-700 text-white' 
+          : 'bg-white border border-slate-200 text-slate-900 shadow-2xl'
       }`}>
 
         {/* HEADER CORPORATIVO SUPERIOR CON BOTÓN DE CIERRE (X) Y MODO NOCTURNO */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className={`flex items-center justify-between border-b pb-3 mb-4 ${
+          modoNocturno ? 'border-slate-800' : 'border-slate-200'
+        }`}>
           <div className="flex items-center gap-3">
             <span className="font-black text-xl text-orange-500 tracking-tight">
-              <span className="text-white">G</span>METROPOLITANA
+              <span className={modoNocturno ? "text-white" : "text-slate-900"}>G</span>METROPOLITANA
             </span>
-            <span className="text-xs text-slate-400 font-semibold border-l border-slate-700 pl-3">
+            <span className={`text-xs font-semibold border-l pl-3 ${
+              modoNocturno ? 'text-slate-400 border-slate-700' : 'text-slate-600 border-slate-300'
+            }`}>
               Cambio de Personal de Turno
             </span>
           </div>
@@ -232,15 +238,23 @@ export default function CambioPersonalModal({
               type="button"
               onClick={() => setModoNocturno && setModoNocturno(!modoNocturno)}
               title={modoNocturno ? "Cambiar a Modo Diurno" : "Cambiar a Modo Nocturno"}
-              className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-colors"
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                modoNocturno 
+                  ? 'bg-slate-800 border-slate-700 text-amber-400 hover:bg-slate-700' 
+                  : 'bg-slate-100 border-slate-300 text-amber-600 hover:bg-slate-200'
+              }`}
             >
-              {modoNocturno ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-slate-300" />}
+              {modoNocturno ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-indigo-600" />}
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                modoNocturno 
+                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700' 
+                  : 'bg-slate-100 border-slate-300 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+              }`}
               title="Cerrar modal"
             >
               <X className="w-5 h-5" />
@@ -249,71 +263,98 @@ export default function CambioPersonalModal({
         </div>
 
         {/* SUBHEADER CORPORATIVO INFO CON TOGGLE DE TIPO DE TURNO */}
-        <div className="grid grid-cols-1 md:grid-cols-3 text-xs font-semibold bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 mb-4 gap-2 items-center">
+        <div className={`grid grid-cols-1 md:grid-cols-3 text-xs font-semibold rounded-xl p-2.5 mb-4 gap-2 items-center border ${
+          modoNocturno 
+            ? 'bg-slate-950/80 border-slate-800 text-slate-200' 
+            : 'bg-slate-100 border-slate-200 text-slate-800'
+        }`}>
           <div className="flex items-center">
-            <span className="text-slate-400">Usuario:</span>
-            <span className="ml-1.5 text-slate-200 font-bold">{usuarioActual?.nombre || 'Jorge Albornoz'}</span>
+            <span className={modoNocturno ? "text-slate-400" : "text-slate-600 font-medium"}>Usuario:</span>
+            <span className={`ml-1.5 font-bold ${modoNocturno ? "text-slate-200" : "text-slate-900"}`}>{usuarioActual?.nombre || 'Jorge Albornoz'}</span>
           </div>
 
           {/* Selector Explícito Diurno / Nocturno */}
           <div className="flex items-center justify-center">
-            <div className="flex gap-1.5 p-1 bg-slate-900 rounded-lg border border-slate-700 w-full max-w-[240px]">
+            <div className={`flex gap-1.5 p-1 rounded-lg border w-full max-w-[240px] ${
+              modoNocturno ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300 shadow-inner'
+            }`}>
               <button
                 type="button"
-                onClick={() => setTipoTurno('Diurno')}
-                className={`flex-1 py-1 px-2.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  tipoTurno === 'Diurno'
+                onClick={() => {
+                  setTipoTurno('Diurno');
+                  if (setModoNocturno) setModoNocturno(false);
+                }}
+                className={`flex-1 py-1 px-2.5 rounded-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  tipoTurno === 'Diurno' || !modoNocturno
                     ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <Sun className={`w-3.5 h-3.5 shrink-0 ${tipoTurno === 'Diurno' || !modoNocturno ? 'text-slate-950' : 'text-amber-400'}`} />
                 <span>Diurno</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setTipoTurno('Nocturno')}
-                className={`flex-1 py-1 px-2.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  tipoTurno === 'Nocturno'
+                onClick={() => {
+                  setTipoTurno('Nocturno');
+                  if (setModoNocturno) setModoNocturno(true);
+                }}
+                className={`flex-1 py-1 px-2.5 rounded-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  tipoTurno === 'Nocturno' && modoNocturno
                     ? 'bg-indigo-600 text-white shadow-md font-black'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <Moon className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+                <Moon className={`w-3.5 h-3.5 shrink-0 ${tipoTurno === 'Nocturno' && modoNocturno ? 'text-white' : 'text-indigo-500'}`} />
                 <span>Nocturno</span>
               </button>
             </div>
           </div>
 
           <div className="flex items-center justify-end font-mono text-[11px]">
-            <span className="text-slate-400 mr-2">Guardia:</span>
-            <span className="text-amber-400 font-bold uppercase mr-3">{safeEquipo?.rotacion || 'Guardia Activa'}</span>
-            <span className="text-slate-400 mr-1.5">Folio:</span>
-            <span className="bg-slate-800 text-amber-400 px-2 py-0.5 rounded border border-slate-700 font-bold">{folio || '01'}</span>
+            <span className={modoNocturno ? "text-slate-400 mr-2" : "text-slate-600 mr-2 font-medium"}>Guardia:</span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold uppercase mr-3">{safeEquipo?.rotacion || 'Guardia Activa'}</span>
+            <span className={modoNocturno ? "text-slate-400 mr-1.5" : "text-slate-600 mr-1.5 font-medium"}>Folio:</span>
+            <span className={`px-2 py-0.5 rounded border font-bold ${
+              modoNocturno ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-white text-amber-600 border-slate-300 shadow-sm'
+            }`}>{folio || '01'}</span>
           </div>
         </div>
 
         {/* SUBHEADER AZUL - EQUIPO DE TURNO ACTUAL DINÁMICO */}
-        <div className="bg-[#0f2b48] text-white text-center text-xs font-bold uppercase tracking-wider rounded-xl overflow-hidden mb-6 border border-blue-900 shadow-md">
-          <div className="py-2 font-extrabold text-sm tracking-wide bg-[#0b2545]">
+        <div className={`text-center text-xs font-bold uppercase tracking-wider rounded-xl overflow-hidden mb-6 border shadow-md ${
+          modoNocturno ? 'bg-[#0f2b48] text-white border-blue-900' : 'bg-blue-600 text-white border-blue-700'
+        }`}>
+          <div className={`py-2 font-extrabold text-sm tracking-wide ${
+            modoNocturno ? 'bg-[#0b2545]' : 'bg-blue-700/90 text-white'
+          }`}>
             EQUIPO DE TURNO ACTUAL
           </div>
           {!hayEquipoAsignado ? (
-            <div className="p-3 text-center text-xs text-slate-300 italic font-medium bg-[#0a2340]">
+            <div className={`p-3 text-center text-xs italic font-medium ${
+              modoNocturno ? 'bg-[#0a2340] text-slate-300' : 'bg-blue-50 text-blue-900'
+            }`}>
               Sin personal asignado al turno
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 text-[11px] font-semibold divide-y sm:divide-y-0 sm:divide-x divide-blue-800 bg-[#0a2340]">
+            <div className={`grid grid-cols-1 sm:grid-cols-3 text-[11px] font-semibold divide-y sm:divide-y-0 sm:divide-x ${
+              modoNocturno ? 'bg-[#0a2340] divide-blue-800' : 'bg-blue-50/90 text-slate-800 divide-blue-200'
+            }`}>
               {integrantesActuales.map((miembro) => (
                 <div key={miembro.rolKey} className="py-2.5 px-2 text-center">
-                  <span className="block text-blue-300 text-[10px] font-extrabold tracking-wide uppercase">{miembro.etiqueta}</span>
+                  <span className={`block text-[10px] font-extrabold tracking-wide uppercase ${
+                    modoNocturno ? 'text-blue-300' : 'text-blue-800'
+                  }`}>{miembro.etiqueta}</span>
                   {miembro.nombre ? (
-                    <span className={miembro.esReemplazado ? "text-amber-400 font-bold block" : "text-white font-bold block"}>
+                    <span className={miembro.esReemplazado 
+                      ? "text-amber-600 dark:text-amber-400 font-bold block" 
+                      : (modoNocturno ? "text-white font-bold block" : "text-slate-900 font-bold block")
+                    }>
                       {miembro.esReemplazado ? `${miembro.nuevoNombre} (Reemplazo)` : miembro.nombre}
                     </span>
                   ) : (
-                    <span className="text-slate-400 italic block text-[10px]">Sin personal asignado</span>
+                    <span className={modoNocturno ? "text-slate-400 italic block text-[10px]" : "text-slate-500 italic block text-[10px]"}>Sin personal asignado</span>
                   )}
                 </div>
               ))}
@@ -330,24 +371,24 @@ export default function CambioPersonalModal({
             {/* Checkbox Habilitador de Reemplazo */}
             <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setReemplazarCheck(!reemplazarCheck)}>
               {reemplazarCheck ? (
-                <CheckSquare className="w-5 h-5 text-amber-500" />
+                <CheckSquare className="w-5 h-5 text-amber-500 shrink-0" />
               ) : (
-                <Square className="w-5 h-5 text-slate-500" />
+                <Square className={`w-5 h-5 shrink-0 ${modoNocturno ? 'text-slate-500' : 'text-slate-400'}`} />
               )}
-              <span className="text-sm font-bold text-slate-200">Reemplazar personal de Turno</span>
+              <span className={`text-sm font-bold ${modoNocturno ? 'text-slate-200' : 'text-slate-800'}`}>Reemplazar personal de Turno</span>
             </div>
 
             {/* Select Dropdown Cargo */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Seleccionar Cargo a Reemplazar</label>
+              <label className={`block text-xs font-bold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-700'}`}>Seleccionar Cargo a Reemplazar</label>
               <select
                 disabled={!reemplazarCheck}
                 value={cargoSeleccionado}
                 onChange={(e) => setCargoSeleccionado(e.target.value)}
                 className={`w-full text-xs font-bold py-2.5 px-3 rounded-lg border transition-colors ${
                   !reemplazarCheck
-                    ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700'
-                    : 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    ? (modoNocturno ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700' : 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200')
+                    : (modoNocturno ? 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm')
                 }`}
               >
                 <option value="Jefe de Turno">Jefe de Turno</option>
@@ -358,14 +399,14 @@ export default function CambioPersonalModal({
 
             {/* Lista Interactiva de Personal de Turno Regular */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Personal de Turno Disponible ({cargoSeleccionado})</label>
+              <label className={`block text-xs font-bold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-700'}`}>Personal de Turno Disponible ({cargoSeleccionado})</label>
               <div className={`rounded-xl border p-2 space-y-1.5 text-xs max-h-44 overflow-y-auto ${
                 !reemplazarCheck
-                  ? 'opacity-50 pointer-events-none bg-slate-800/40 border-slate-700'
-                  : 'bg-slate-800/80 border-slate-700'
+                  ? (modoNocturno ? 'opacity-50 pointer-events-none bg-slate-800/40 border-slate-700' : 'opacity-50 pointer-events-none bg-slate-100 border-slate-200')
+                  : (modoNocturno ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-50 border-slate-200')
               }`}>
                 {(candidatosFiltrados || []).length === 0 ? (
-                  <div className="p-3 text-center opacity-60 italic text-[11px] text-slate-400">
+                  <div className={`p-3 text-center opacity-60 italic text-[11px] ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
                     No hay otros candidatos disponibles para este cargo (personas ya asignadas al turno).
                   </div>
                 ) : (
@@ -377,8 +418,8 @@ export default function CambioPersonalModal({
                         onClick={() => handleSeleccionarCandidato(c)}
                         className={`p-2 rounded-lg cursor-pointer transition-all border font-medium flex items-center justify-between ${
                           esSel
-                            ? 'bg-amber-600/20 border-amber-500 text-amber-300 font-bold shadow-sm'
-                            : 'border-slate-700/60 hover:bg-slate-700/50 text-slate-300'
+                            ? (modoNocturno ? 'bg-amber-600/20 border-amber-500 text-amber-300 font-bold shadow-sm' : 'bg-amber-100 border-amber-500 text-amber-900 font-bold shadow-sm')
+                            : (modoNocturno ? 'border-slate-700/60 hover:bg-slate-700/50 text-slate-300' : 'border-slate-200 hover:bg-slate-200/60 text-slate-800')
                         }`}
                       >
                         <span>{c?.nombre}</span>
@@ -392,15 +433,15 @@ export default function CambioPersonalModal({
 
             {/* Recuadro de Guardia de Contingencia */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Guardia Contingencia</label>
+              <label className={`block text-xs font-bold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-700'}`}>Guardia Contingencia</label>
               <select
                 disabled={!reemplazarCheck}
                 value={guardiaContingenciaSel}
                 onChange={handleSeleccionarContingencia}
                 className={`w-full text-xs font-bold py-2.5 px-3 rounded-lg border transition-colors ${
                   !reemplazarCheck
-                    ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700'
-                    : 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    ? (modoNocturno ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700' : 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200')
+                    : (modoNocturno ? 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm')
                 }`}
               >
                 <option value="">-- Seleccionar de Contingencia --</option>
@@ -418,8 +459,10 @@ export default function CambioPersonalModal({
           <div className="space-y-4">
             
             {/* Campo Motivo de Reemplazo */}
-            <div className="p-4 rounded-xl border border-slate-700 bg-slate-800/80 space-y-2">
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+            <div className={`p-4 rounded-xl border space-y-2 ${
+              modoNocturno ? 'border-slate-700 bg-slate-800/80' : 'border-slate-200 bg-slate-50'
+            }`}>
+              <label className={`block text-xs font-bold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-700'}`}>
                 Motivo de reemplazo
               </label>
 
@@ -429,8 +472,8 @@ export default function CambioPersonalModal({
                 onChange={(e) => setTipoMotivo(e.target.value)}
                 className={`w-full text-xs font-semibold p-2.5 rounded-lg border transition-all ${
                   !reemplazarCheck
-                    ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700'
-                    : 'bg-slate-900 border-slate-700 text-white focus:outline-none focus:border-blue-500'
+                    ? (modoNocturno ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700' : 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200')
+                    : (modoNocturno ? 'bg-slate-900 border-slate-700 text-white focus:outline-none focus:border-blue-500' : 'bg-white border-slate-300 text-slate-900 focus:outline-none focus:border-blue-500 shadow-sm')
                 }`}
               >
                 <option value="Licencia médica">Licencia médica</option>
@@ -443,16 +486,20 @@ export default function CambioPersonalModal({
             </div>
 
             {/* Resumen de Reemplazos Confirmados */}
-            <div className="rounded-xl border border-slate-700 bg-slate-800/60 overflow-hidden text-xs divide-y divide-slate-700">
+            <div className={`rounded-xl border overflow-hidden text-xs divide-y ${
+              modoNocturno 
+                ? 'border-slate-700 bg-slate-800/60 divide-slate-700' 
+                : 'border-slate-200 bg-slate-50 divide-slate-200'
+            }`}>
               {/* Fila Jefe de Turno */}
               <div className="p-3 space-y-1">
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-300">Reemplazo Jefe de Turno</span>
-                  <span className="text-amber-400 font-bold">
+                  <span className={modoNocturno ? "text-slate-300" : "text-slate-700"}>Reemplazo Jefe de Turno</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">
                     {(reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : '—'}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <div className={`flex justify-between text-[11px] font-mono ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
                   <span>Correo Electrónico</span>
                   <span>{(reemplazarCheck && reemplazoJDT?.email) ? reemplazoJDT.email : '—'}</span>
                 </div>
@@ -461,12 +508,12 @@ export default function CambioPersonalModal({
               {/* Fila Operador Sala */}
               <div className="p-3 space-y-1">
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-300">Reemplazo Operador Sala</span>
-                  <span className="text-amber-400 font-bold">
+                  <span className={modoNocturno ? "text-slate-300" : "text-slate-700"}>Reemplazo Operador Sala</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">
                     {(reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : '—'}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <div className={`flex justify-between text-[11px] font-mono ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
                   <span>Correo Electrónico</span>
                   <span>{(reemplazarCheck && reemplazoOSC?.email) ? reemplazoOSC.email : '—'}</span>
                 </div>
@@ -475,12 +522,12 @@ export default function CambioPersonalModal({
               {/* Fila Operador Terreno */}
               <div className="p-3 space-y-1">
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-300">Reemplazo Operador Terreno</span>
-                  <span className="text-amber-400 font-bold">
+                  <span className={modoNocturno ? "text-slate-300" : "text-slate-700"}>Reemplazo Operador Terreno</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">
                     {(reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : '—'}
                   </span>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <div className={`flex justify-between text-[11px] font-mono ${modoNocturno ? 'text-slate-400' : 'text-slate-500'}`}>
                   <span>Correo Electrónico</span>
                   <span>{(reemplazarCheck && reemplazoOT?.email) ? reemplazoOT.email : '—'}</span>
                 </div>
@@ -492,11 +539,17 @@ export default function CambioPersonalModal({
         </div>
 
         {/* PIE DE TARJETA CON BOTÓN CANCELAR (X / VOLVER) Y CONFIRMAR REEMPLAZO DESHABILITADO HASTA VALIDACIÓN */}
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+        <div className={`pt-4 border-t flex items-center justify-between ${
+          modoNocturno ? 'border-slate-800' : 'border-slate-200'
+        }`}>
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors text-xs font-bold cursor-pointer"
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${
+              modoNocturno 
+                ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                : 'border-slate-300 text-slate-700 hover:bg-slate-100 bg-white shadow-sm'
+            }`}
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Cancelar</span>
@@ -509,7 +562,7 @@ export default function CambioPersonalModal({
             className={`font-bold text-xs py-2.5 px-6 rounded-xl transition-all duration-200 ${
               esValidoParaConfirmar
                 ? 'bg-amber-600 hover:bg-amber-500 text-white cursor-pointer shadow-lg shadow-amber-600/20 transform hover:scale-[1.01]'
-                : 'bg-slate-700 text-slate-400 cursor-not-allowed opacity-50 shadow-none'
+                : (modoNocturno ? 'bg-slate-700 text-slate-400 cursor-not-allowed opacity-50 shadow-none' : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 shadow-none')
             }`}
           >
             Reemplazar personal de turno
