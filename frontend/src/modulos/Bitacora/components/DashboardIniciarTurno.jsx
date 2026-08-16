@@ -1325,21 +1325,29 @@ ${extraHtml}
   };
 
   const aplicarDatos = (data) => {
-    setParametros(prev => ({
-      ...prev,
-      despachoCNR: data.despachoCNR ?? prev.despachoCNR,
-      sistemaProm: (data.sistemaProm && data.sistemaProm !== '0') ? data.sistemaProm : (prev.sistemaProm !== '0' ? prev.sistemaProm : '53.4'),
-      potEspera: data.potEspera ?? prev.potEspera,
-      fuegosSuplemen: data.fuegosSuplemen ?? prev.fuegosSuplemen,
-      hrsCargaBase: data.hrsCargaBase ?? prev.hrsCargaBase,
-      hrsMinTec: data.hrsMinTec ?? prev.hrsMinTec,
-      hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev.hrsFuegosSuplem,
-      milesM3Gas: data.milesM3Gas ?? prev.milesM3Gas,
-      m3FA: data.m3FA ?? prev.m3FA,
-      m3Diesel: data.m3Diesel ?? prev.m3Diesel,
-      kgGasGLP: data.kgGasGLP ?? prev.kgGasGLP,
-      costoMarginal: data.costoMarginal ?? prev.costoMarginal
-    }));
+    if (!data) return;
+    setParametros(prev => {
+      const actualizados = {
+        ...prev,
+        despachoCNR: data.despachoCNR || prev.despachoCNR || 'En servicio',
+        sistemaProm: data.sistemaProm || '52.9',
+        potEspera: data.potEspera || '1311',
+        fuegosSuplemen: data.fuegosSuplemen ?? prev.fuegosSuplemen ?? '0',
+        hrsCargaBase: data.hrsCargaBase ?? prev.hrsCargaBase ?? '0',
+        hrsMinTec: data.hrsMinTec ?? prev.hrsMinTec ?? '7',
+        hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev.hrsFuegosSuplem ?? '0',
+        milesM3Gas: data.milesM3Gas ?? prev.milesM3Gas ?? '0',
+        m3FA: data.m3FA ?? prev.m3FA ?? '0',
+        m3Diesel: data.m3Diesel ?? prev.m3Diesel ?? '0',
+        kgGasGLP: data.kgGasGLP ?? prev.kgGasGLP ?? '0',
+        costoMarginal: data.costoMarginal || '39.0'
+      };
+      try {
+        localStorage.setItem('bitacora_parametros', JSON.stringify(actualizados));
+        window.dispatchEvent(new Event('parametros_actualizados'));
+      } catch (_) {}
+      return actualizados;
+    });
   };
 
   const calcularMatrizDinamica = (datosEntrada = {}, bloquesMW = null) => {
