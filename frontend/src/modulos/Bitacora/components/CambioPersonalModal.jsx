@@ -195,35 +195,40 @@ export default function CambioPersonalModal({
   };
 
   // Validación para habilitar el botón "Reemplazar personal de turno"
-  const esValidoParaConfirmar = reemplazarCheck && (Boolean(reemplazoJDT) || Boolean(reemplazoOSC) || Boolean(reemplazoOT)) && Boolean(tipoMotivo && tipoMotivo.trim() !== '');
+  const hayReemplazoSeleccionado = Boolean(reemplazoJDT || reemplazoOSC || reemplazoOT);
+  const esValidoParaConfirmar = hayReemplazoSeleccionado || reemplazarCheck;
 
   const handleConfirmar = () => {
-    if (!esValidoParaConfirmar) return;
     const tipoNorm = tipoTurno.toUpperCase();
     try {
       localStorage.setItem('tipo_turno_activo', tipoNorm);
     } catch (_) {}
+
+    const nuevoJdt = reemplazoJDT?.nombre || jdtActual;
+    const nuevoOsc = reemplazoOSC?.nombre || oscActual;
+    const nuevoOt = reemplazoOT?.nombre || otActual;
+    const motivoUsar = (tipoMotivo && tipoMotivo.trim() !== '') ? tipoMotivo : 'Licencia médica';
 
     const payload = {
       ...safeEquipo,
       tipo_turno: tipoNorm,
       turno: tipoNorm,
       rotacion: safeEquipo?.rotacion || equipoGuardado?.rotacion || 'TIGRES',
-      jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : jdtActual,
-      osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : oscActual,
-      ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : otActual,
-      jefe_turno: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : jdtActual,
-      operador: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : oscActual,
-      personal_turno: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : otActual,
-      motivoJDT: (reemplazarCheck && reemplazoJDT) ? tipoMotivo : (safeEquipo?.motivoJDT || ''),
-      motivoOSC: (reemplazarCheck && reemplazoOSC) ? tipoMotivo : (safeEquipo?.motivoOSC || ''),
-      motivoOT: (reemplazarCheck && reemplazoOT) ? tipoMotivo : (safeEquipo?.motivoOT || ''),
-      hayContingencia: reemplazarCheck && Boolean(reemplazoJDT || reemplazoOSC || reemplazoOT),
-      motivoContingencia: tipoMotivo,
+      jdt: nuevoJdt,
+      osc: nuevoOsc,
+      ot: nuevoOt,
+      jefe_turno: nuevoJdt,
+      operador: nuevoOsc,
+      personal_turno: nuevoOt,
+      motivoJDT: reemplazoJDT ? motivoUsar : (safeEquipo?.motivoJDT || ''),
+      motivoOSC: reemplazoOSC ? motivoUsar : (safeEquipo?.motivoOSC || ''),
+      motivoOT: reemplazoOT ? motivoUsar : (safeEquipo?.motivoOT || ''),
+      hayContingencia: Boolean(reemplazoJDT || reemplazoOSC || reemplazoOT || safeEquipo?.hayContingencia),
+      motivoContingencia: motivoUsar,
       detalleContingencia: `Reemplazos: ${[
-        reemplazoJDT && `JDT: ${reemplazoJDT.nombre} (${tipoMotivo})`,
-        reemplazoOSC && `OSC: ${reemplazoOSC.nombre} (${tipoMotivo})`,
-        reemplazoOT && `OT: ${reemplazoOT.nombre} (${tipoMotivo})`
+        reemplazoJDT && `JDT: ${reemplazoJDT.nombre} (${motivoUsar})`,
+        reemplazoOSC && `OSC: ${reemplazoOSC.nombre} (${motivoUsar})`,
+        reemplazoOT && `OT: ${reemplazoOT.nombre} (${motivoUsar})`
       ].filter(Boolean).join(' | ')}`
     };
 
@@ -243,6 +248,7 @@ export default function CambioPersonalModal({
     if (typeof onConfirmarReemplazo === 'function') {
       try { onConfirmarReemplazo(payload); } catch (e) { console.error("Error en onConfirmarReemplazo:", e); }
     }
+
     // Limpieza de formulario
     setReemplazoJDT(null);
     setReemplazoOSC(null);
