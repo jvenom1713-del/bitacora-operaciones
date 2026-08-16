@@ -1661,7 +1661,7 @@ ${senalesForzadasTexto}
           )}
 
           {/* PASO 3 & 4: ESTADO CERRADO / APROBADO / FINALIZADO */}
-          {(estadoTurnoCierre === 'CERRADO' || estadoTurnoCierre === 'APROBADO' || estadoTurnoCierre === 'FINALIZADO') && (
+          {isAprobada(estadoTurnoCierre) && (
             <div className="space-y-4">
               <div className="bg-emerald-950/60 border border-emerald-700/50 p-4 rounded-xl text-emerald-200 text-xs font-bold flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />

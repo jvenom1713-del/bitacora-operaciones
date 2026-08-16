@@ -164,27 +164,38 @@ export default function MenuJefeTurno({
           const estaEnviado = isEnviado(estadoEfectivo);
           const estaBorrador = isBorrador(estadoEfectivo);
           const estaAprobada = isAprobada(estadoEfectivo);
+          
+          // El botón que abre la revisión se habilita ÚNICAMENTE cuando el Operador ha enviado la Bitácora a revisión.
+          // En estado Borrador o una vez Aprobada/Cerrada por el JDT, PERMANECE BLOQUEADO hasta el ingreso de un nuevo envío.
+          const botonHabilitado = estaEnviado;
 
           return (
             <div className="space-y-4">
               {/* Botón 1: Revisar y Cerrar Bitácora (JDT) */}
               <button
+                disabled={!botonHabilitado}
                 onClick={() => {
-                  try {
-                    localStorage.setItem('origen_menu', 'MENU_JEFE');
-                    localStorage.setItem('rol_activo', 'Jefe de Turno');
-                  } catch (_) {}
-                  if (onVerBitacoraEnCurso) onVerBitacoraEnCurso();
-                  navigate('/hoja-turno');
+                  if (botonHabilitado) {
+                    try {
+                      localStorage.setItem('origen_menu', 'MENU_JEFE');
+                      localStorage.setItem('rol_activo', 'Jefe de Turno');
+                    } catch (_) {}
+                    if (onVerBitacoraEnCurso) onVerBitacoraEnCurso();
+                    navigate('/hoja-turno');
+                  }
                 }}
-                title="Ingresar a la hoja de bitácora para revisar, autorizar y firmar"
-                className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 cursor-pointer active:scale-[0.99] transform hover:scale-[1.01] ${
-                  estaEnviado
-                    ? 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 shadow-xl shadow-emerald-900/40 border-amber-400 animate-pulse'
-                    : 'text-white bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 hover:from-slate-700 hover:to-slate-800 border-slate-700/80 shadow-lg shadow-slate-900/50'
+                title={botonHabilitado 
+                  ? "Ingresar a la hoja de bitácora para revisar, autorizar y firmar" 
+                  : estaAprobada
+                    ? "Bloqueado: Turno Aprobado y Cerrado. Esperando nuevo envío del Operador"
+                    : "Bloqueado: El Operador de Sala aún no envía la Bitácora a revisión"}
+                className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 ${
+                  botonHabilitado
+                    ? 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 transform hover:scale-[1.01] animate-pulse'
+                    : 'text-slate-400 bg-slate-800/80 border-slate-700/60 cursor-not-allowed opacity-60'
                 }`}
               >
-                <FileText className={`w-6 h-6 ${estaEnviado ? 'text-amber-300' : 'text-emerald-400'}`} />
+                <FileText className={`w-6 h-6 ${botonHabilitado ? 'text-amber-300' : 'text-slate-500'}`} />
                 <div className="text-left">
                   <span className="block font-bold text-base">Revisar y Cerrar Bitácora (JDT)</span>
                   {estaEnviado && (
@@ -193,13 +204,13 @@ export default function MenuJefeTurno({
                     </span>
                   )}
                   {estaBorrador && (
-                    <span className="text-[11px] font-medium text-emerald-200/90 block mt-0.5">
-                      • Turno Activo en Edición — Clic para Revisar Novedades
+                    <span className="text-[11px] font-semibold text-amber-400/90 block mt-0.5">
+                      🔒 Bloqueado: Operador de Sala aún no envía a revisión
                     </span>
                   )}
                   {estaAprobada && (
-                    <span className="text-[11px] font-medium text-blue-200 block mt-0.5">
-                      ✓ Turno Aprobado — Clic para Ver Registro Consolidado
+                    <span className="text-[11px] font-semibold text-slate-400 block mt-0.5">
+                      🔒 Bloqueado: Turno Aprobado y Cerrado — Esperando nuevo envío del Operador
                     </span>
                   )}
                 </div>
