@@ -260,12 +260,22 @@ export default function DashboardIniciarTurno({
     'cvaldivia@generadora.cl', 
     'admin@generadora.cl'
   ];
+  const storedRol = localStorage.getItem('rol_activo');
+  const storedOrigen = localStorage.getItem('origen_menu');
+  const storedUser = localStorage.getItem('usuario_actual');
+  let storedUserObj = null;
+  try { storedUserObj = storedUser ? JSON.parse(storedUser) : null; } catch (_) {}
+
   const esJefeOAdmin = Boolean(
     rolActivo === 'Jefe de Turno' ||
+    storedRol === 'Jefe de Turno' ||
+    storedOrigen === 'MENU_JEFE' ||
     usuarioActual?.rol_codigo === 'JEFE_TURNO' || 
     usuarioActual?.rol_codigo === 'ADMIN' || 
     usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') ||
     usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
+    storedUserObj?.rol_codigo === 'JEFE_TURNO' ||
+    storedUserObj?.rol_codigo === 'ADMIN' ||
     JEFES_EMAILS.includes(emailTrim) ||
     emailTrim.includes('jefe')
   );
