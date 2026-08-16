@@ -4120,7 +4120,7 @@ ${extraHtml}
           usuarioActual={usuarioActual}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
-          equipoTurno={turnoActivo?.equipoTurno || equipoTurno}
+          equipoTurno={turnoActivo?.equipoTurno || turnoActivo?.personal || turnoActivo?.integrantes || equipoTurno}
           folio={folioStr}
           onConfirmarReemplazo={(nuevoEquipo) => {
             if (onCambiarPersonal) {

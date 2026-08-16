@@ -7,13 +7,14 @@ export default function CambioPersonalModal({
   usuarioActual, 
   modoNocturno,
   setModoNocturno,
-  equipoTurno = { jdt: 'Javier San Martín', osc: 'Humberto Barra Tapia', ot: 'Eric Godoy Díaz' },
+  equipoTurno,
   onConfirmarReemplazo,
   folio = '01'
 }) {
   if (!isOpen) return null;
 
-  const [reemplazarCheck, setReemplazarCheck] = useState(true);
+  // Botón y checkbox deshabilitados por defecto hasta que se active o seleccione un reemplazo válido
+  const [reemplazarCheck, setReemplazarCheck] = useState(false);
   const [cargoSeleccionado, setCargoSeleccionado] = useState('Jefe de Turno');
   
   // Reemplazos seleccionados por cargo
@@ -57,6 +58,36 @@ export default function CambioPersonalModal({
   ];
 
   const safeEquipo = equipoTurno || {};
+
+  // Lista dinámica de integrantes del equipo de turno actual
+  const integrantesActuales = [
+    { 
+      rolKey: 'jdt', 
+      cargo: 'Jefe de Turno', 
+      etiqueta: 'JDT (Jefe de Turno)', 
+      nombre: safeEquipo?.jdt, 
+      esReemplazado: reemplazarCheck && Boolean(reemplazoJDT), 
+      nuevoNombre: reemplazoJDT?.nombre 
+    },
+    { 
+      rolKey: 'osc', 
+      cargo: 'Operador Sala Control', 
+      etiqueta: 'OSC (Operador Sala)', 
+      nombre: safeEquipo?.osc, 
+      esReemplazado: reemplazarCheck && Boolean(reemplazoOSC), 
+      nuevoNombre: reemplazoOSC?.nombre 
+    },
+    { 
+      rolKey: 'ot', 
+      cargo: 'Operador Terreno', 
+      etiqueta: 'OT (Operador Terreno)', 
+      nombre: safeEquipo?.ot, 
+      esReemplazado: reemplazarCheck && Boolean(reemplazoOT), 
+      nuevoNombre: reemplazoOT?.nombre 
+    }
+  ];
+
+  const hayEquipoAsignado = Boolean(safeEquipo?.jdt || safeEquipo?.osc || safeEquipo?.ot);
 
   // Personas actualmente asignadas al equipo de turno
   const nombresEnEquipo = new Set([
@@ -121,21 +152,30 @@ export default function CambioPersonalModal({
     }
   };
 
+  // Validación para habilitar el botón "Reemplazar personal de turno"
+  const esValidoParaConfirmar = reemplazarCheck && (Boolean(reemplazoJDT) || Boolean(reemplazoOSC) || Boolean(reemplazoOT)) && Boolean(tipoMotivo && tipoMotivo.trim() !== '');
+
   const handleConfirmar = () => {
+    if (!esValidoParaConfirmar) return;
     if (onConfirmarReemplazo) {
       onConfirmarReemplazo({
-        jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || 'Javier San Martín'),
-        osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || 'Humberto Barra Tapia'),
-        ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || 'Eric Godoy Díaz')
+        ...safeEquipo,
+        jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || ''),
+        osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || ''),
+        ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || ''),
+        motivoJDT: reemplazoJDT ? tipoMotivo : safeEquipo?.motivoJDT,
+        motivoOSC: reemplazoOSC ? tipoMotivo : safeEquipo?.motivoOSC,
+        motivoOT: reemplazoOT ? tipoMotivo : safeEquipo?.motivoOT,
       });
     }
+    // Limpieza de formulario
+    setReemplazoJDT(null);
+    setReemplazoOSC(null);
+    setReemplazoOT(null);
+    setReemplazarCheck(false);
+    setGuardiaContingenciaSel('');
     if (onClose) onClose();
   };
-
-  // Nombres dinámicos para el encabezado EQUIPO DE TURNO
-  const nombreJDTObservado = (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || 'Javier San Martín');
-  const nombreOSCObservado = (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || 'Humberto Barra Tapia');
-  const nombreOTObservado = (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || 'Eric Godoy Díaz');
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -184,8 +224,8 @@ export default function CambioPersonalModal({
             <span className="ml-1.5 text-slate-200 font-bold">{usuarioActual?.nombre || 'Jorge Albornoz'}</span>
           </div>
           <div className="flex items-center justify-center">
-            <span className="text-slate-400">Planta:</span>
-            <span className="ml-1.5 text-blue-400 font-bold">Nueva Renca</span>
+            <span className="text-slate-400">Guardia / Rotación:</span>
+            <span className="ml-1.5 text-amber-400 font-bold uppercase">{safeEquipo?.rotacion || 'Guardia Activa'}</span>
           </div>
           <div className="flex items-center justify-end font-mono text-[11px]">
             <span className="text-slate-400 mr-2">Folio:</span>
@@ -193,32 +233,31 @@ export default function CambioPersonalModal({
           </div>
         </div>
 
-        {/* SUBHEADER AZUL - BITÁCORA DIARIA & EQUIPO DE TURNO */}
+        {/* SUBHEADER AZUL - EQUIPO DE TURNO ACTUAL DINÁMICO */}
         <div className="bg-[#0f2b48] text-white text-center text-xs font-bold uppercase tracking-wider rounded-xl overflow-hidden mb-6 border border-blue-900 shadow-md">
           <div className="py-2 font-extrabold text-sm tracking-wide bg-[#0b2545]">
             EQUIPO DE TURNO ACTUAL
           </div>
-          <div className="grid grid-cols-4 text-[11px] font-semibold divide-x divide-blue-800 bg-[#0a2340]">
-            <div className="py-2 px-1 flex items-center justify-center text-blue-300">TURNO</div>
-            <div className="py-2 px-1">
-              <span className="block text-blue-300 text-[10px]">JDT</span>
-              <span className={reemplazarCheck && reemplazoJDT ? "text-amber-400 font-bold" : "text-white font-bold"}>
-                {nombreJDTObservado}
-              </span>
+          {!hayEquipoAsignado ? (
+            <div className="p-3 text-center text-xs text-slate-300 italic font-medium bg-[#0a2340]">
+              Sin personal asignado al turno
             </div>
-            <div className="py-2 px-1">
-              <span className="block text-blue-300 text-[10px]">OSC</span>
-              <span className={reemplazarCheck && reemplazoOSC ? "text-amber-400 font-bold" : "text-white font-bold"}>
-                {nombreOSCObservado}
-              </span>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 text-[11px] font-semibold divide-y sm:divide-y-0 sm:divide-x divide-blue-800 bg-[#0a2340]">
+              {integrantesActuales.map((miembro) => (
+                <div key={miembro.rolKey} className="py-2.5 px-2 text-center">
+                  <span className="block text-blue-300 text-[10px] font-extrabold tracking-wide uppercase">{miembro.etiqueta}</span>
+                  {miembro.nombre ? (
+                    <span className={miembro.esReemplazado ? "text-amber-400 font-bold block" : "text-white font-bold block"}>
+                      {miembro.esReemplazado ? `${miembro.nuevoNombre} (Reemplazo)` : miembro.nombre}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 italic block text-[10px]">Sin personal asignado</span>
+                  )}
+                </div>
+              ))}
             </div>
-            <div className="py-2 px-1">
-              <span className="block text-blue-300 text-[10px]">OT</span>
-              <span className={reemplazarCheck && reemplazoOT ? "text-amber-400 font-bold" : "text-white font-bold"}>
-                {nombreOTObservado}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* ÁREA PRINCIPAL DE CONTENIDO */}
@@ -230,7 +269,7 @@ export default function CambioPersonalModal({
             {/* Checkbox Habilitador de Reemplazo */}
             <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setReemplazarCheck(!reemplazarCheck)}>
               {reemplazarCheck ? (
-                <CheckSquare className="w-5 h-5 text-blue-500" />
+                <CheckSquare className="w-5 h-5 text-amber-500" />
               ) : (
                 <Square className="w-5 h-5 text-slate-500" />
               )}
@@ -277,7 +316,7 @@ export default function CambioPersonalModal({
                         onClick={() => handleSeleccionarCandidato(c)}
                         className={`p-2 rounded-lg cursor-pointer transition-all border font-medium flex items-center justify-between ${
                           esSel
-                            ? 'bg-blue-600/20 border-blue-500 text-blue-400 font-bold shadow-sm'
+                            ? 'bg-amber-600/20 border-amber-500 text-amber-300 font-bold shadow-sm'
                             : 'border-slate-700/60 hover:bg-slate-700/50 text-slate-300'
                         }`}
                       >
@@ -391,7 +430,7 @@ export default function CambioPersonalModal({
 
         </div>
 
-        {/* PIE DE TARJETA CON BOTÓN CANCELAR (X / VOLVER) Y CONFIRMAR */}
+        {/* PIE DE TARJETA CON BOTÓN CANCELAR (X / VOLVER) Y CONFIRMAR REEMPLAZO DESHABILITADO HASTA VALIDACIÓN */}
         <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
           <button
             type="button"
@@ -405,9 +444,14 @@ export default function CambioPersonalModal({
           <button
             type="button"
             onClick={handleConfirmar}
-            className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs py-2.5 px-6 rounded-xl shadow-lg shadow-orange-600/30 transition-all duration-200 transform hover:scale-[1.01] cursor-pointer"
+            disabled={!esValidoParaConfirmar}
+            className={`font-bold text-xs py-2.5 px-6 rounded-xl transition-all duration-200 ${
+              esValidoParaConfirmar
+                ? 'bg-amber-600 hover:bg-amber-500 text-white cursor-pointer shadow-lg shadow-amber-600/20 transform hover:scale-[1.01]'
+                : 'bg-slate-700 text-slate-400 cursor-not-allowed opacity-50 shadow-none'
+            }`}
           >
-            Confirmar Reemplazo
+            Reemplazar personal de turno
           </button>
         </div>
 
@@ -415,3 +459,4 @@ export default function CambioPersonalModal({
     </div>
   );
 }
+
