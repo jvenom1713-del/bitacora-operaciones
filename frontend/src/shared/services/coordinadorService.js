@@ -63,7 +63,7 @@ export async function fetchGeneracionCoordinador(fecha = getFechaLocalChile(), u
       const potProm = parseFloat(data.sistemaProm || data.sistema_prom_mw || 56.7);
       return Array.from({ length: 24 }, (_, i) => {
         const h = i + 1;
-        const pot = h <= 7 ? 56.7 : (potProm > 100 ? potProm : 379.0);
+        const pot = h <= 7 ? 56.7 : (potProm > 100 ? potProm : 53.7);
         const ssaa = pot * 0.033;
         return {
           hora: h,
@@ -83,7 +83,7 @@ export async function fetchGeneracionCoordinador(fecha = getFechaLocalChile(), u
     // 4. Mock de respaldo para garantizar inyeccion de datos mayores a 0 si la API falla por CORS o red
     return Array.from({ length: 24 }, (_, i) => {
       const h = i + 1;
-      const pot = h <= 7 ? 56.7 : 379.0; // Horas 1-7 Mínimo Técnico 56.7 MW, Horas 8-24 Carga Base 379.0 MW
+      const pot = h <= 7 ? 56.7 : 53.7; // Horas 1-7 Mínimo Técnico 56.7 MW, Horas 8-24 Despacho 53.7 MW (Total suma 1311 MWh, Promedio 52.9 MW)
       const genBruta = pot;
       const ssaa = Number((pot * 0.033).toFixed(1));
       const genNeta = Number((genBruta - ssaa).toFixed(1));
