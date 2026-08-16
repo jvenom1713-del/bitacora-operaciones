@@ -703,6 +703,9 @@ export default function App() {
       const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       const rotName = typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.rotacion || 'TIGRES') : (rotacionSeleccionada || 'TIGRES');
+      const tipoTurnoExtraido = (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada.tipo_turno)
+        ? rotacionSeleccionada.tipo_turno.toUpperCase()
+        : (localStorage.getItem('tipo_turno_activo') || ((ahora.getHours() >= 8 && ahora.getHours() < 20) ? 'DIURNO' : 'NOCTURNO'));
 
       const res = await fetch(getApiUrl('/api/turnos/nuevo'), {
         method: 'POST',
@@ -710,6 +713,7 @@ export default function App() {
         body: JSON.stringify({
           usuario_id: usuarioActual?.id || 1,
           rotacion: rotName,
+          tipo_turno: tipoTurnoExtraido,
           fecha: typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.fecha || fechaLocal) : fechaLocal,
           hora_inicio: typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.hora_inicio || horaLocal) : horaLocal
         })
@@ -721,6 +725,7 @@ export default function App() {
         turnoData = {
           estado: 'ABIERTO',
           rotacion: rotName,
+          tipo_turno: tipoTurnoExtraido,
           fecha: fechaLocal,
           hora_inicio: horaLocal,
           creado_el: ahora.toISOString(),
@@ -729,6 +734,7 @@ export default function App() {
       } else {
         turnoData = {
           ...turnoData,
+          tipo_turno: turnoData.tipo_turno || tipoTurnoExtraido,
           fecha: turnoData.fecha || fechaLocal,
           hora_inicio: turnoData.hora_inicio || horaLocal,
           creado_el: turnoData.creado_el || ahora.toISOString()
@@ -744,6 +750,7 @@ export default function App() {
       setTurnoActivo(turnoData);
       try {
         localStorage.setItem('estado_turno_activo', 'ABIERTO');
+        localStorage.setItem('tipo_turno_activo', tipoTurnoExtraido);
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (err) {}
       setEventos([]);
@@ -756,8 +763,12 @@ export default function App() {
         .toISOString()
         .split('T')[0];
       const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const tipoTurnoExtraido = (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada.tipo_turno)
+        ? rotacionSeleccionada.tipo_turno.toUpperCase()
+        : 'DIURNO';
       const fallbackTurno = { 
         estado: 'ABIERTO', 
+        tipo_turno: tipoTurnoExtraido,
         fecha: fechaLocal, 
         hora_inicio: horaLocal, 
         creado_el: ahora.toISOString(), 

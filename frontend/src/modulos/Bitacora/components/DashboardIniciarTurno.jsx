@@ -249,6 +249,47 @@ export default function DashboardIniciarTurno({
     }
   };
 
+  const horaInicial = new Date().getHours();
+  const tipoAuto = (horaInicial >= 8 && horaInicial < 20) ? 'DIURNO' : 'NOCTURNO';
+
+  const [tipoTurnoState, setTipoTurnoState] = useState(() => {
+    return (turnoActivoProp?.tipo_turno || turnoActivoProp?.turno || localStorage.getItem('tipo_turno_activo') || tipoAuto).toUpperCase();
+  });
+
+  useEffect(() => {
+    if (turnoActivoProp?.tipo_turno || turnoActivoProp?.turno) {
+      const norm = (turnoActivoProp.tipo_turno || turnoActivoProp.turno).toUpperCase();
+      setTipoTurnoState(norm);
+      try {
+        localStorage.setItem('tipo_turno_activo', norm);
+      } catch (_) {}
+    }
+  }, [turnoActivoProp]);
+
+  useEffect(() => {
+    const syncTipoTurno = () => {
+      const saved = localStorage.getItem('tipo_turno_activo');
+      if (saved) setTipoTurnoState(saved.toUpperCase());
+    };
+    syncTipoTurno();
+    window.addEventListener('turno_actualizado', syncTipoTurno);
+    window.addEventListener('storage', syncTipoTurno);
+    return () => {
+      window.removeEventListener('turno_actualizado', syncTipoTurno);
+      window.removeEventListener('storage', syncTipoTurno);
+    };
+  }, []);
+
+  const handleCambiarTipoTurno = (nuevoTipo) => {
+    const norm = String(nuevoTipo).toUpperCase();
+    setTipoTurnoState(norm);
+    try {
+      localStorage.setItem('tipo_turno_activo', norm);
+      window.dispatchEvent(new Event('turno_actualizado'));
+    } catch (_) {}
+    setTurnoActivo(prev => prev ? ({ ...prev, tipo_turno: norm, turno: norm }) : ({ tipo_turno: norm, turno: norm }));
+  };
+
   useEffect(() => {
     if (turnoActivoProp) {
       setTurnoActivo(turnoActivoProp);
@@ -1907,8 +1948,34 @@ ${extraHtml}
           }`}>
             <span>BITACORA DIARIA</span>
             
-            {/* BADGE DE ESTADO CON CANDADO EN ROJO */}
+            {/* BADGES REACTIVOS: TIPO DE TURNO (DIURNO / NOCTURNO) Y ESTADO */}
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const nuevo = tipoTurnoState === 'DIURNO' ? 'NOCTURNO' : 'DIURNO';
+                  handleCambiarTipoTurno(nuevo);
+                }}
+                title="Click para alternar entre Turno Diurno y Turno Nocturno"
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black shadow-md border transition-all cursor-pointer ${
+                  tipoTurnoState === 'DIURNO'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                    : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30'
+                }`}
+              >
+                {tipoTurnoState === 'DIURNO' ? (
+                  <>
+                    <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>TURNO DIURNO (08:00 - 19:59)</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
+                    <span>TURNO NOCTURNO (20:00 - 07:59)</span>
+                  </>
+                )}
+              </button>
+
               {estadoTurno === 'CERRADO' ? (
                 <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600/30 text-red-300 border border-red-500/60 text-xs font-black shadow-md">
                   <Lock className="w-4 h-4 text-red-500 shrink-0" />
