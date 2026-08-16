@@ -202,20 +202,40 @@ export default function CambioPersonalModal({
     const tipoNorm = tipoTurno.toUpperCase();
     try {
       localStorage.setItem('tipo_turno_activo', tipoNorm);
-      window.dispatchEvent(new Event('turno_actualizado'));
     } catch (_) {}
 
     const payload = {
       ...safeEquipo,
       tipo_turno: tipoNorm,
       turno: tipoNorm,
-      jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || ''),
-      osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || ''),
-      ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || ''),
-      motivoJDT: reemplazoJDT ? tipoMotivo : safeEquipo?.motivoJDT,
-      motivoOSC: reemplazoOSC ? tipoMotivo : safeEquipo?.motivoOSC,
-      motivoOT: reemplazoOT ? tipoMotivo : safeEquipo?.motivoOT,
+      rotacion: safeEquipo?.rotacion || equipoGuardado?.rotacion || 'TIGRES',
+      jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : jdtActual,
+      osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : oscActual,
+      ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : otActual,
+      jefe_turno: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : jdtActual,
+      operador: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : oscActual,
+      personal_turno: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : otActual,
+      motivoJDT: (reemplazarCheck && reemplazoJDT) ? tipoMotivo : (safeEquipo?.motivoJDT || ''),
+      motivoOSC: (reemplazarCheck && reemplazoOSC) ? tipoMotivo : (safeEquipo?.motivoOSC || ''),
+      motivoOT: (reemplazarCheck && reemplazoOT) ? tipoMotivo : (safeEquipo?.motivoOT || ''),
+      hayContingencia: reemplazarCheck && Boolean(reemplazoJDT || reemplazoOSC || reemplazoOT),
+      motivoContingencia: tipoMotivo,
+      detalleContingencia: `Reemplazos: ${[
+        reemplazoJDT && `JDT: ${reemplazoJDT.nombre} (${tipoMotivo})`,
+        reemplazoOSC && `OSC: ${reemplazoOSC.nombre} (${tipoMotivo})`,
+        reemplazoOT && `OT: ${reemplazoOT.nombre} (${tipoMotivo})`
+      ].filter(Boolean).join(' | ')}`
     };
+
+    try {
+      localStorage.setItem('equipo_turno_actual', JSON.stringify(payload));
+      localStorage.setItem('turno_activo_guardado', JSON.stringify(payload));
+      window.dispatchEvent(new Event('equipo_actualizado'));
+      window.dispatchEvent(new Event('turno_actualizado'));
+      window.dispatchEvent(new Event('storage'));
+    } catch (e) {
+      console.error("Error guardando equipo en localStorage:", e);
+    }
 
     if (typeof onSave === 'function') {
       try { onSave(payload); } catch (e) { console.error("Error en onSave:", e); }

@@ -631,10 +631,14 @@ export default function App() {
     const baseOficial = MATRIZ_GUARDIAS[rotUsar] || MATRIZ_GUARDIAS.TIGRES;
 
     const datosFinales = {
+      ...nuevoEquipo,
       rotacion: nuevoEquipo.rotacion || baseOficial.rotacion,
       jdt: nuevoEquipo.jdt || baseOficial.jdt,
       osc: nuevoEquipo.osc || baseOficial.osc,
-      ot: nuevoEquipo.ot || baseOficial.ot
+      ot: nuevoEquipo.ot || baseOficial.ot,
+      motivoJDT: nuevoEquipo.motivoJDT || '',
+      motivoOSC: nuevoEquipo.motivoOSC || '',
+      motivoOT: nuevoEquipo.motivoOT || ''
     };
 
     setEquipoTurnoSeleccionado(prev => {
@@ -647,12 +651,13 @@ export default function App() {
 
     setTurnoActivo(prev => {
       const infoContingencia = detectarContingenciasGuardia(datosFinales);
-      const motivoAuto = infoContingencia.hayContingencia
-        ? (nuevoEquipo.motivoContingencia && nuevoEquipo.motivoContingencia !== 'Dotación Normal / Sin contingencia' ? nuevoEquipo.motivoContingencia : (prev?.motivoContingencia || 'Licencia'))
-        : 'Dotación Normal / Sin contingencia';
+      const motivoAuto = nuevoEquipo.motivoContingencia || (infoContingencia.hayContingencia
+        ? (prev?.motivoContingencia || 'Licencia médica')
+        : 'Dotación Normal / Sin contingencia');
 
       const objActualizado = {
         ...(prev || {}),
+        ...datosFinales,
         rotacion: datosFinales.rotacion,
         jdt: datosFinales.jdt,
         osc: datosFinales.osc,
@@ -661,7 +666,7 @@ export default function App() {
         operador: datosFinales.osc,
         personal_turno: datosFinales.ot,
         equipoTurno: { ...(prev?.equipoTurno || {}), ...datosFinales, motivoContingencia: motivoAuto },
-        hayContingencia: infoContingencia.hayContingencia,
+        hayContingencia: infoContingencia.hayContingencia || Boolean(nuevoEquipo.hayContingencia),
         reemplazosContingencia: infoContingencia.reemplazos,
         resumenReemplazos: infoContingencia.resumenReemplazos,
         motivoContingencia: motivoAuto,
@@ -673,7 +678,9 @@ export default function App() {
       };
       try {
         localStorage.setItem('turno_activo_guardado', JSON.stringify(objActualizado));
-        localStorage.setItem('equipo_turno_actual', JSON.stringify(datosFinales));
+        localStorage.setItem('equipo_turno_actual', JSON.stringify(objActualizado));
+        window.dispatchEvent(new Event('equipo_actualizado'));
+        window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
 
       // Sincronizar en Supabase de fondo si está disponible

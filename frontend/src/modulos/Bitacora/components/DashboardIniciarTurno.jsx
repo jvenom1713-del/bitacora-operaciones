@@ -175,28 +175,47 @@ export default function DashboardIniciarTurno({
       const savedStr = localStorage.getItem('equipo_turno_actual');
       const saved = savedStr ? JSON.parse(savedStr) : null;
 
-      const rotRaw = equipoTurno?.rotacion || saved?.rotacion || turnoActivoProp?.rotacion || turnoActivoProp?.equipoTurno?.rotacion || 'TIGRES';
+      const rotRaw = saved?.rotacion || equipoTurno?.rotacion || turnoActivoProp?.rotacion || turnoActivoProp?.equipoTurno?.rotacion || 'TIGRES';
       const rot = String(rotRaw).toUpperCase().replace('Á', 'A');
       const baseOficial = MATRIZ_GUARDIAS[rot] || MATRIZ_GUARDIAS.TIGRES;
 
-      const jdt = equipoTurno?.jdt || saved?.jdt || turnoActivoProp?.jdt || turnoActivoProp?.jefe_turno || baseOficial.jdt;
-      const osc = equipoTurno?.osc || saved?.osc || turnoActivoProp?.osc || turnoActivoProp?.operador || baseOficial.osc;
-      const ot = equipoTurno?.ot || saved?.ot || turnoActivoProp?.ot || turnoActivoProp?.personal_turno || baseOficial.ot;
+      const jdt = saved?.jdt || equipoTurno?.jdt || turnoActivoProp?.jdt || turnoActivoProp?.jefe_turno || baseOficial.jdt;
+      const osc = saved?.osc || equipoTurno?.osc || turnoActivoProp?.osc || turnoActivoProp?.operador || baseOficial.osc;
+      const ot = saved?.ot || equipoTurno?.ot || turnoActivoProp?.ot || turnoActivoProp?.personal_turno || baseOficial.ot;
 
       return {
         rotacion: rot,
         jdt,
         osc,
         ot,
-        motivoJDT: equipoTurno?.motivoJDT || saved?.motivoJDT,
-        motivoOSC: equipoTurno?.motivoOSC || saved?.motivoOSC,
-        motivoOT: equipoTurno?.motivoOT || saved?.motivoOT
+        motivoJDT: saved?.motivoJDT || equipoTurno?.motivoJDT || '',
+        motivoOSC: saved?.motivoOSC || equipoTurno?.motivoOSC || '',
+        motivoOT: saved?.motivoOT || equipoTurno?.motivoOT || '',
+        motivoContingencia: saved?.motivoContingencia || equipoTurno?.motivoContingencia || '',
+        detalleContingencia: saved?.detalleContingencia || equipoTurno?.detalleContingencia || '',
+        hayContingencia: Boolean(saved?.hayContingencia || equipoTurno?.hayContingencia || saved?.motivoJDT || saved?.motivoOSC || saved?.motivoOT)
       };
     } catch {
       return MATRIZ_GUARDIAS.TIGRES;
     }
   };
-  const safeEquipoTurno = getEquipoActualConsolidado();
+  const [equipoDinamico, setEquipoDinamico] = useState(() => getEquipoActualConsolidado());
+
+  useEffect(() => {
+    const actualizar = () => {
+      setEquipoDinamico(getEquipoActualConsolidado());
+    };
+    window.addEventListener('equipo_actualizado', actualizar);
+    window.addEventListener('turno_actualizado', actualizar);
+    window.addEventListener('storage', actualizar);
+    return () => {
+      window.removeEventListener('equipo_actualizado', actualizar);
+      window.removeEventListener('turno_actualizado', actualizar);
+      window.removeEventListener('storage', actualizar);
+    };
+  }, [equipoTurno, turnoActivoProp]);
+
+  const safeEquipoTurno = equipoDinamico;
   const [tabActiva, setTabActiva] = useState(tabInicial);
 
   useEffect(() => {
@@ -2766,16 +2785,25 @@ ${extraHtml}
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">JDT</span>
                       <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.jdt || 'Ariel Torres'}</span>
+                      {safeEquipoTurno?.motivoJDT && (
+                        <span className="text-[9px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1 rounded mt-0.5">⚠️ {safeEquipoTurno.motivoJDT}</span>
+                      )}
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OSC</span>
                       <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.osc || 'Jorge Albornoz'}</span>
+                      {safeEquipoTurno?.motivoOSC && (
+                        <span className="text-[9px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1 rounded mt-0.5">⚠️ {safeEquipoTurno.motivoOSC}</span>
+                      )}
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OT / Personal</span>
                       <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.ot || 'Matias Cisternas'}</span>
+                      {safeEquipoTurno?.motivoOT && (
+                        <span className="text-[9px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1 rounded mt-0.5">⚠️ {safeEquipoTurno.motivoOT}</span>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -109,6 +109,52 @@ export default function VistaConsultaHojaTurno({
     JEFES_EMAILS.includes(storedUserObj?.email?.toLowerCase())
   );
 
+  const getEquipoConsolidadoVista = () => {
+    try {
+      const savedStr = localStorage.getItem('equipo_turno_actual');
+      const saved = savedStr ? JSON.parse(savedStr) : null;
+
+      const rotRaw = saved?.rotacion || equipoTurno?.rotacion || turnoActivo?.rotacion || turnoActivo?.equipoTurno?.rotacion || 'TIGRES';
+      const rot = String(rotRaw).toUpperCase().replace('Á', 'A');
+      const baseOficial = MATRIZ_GUARDIAS[rot] || MATRIZ_GUARDIAS.TIGRES;
+
+      const jdt = saved?.jdt || equipoTurno?.jdt || turnoActivo?.jdt || turnoActivo?.jefe_turno || baseOficial.jdt;
+      const osc = saved?.osc || equipoTurno?.osc || turnoActivo?.osc || turnoActivo?.operador || baseOficial.osc;
+      const ot = saved?.ot || equipoTurno?.ot || turnoActivo?.ot || turnoActivo?.personal_turno || baseOficial.ot;
+
+      return {
+        rotacion: rot,
+        jdt,
+        osc,
+        ot,
+        motivoJDT: saved?.motivoJDT || equipoTurno?.motivoJDT || '',
+        motivoOSC: saved?.motivoOSC || equipoTurno?.motivoOSC || '',
+        motivoOT: saved?.motivoOT || equipoTurno?.motivoOT || '',
+        motivoContingencia: saved?.motivoContingencia || equipoTurno?.motivoContingencia || '',
+        detalleContingencia: saved?.detalleContingencia || equipoTurno?.detalleContingencia || '',
+        hayContingencia: Boolean(saved?.hayContingencia || equipoTurno?.hayContingencia || saved?.motivoJDT || saved?.motivoOSC || saved?.motivoOT)
+      };
+    } catch {
+      return MATRIZ_GUARDIAS.TIGRES;
+    }
+  };
+
+  const [equipoTurnoState, setEquipoTurnoState] = useState(() => getEquipoConsolidadoVista());
+
+  useEffect(() => {
+    const actualizar = () => {
+      setEquipoTurnoState(getEquipoConsolidadoVista());
+    };
+    window.addEventListener('equipo_actualizado', actualizar);
+    window.addEventListener('turno_actualizado', actualizar);
+    window.addEventListener('storage', actualizar);
+    return () => {
+      window.removeEventListener('equipo_actualizado', actualizar);
+      window.removeEventListener('turno_actualizado', actualizar);
+      window.removeEventListener('storage', actualizar);
+    };
+  }, [equipoTurno, turnoActivo]);
+
   const [eventosTurno, setEventosTurno] = useState(() => filtrarEventosPorDiaOperativo(eventos || []));
 
   useEffect(() => {
@@ -1049,14 +1095,19 @@ ${senalesForzadasTexto}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3.5 text-xs font-semibold">
             {[
-              { label: 'Rotación Guardia', value: equipoTurno?.rotacion || 'TIGRES', color: 'text-amber-400' },
-              { label: 'Jefe de Turno (JDT)', value: equipoTurno?.jdt || 'Norman Galaz', color: 'text-cyan-300' },
-              { label: 'Operador Sala Control (OSC)', value: equipoTurno?.osc || 'Jorge Albornoz', color: 'text-emerald-300' },
-              { label: 'Operador Turno (OT)', value: equipoTurno?.ot || 'Matías Cisternas', color: 'text-purple-300' },
+              { label: 'Rotación Guardia', value: equipoTurnoState?.rotacion || 'TIGRES', sub: null, color: 'text-amber-400' },
+              { label: 'Jefe de Turno (JDT)', value: equipoTurnoState?.jdt || 'Norman Galaz', sub: equipoTurnoState?.motivoJDT, color: 'text-cyan-300' },
+              { label: 'Operador Sala Control (OSC)', value: equipoTurnoState?.osc || 'Jorge Albornoz', sub: equipoTurnoState?.motivoOSC, color: 'text-emerald-300' },
+              { label: 'Operador Turno (OT)', value: equipoTurnoState?.ot || 'Matías Cisternas', sub: equipoTurnoState?.motivoOT, color: 'text-purple-300' },
             ].map((item, i) => (
               <div key={i} className={`p-2.5 rounded-lg border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">{item.label}</span>
                 <strong className={`${item.color} font-black text-xs sm:text-sm block`}>{item.value}</strong>
+                {item.sub && (
+                  <span className="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded mt-1 inline-block font-medium">
+                    ⚠️ {item.sub}
+                  </span>
+                )}
               </div>
             ))}
           </div>
