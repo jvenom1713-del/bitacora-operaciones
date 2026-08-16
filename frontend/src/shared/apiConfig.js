@@ -1,12 +1,15 @@
 import { supabase } from './supabaseClient';
 
 export const isHttp = typeof window !== 'undefined' && window.location.protocol.startsWith('http');
-export const API_BASE = isHttp ? '' : 'http://127.0.0.1:5000';
 
 export function getApiUrl(path) {
   const cleanPath = path.startsWith('/') ? path : '/' + path;
-  if (!isHttp) {
-    return `http://127.0.0.1:5000${cleanPath}`;
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const port = window.location.port;
+    if ((host === 'localhost' || host === '127.0.0.1') && port && port !== '5000') {
+      return `http://${host}:5000${cleanPath}`;
+    }
   }
   return cleanPath;
 }
