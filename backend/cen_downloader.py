@@ -87,13 +87,13 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
 
     fechas_a_probar = []
     if fecha is not None:
-        fechas_a_probar = [fecha - timedelta(days=d) for d in range(max_dias_atras + 1)]
+        fechas_a_probar = [fecha, fecha + timedelta(days=1)] + [fecha - timedelta(days=d) for d in range(1, max_dias_atras + 1)]
     else:
         hoy = datetime.now()
-        fechas_a_probar = [hoy + timedelta(days=1)] + [hoy - timedelta(days=d) for d in range(max_dias_atras + 1)]
+        fechas_a_probar = [hoy + timedelta(days=1), hoy] + [hoy - timedelta(days=d) for d in range(1, max_dias_atras + 1)]
 
     candidatos_zip = []
-    version_suffixes = ['_v10', '_v9', '_v8', '_v7', '_v6', '_v5', '_v4', '_v3', '_v2', '_v1', '', '_def', '_final']
+    version_suffixes = ['', '_v1', '_v2', '_v3', '_v4', '_v5', '_v6', '_v7', '_v8', '_v9', '_v10', '_def', '_final']
 
     for f in fechas_a_probar:
         fecha8 = f.strftime('%Y%m%d')
