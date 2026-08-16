@@ -3167,74 +3167,7 @@ ${extraHtml}
               </div>
             </div>
 
-            {/* ─── SECCIÓN 5.5: PERMISOS DE TRABAJO EN CALIENTE SIN CERRAR (SOLO JEFE DE TURNO / ADMIN) ─── */}
-            {esJefeOAdmin && (
-              <div className={`rounded-2xl shadow-xl border overflow-hidden mt-6 ${modoNocturno ? 'bg-slate-900/90 border-orange-900/60' : 'bg-white border-orange-300'}`}>
-                <div className={`flex items-center justify-between px-6 py-4 border-b ${modoNocturno ? 'bg-orange-950/60 border-orange-900/40' : 'bg-orange-50 border-orange-200'}`}>
-                  <span className={`font-bold text-sm flex items-center gap-2 ${modoNocturno ? 'text-orange-300' : 'text-orange-800'}`}>
-                    <Flame className="w-5 h-5 text-orange-500" />
-                    5.5. PERMISOS DE TRABAJO EN CALIENTE — SIN CERRAR EN EL TURNO
-                  </span>
-                  <button
-                    onClick={() => setTabActiva('PERMISOS')}
-                    className="px-3 py-1.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow"
-                  >
-                    <Flame className="w-3.5 h-3.5" />
-                    <span>Gestionar Permisos ({permisosAbiertos.length} Abiertos)</span>
-                  </button>
-                </div>
 
-                <div className="p-4 sm:p-6">
-                  {permisosAbiertos.length === 0 ? (
-                    <div className={`flex items-center gap-3 p-4 rounded-xl border ${modoNocturno ? 'bg-emerald-950/40 border-emerald-800/50 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-                      <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
-                      <span className="text-sm font-semibold">No hay permisos de trabajo en caliente activos sin cerrar. Turno en orden.</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className={`flex items-center gap-3 p-3 rounded-xl border mb-4 ${modoNocturno ? 'bg-orange-950/50 border-orange-700/50 text-orange-200' : 'bg-orange-50 border-orange-300 text-orange-800'}`}>
-                        <AlertTriangle className="w-5 h-5 text-orange-400 shrink-0" />
-                        <span className="text-xs font-bold uppercase tracking-wide">
-                          Atención Jefe de Turno: existen {permisosAbiertos.length} permiso(s) de trabajo en caliente sin cierre formal al término del turno.
-                        </span>
-                      </div>
-
-                      <div className="overflow-x-auto rounded-xl border border-orange-500/30">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className={`text-left ${modoNocturno ? 'bg-orange-950/70 text-orange-300' : 'bg-orange-100 text-orange-800'}`}>
-                              <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">N° Permiso</th>
-                              <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Ubicación Técnica</th>
-                              <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Solicitado Por</th>
-                              <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Autorizado Por</th>
-                              <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap">Fecha Apertura</th>
-                              <th className="px-4 py-3 font-black uppercase tracking-wider whitespace-nowrap text-center">Estado</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {permisosAbiertos.map((p, idx) => (
-                              <tr key={p.id || idx} className={`border-t ${modoNocturno ? 'border-slate-800 odd:bg-orange-950/20 even:bg-slate-900/40' : 'border-orange-100 odd:bg-orange-50/60 even:bg-white'}`}>
-                                <td className="px-4 py-3 font-black text-sm text-orange-400">{p.numero || '—'}</td>
-                                <td className="px-4 py-3 font-medium">{p.ubicacion || '—'}</td>
-                                <td className="px-4 py-3">{p.solicitado_por || '—'}</td>
-                                <td className="px-4 py-3">{p.autorizado_por || '—'}</td>
-                                <td className="px-4 py-3 font-mono">{p.fecha_apertura || '—'}</td>
-                                <td className="px-4 py-3 text-center">
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black border bg-orange-500/20 text-orange-300 border-orange-500/50">
-                                    <Flame className="w-3 h-3" />
-                                    ABIERTO
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
 
           </div>
         )}
