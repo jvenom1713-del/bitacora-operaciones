@@ -1453,7 +1453,7 @@ ${extraHtml}
 
         if (!datosCargados) {
           try {
-            const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+            const res = await fetch(getApiUrl('/api/resumen-generacion-diaria?refresh=true'));
             if (res.ok) {
               const resData = await res.json();
               if (resData && resData.status !== 'error') {
