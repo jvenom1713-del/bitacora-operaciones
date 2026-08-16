@@ -1085,6 +1085,8 @@ export default function App() {
       'atorres@generadora.cl', 
       'ngalaz@generadora.cl', 
       'cvaldivia@generadora.cl', 
+      'jalbornoz@generadora.cl',
+      'mcisternas@generadora.cl',
       'admin@generadora.cl'
     ];
     const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
@@ -1108,6 +1110,8 @@ export default function App() {
       'atorres@generadora.cl', 
       'ngalaz@generadora.cl', 
       'cvaldivia@generadora.cl', 
+      'jalbornoz@generadora.cl',
+      'mcisternas@generadora.cl',
       'admin@generadora.cl'
     ];
     const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
@@ -1282,6 +1286,8 @@ export default function App() {
       'atorres@generadora.cl', 
       'ngalaz@generadora.cl', 
       'cvaldivia@generadora.cl', 
+      'jalbornoz@generadora.cl',
+      'mcisternas@generadora.cl',
       'admin@generadora.cl'
     ];
 

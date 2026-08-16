@@ -81,6 +81,8 @@ export default function VistaConsultaHojaTurno({
     'atorres@generadora.cl', 
     'ngalaz@generadora.cl', 
     'cvaldivia@generadora.cl', 
+    'jalbornoz@generadora.cl',
+    'mcisternas@generadora.cl',
     'admin@generadora.cl'
   ];
 
@@ -1597,7 +1599,7 @@ ${senalesForzadasTexto}
           {/* ACCIONES DE CIERRE Y APROBACIÓN */}
           {!isAprobada(estadoTurnoCierre) && (
             <div>
-              {esJefeTurnoEfectivo ? (
+              {(esJefeTurnoEfectivo || isEnviado(estadoTurnoCierre)) ? (
                 /* Botón Único para Jefe de Turno: Aprobar y Cerrar Bitácora */
                 <button
                   onClick={handleAbrirModalPassword}

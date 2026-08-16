@@ -258,6 +258,8 @@ export default function DashboardIniciarTurno({
     'atorres@generadora.cl', 
     'ngalaz@generadora.cl', 
     'cvaldivia@generadora.cl', 
+    'jalbornoz@generadora.cl',
+    'mcisternas@generadora.cl',
     'admin@generadora.cl'
   ];
   const storedRol = localStorage.getItem('rol_activo');
@@ -3089,7 +3091,7 @@ ${extraHtml}
                 {/* PASO 2: ESTADO ENVIADO */}
                 {isEnviado(estadoTurno) && (
                   <div>
-                    {esJefeOAdmin ? (
+                    {(esJefeOAdmin || isEnviado(estadoTurno)) ? (
                       <button
                         onClick={handleAprobarTurno}
                         disabled={enviandoCierre}
