@@ -2751,53 +2751,17 @@ ${extraHtml}
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">JDT</span>
-                      <select
-                        value={safeEquipoTurno?.jdt || 'Ariel Torres'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, jdt: e.target.value })}
-                        className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
-                      >
-                        <option value="Javier San Martin" className="equipo-turno-opcion bg-white text-black font-bold">Javier San Martin</option>
-                        <option value="Pablo Flores Vasquez" className="equipo-turno-opcion bg-white text-black font-bold">Pablo Flores Vasquez</option>
-                        <option value="Ariel Torres" className="equipo-turno-opcion bg-white text-black font-bold">Ariel Torres</option>
-                        <option value="Norman Galaz" className="equipo-turno-opcion bg-white text-black font-bold">Norman Galaz</option>
-                        <option value="Cristian Valdivia Maldonado" className="equipo-turno-opcion bg-white text-black font-bold">Cristian Valdivia Maldonado</option>
-                        <option value="Rodrigo Troncoso" className="equipo-turno-opcion bg-white text-black font-bold">Rodrigo Troncoso (Contingencia)</option>
-                      </select>
-                      <span className="hidden print:inline font-black text-xs text-black">{safeEquipoTurno?.jdt || 'Ariel Torres'}</span>
+                      <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.jdt || 'Ariel Torres'}</span>
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OSC</span>
-                      <select
-                        value={safeEquipoTurno?.osc || 'Jorge Albornoz'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, osc: e.target.value })}
-                        className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
-                      >
-                        <option value="Humberto Barra Tapia" className="equipo-turno-opcion bg-white text-black font-bold">Humberto Barra Tapia</option>
-                        <option value="Luis Morales" className="equipo-turno-opcion bg-white text-black font-bold">Luis Morales</option>
-                        <option value="Jorge Albornoz" className="equipo-turno-opcion bg-white text-black font-bold">Jorge Albornoz</option>
-                        <option value="Eduardo Armijo Retamal" className="equipo-turno-opcion bg-white text-black font-bold">Eduardo Armijo Retamal</option>
-                        <option value="Aristides Toledo Peña" className="equipo-turno-opcion bg-white text-black font-bold">Aristides Toledo Peña</option>
-                        <option value="Máximo Cortés" className="equipo-turno-opcion bg-white text-black font-bold">Máximo Cortés (Contingencia)</option>
-                      </select>
-                      <span className="hidden print:inline font-black text-xs text-black">{safeEquipoTurno?.osc || 'Jorge Albornoz'}</span>
+                      <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.osc || 'Jorge Albornoz'}</span>
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OT / Personal</span>
-                      <select
-                        value={safeEquipoTurno?.ot || 'Matias Cisternas'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, ot: e.target.value })}
-                        className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
-                      >
-                        <option value="Eric Godoy Diaz" className="equipo-turno-opcion bg-white text-black font-bold">Eric Godoy Diaz</option>
-                        <option value="Gerson Cofré" className="equipo-turno-opcion bg-white text-black font-bold">Gerson Cofré</option>
-                        <option value="Matias Cisternas" className="equipo-turno-opcion bg-white text-black font-bold">Matias Cisternas</option>
-                        <option value="Carlos Vivero" className="equipo-turno-opcion bg-white text-black font-bold">Carlos Vivero</option>
-                        <option value="Claudio Garrido San Martin" className="equipo-turno-opcion bg-white text-black font-bold">Claudio Garrido San Martin</option>
-                        <option value="Enzo Cornejo" className="equipo-turno-opcion bg-white text-black font-bold">Enzo Cornejo (Contingencia)</option>
-                      </select>
-                      <span className="hidden print:inline font-black text-xs text-black">{safeEquipoTurno?.ot || 'Matias Cisternas'}</span>
+                      <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.ot || 'Matias Cisternas'}</span>
                     </div>
                   </div>
                 </div>
