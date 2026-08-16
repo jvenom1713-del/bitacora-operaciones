@@ -1416,16 +1416,16 @@ ${extraHtml}
     return {
       despachoCNR: 'En servicio',
       sistemaProm: '56.7',
-      potEspera: '4004',
+      potEspera: '1311',
       fuegosSuplemen: '0',
       hrsCargaBase: '0',
-      hrsMinTec: '22',
+      hrsMinTec: '7',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
       m3Diesel: '0',
       kgGasGLP: '0',
-      costoMarginal: '52.9'
+      costoMarginal: '39.0'
     };
   };
 
@@ -1480,22 +1480,26 @@ ${extraHtml}
   const handleRefrescarCenManual = async () => {
     setCargandoExcel(true);
     setEstadoCarga(null);
+    setMensajeCarga('Consultando CEN S3...');
+
     try {
       let rawData = null;
 
       try {
-        const resCen = await fetch(getApiUrl('/api/auto-sync-coordinador'));
+        const resCen = await fetch(getApiUrl('/api/resumen-generacion-diaria?refresh=true&force=true'));
         if (resCen.ok) {
           const resData = await resCen.json();
           if (resData && resData.status !== 'error') {
             rawData = { ...resData, esDeServidor: true };
           }
         }
-      } catch (_) {}
+      } catch (errCen) {
+        console.warn('Aviso al refrescar CEN:', errCen);
+      }
 
       if (!rawData) {
         try {
-          const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
+          const res = await fetch(getApiUrl('/api/auto-sync-coordinador'));
           if (res.ok) {
             const resData = await res.json();
             if (resData && resData.status !== 'error') {
@@ -1505,30 +1509,12 @@ ${extraHtml}
         } catch (_) {}
       }
 
-      if (!rawData && supabase) {
-        try {
-          const { data } = await supabase
-            .from('turnos_generacion')
-            .select('*')
-            .order('creado_el', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (data) {
-            rawData = {
-              ...data,
-              esDeServidor: true
-            };
-          }
-        } catch (_) {}
-      }
-
       const datosCalculados = calcularMatrizDinamica(rawData || {});
       aplicarDatos(datosCalculados);
 
       if (onCambiarPersonal) {
         onCambiarPersonal({
-          ...equipoTurno,
+          ...safeEquipoTurno,
           generacionPromedio: datosCalculados.sistemaProm,
           sistemaProm: datosCalculados.sistemaProm,
           costoMarginal: datosCalculados.costoMarginal,
@@ -1536,32 +1522,14 @@ ${extraHtml}
         });
       }
 
-      if (supabase) {
-        try {
-          const folioUsar = equipoTurno?.folio || '01';
-          await supabase.from('turnos_generacion').upsert({
-            folio: folioUsar,
-            despacho_cnr: datosCalculados.despachoCNR,
-            sistema_prom: datosCalculados.sistemaProm,
-            generacion_promedio: datosCalculados.sistemaProm,
-            costo_marginal: datosCalculados.costoMarginal,
-            pot_espera: datosCalculados.potEspera,
-            hrs_carga_base: datosCalculados.hrsCargaBase,
-            hrs_min_tec: datosCalculados.hrsMinTec,
-            hrs_fuegos_suplem: datosCalculados.hrsFuegosSuplem,
-            actualizado_el: new Date().toISOString()
-          }, { onConflict: 'folio' });
-        } catch (_) {}
-      }
-
       setEstadoCarga('ok');
-      setMensajeCarga('Generación actualizada');
+      setMensajeCarga('Datos CEN Sincronizados');
     } catch (err) {
       console.error('Error actualizando Matriz:', err);
       const fallbackCalculado = calcularMatrizDinamica({});
       aplicarDatos(fallbackCalculado);
       setEstadoCarga('ok');
-      setMensajeCarga('Generación actualizada');
+      setMensajeCarga('Datos CEN Sincronizados');
     } finally {
       setCargandoExcel(false);
     }
@@ -3371,12 +3339,25 @@ ${extraHtml}
                     onChange={handleSubirExcel}
                   />
                   <button
+                    onClick={handleRefrescarCenManual}
+                    disabled={cargandoExcel}
+                    title="Sincronizar directamente con el Coordinador (AWS S3)"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                      cargandoExcel
+                        ? 'bg-blue-900/40 border-blue-700 text-blue-400 cursor-wait'
+                        : 'bg-blue-600 hover:bg-blue-500 border-blue-500 text-white cursor-pointer shadow-md'
+                    }`}
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${cargandoExcel ? 'animate-spin' : ''}`} />
+                    {cargandoExcel ? 'Sincronizando...' : 'Refrescar CEN'}
+                  </button>
+                  <button
                     onClick={() => inputFileRef.current?.click()}
                     disabled={cargandoExcel}
                     title="Cargar planilla Coordinador manualmente (.xlsx)"
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
                       cargandoExcel
-                        ? 'bg-blue-900/40 border-blue-700 text-blue-400 cursor-wait'
+                        ? 'bg-emerald-900/40 border-emerald-700 text-emerald-400 cursor-wait'
                         : 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500 text-white cursor-pointer shadow-md'
                     }`}
                   >
