@@ -2146,127 +2146,66 @@ ${extraHtml}
             const esReemplazoOSC = safeEquipoTurno?.osc && normStr(safeEquipoTurno.osc) !== normStr(oficialGuardia.osc);
             const esReemplazoOT = safeEquipoTurno?.ot && normStr(safeEquipoTurno.ot) !== normStr(oficialGuardia.ot);
 
+            const jdtNombre = matchOpt(safeEquipoTurno?.jdt, optionsJDT, 'Ariel Torres');
+            const oscNombre = matchOpt(safeEquipoTurno?.osc, optionsOSC, 'Jorge Albornoz');
+            const otNombre = matchOpt(safeEquipoTurno?.ot, optionsOT, 'Matias Cisternas');
+
             return (
-              <div className={`grid grid-cols-4 text-center font-bold text-xs sm:text-sm py-2 divide-x ${
+              <div className={`grid grid-cols-4 text-center font-bold text-xs sm:text-sm py-2.5 divide-x ${
                 modoNocturno ? 'bg-[#091b33] divide-blue-800 text-white' : 'bg-slate-100/90 divide-slate-300/80 text-slate-900'
               }`}>
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>GUARDIA / TURNO</span>
-                  <span className="font-black text-xs sm:text-sm text-amber-500 font-mono tracking-wider bg-amber-950/40 border border-amber-500/40 px-2 py-0.5 rounded shadow-sm mt-0.5">
+                  <span className="font-black text-xs sm:text-sm text-amber-500 font-mono tracking-wider bg-amber-950/40 border border-amber-500/40 px-2.5 py-0.5 rounded shadow-sm mt-0.5">
                     {safeEquipoTurno?.rotacion || 'TIGRES'}
                   </span>
                 </div>
 
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>JDT (Jefe)</span>
-                  <select
-                    value={matchOpt(safeEquipoTurno?.jdt, optionsJDT, 'Ariel Torres')}
-                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, jdt: e.target.value })}
-                    className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
-                      esReemplazoJDT ? 'border-amber-500 ring-1 ring-amber-400' : ''
-                    } ${
-                      modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white font-extrabold' : 'border-slate-300 bg-white text-slate-950 font-black'
-                    }`}
-                  >
-                    <option value="Javier San Martin" className="equipo-turno-opcion bg-white text-black font-bold">Javier San Martin</option>
-                    <option value="Pablo Flores Vasquez" className="equipo-turno-opcion bg-white text-black font-bold">Pablo Flores Vasquez</option>
-                    <option value="Ariel Torres" className="equipo-turno-opcion bg-white text-black font-bold">Ariel Torres</option>
-                    <option value="Norman Galaz" className="equipo-turno-opcion bg-white text-black font-bold">Norman Galaz</option>
-                    <option value="Cristian Valdivia Maldonado" className="equipo-turno-opcion bg-white text-black font-bold">Cristian Valdivia Maldonado</option>
-                    <option value="Rodrigo Troncoso" className="equipo-turno-opcion bg-white text-black font-bold">Rodrigo Troncoso (Contingencia)</option>
-                  </select>
+                  <span className={`font-black text-xs sm:text-sm mt-0.5 px-2 py-0.5 rounded border text-center ${
+                    esReemplazoJDT 
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400 font-extrabold' 
+                      : modoNocturno ? 'text-slate-100 border-transparent' : 'text-slate-900 border-transparent'
+                  }`}>
+                    {jdtNombre}
+                  </span>
                   {esReemplazoJDT && (
-                    <div className="mt-1 flex flex-col items-center w-full max-w-[190px]">
-                      <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-tighter">
-                        ¿Motivo del cambio?
-                      </span>
-                      <select
-                        value={equipoTurno.motivoJDT || 'Licencia'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, motivoJDT: e.target.value })}
-                        className="equipo-turno-select w-full font-bold text-[11px] border border-amber-400 rounded px-1 py-0.5 text-center focus:outline-none bg-white text-slate-950 shadow-sm"
-                      >
-                        <option value="Licencia" className="equipo-turno-opcion bg-white text-black font-bold">Licencia</option>
-                        <option value="Día compensado" className="equipo-turno-opcion bg-white text-black font-bold">Día compensado</option>
-                        <option value="Día administrativo" className="equipo-turno-opcion bg-white text-black font-bold">Día administrativo</option>
-                        <option value="Mantenimiento" className="equipo-turno-opcion bg-white text-black font-bold">Mantenimiento</option>
-                        <option value="Problemas climáticos" className="equipo-turno-opcion bg-white text-black font-bold">Problemas climáticos</option>
-                      </select>
-                    </div>
+                    <span className="text-[10px] font-extrabold text-amber-500 uppercase tracking-tight mt-0.5">
+                      (Reemplazo - {equipoTurno.motivoJDT || 'Licencia'})
+                    </span>
                   )}
                 </div>
 
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OSC (Operador)</span>
-                  <select
-                    value={matchOpt(safeEquipoTurno?.osc, optionsOSC, 'Jorge Albornoz')}
-                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, osc: e.target.value })}
-                    className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
-                      esReemplazoOSC ? 'border-amber-500 ring-1 ring-amber-400' : ''
-                    } ${
-                      modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white font-extrabold' : 'border-slate-300 bg-white text-slate-950 font-black'
-                    }`}
-                  >
-                    <option value="Humberto Barra Tapia" className="equipo-turno-opcion bg-white text-black font-bold">Humberto Barra Tapia</option>
-                    <option value="Luis Morales" className="equipo-turno-opcion bg-white text-black font-bold">Luis Morales</option>
-                    <option value="Jorge Albornoz" className="equipo-turno-opcion bg-white text-black font-bold">Jorge Albornoz</option>
-                    <option value="Eduardo Armijo Retamal" className="equipo-turno-opcion bg-white text-black font-bold">Eduardo Armijo Retamal</option>
-                    <option value="Aristides Toledo Peña" className="equipo-turno-opcion bg-white text-black font-bold">Aristides Toledo Peña</option>
-                    <option value="Máximo Cortés" className="equipo-turno-opcion bg-white text-black font-bold">Máximo Cortés (Contingencia)</option>
-                  </select>
+                  <span className={`font-black text-xs sm:text-sm mt-0.5 px-2 py-0.5 rounded border text-center ${
+                    esReemplazoOSC 
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400 font-extrabold' 
+                      : modoNocturno ? 'text-slate-100 border-transparent' : 'text-slate-900 border-transparent'
+                  }`}>
+                    {oscNombre}
+                  </span>
                   {esReemplazoOSC && (
-                    <div className="mt-1 flex flex-col items-center w-full max-w-[190px]">
-                      <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-tighter">
-                        ¿Motivo del cambio?
-                      </span>
-                      <select
-                        value={safeEquipoTurno?.motivoOSC || 'Licencia'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, motivoOSC: e.target.value })}
-                        className="equipo-turno-select w-full font-bold text-[11px] border border-amber-400 rounded px-1 py-0.5 text-center focus:outline-none bg-white text-slate-950 shadow-sm"
-                      >
-                        <option value="Licencia" className="equipo-turno-opcion bg-white text-black font-bold">Licencia</option>
-                        <option value="Día compensado" className="equipo-turno-opcion bg-white text-black font-bold">Día compensado</option>
-                        <option value="Día administrativo" className="equipo-turno-opcion bg-white text-black font-bold">Día administrativo</option>
-                        <option value="Mantenimiento" className="equipo-turno-opcion bg-white text-black font-bold">Mantenimiento</option>
-                        <option value="Problemas climáticos" className="equipo-turno-opcion bg-white text-black font-bold">Problemas climáticos</option>
-                      </select>
-                    </div>
+                    <span className="text-[10px] font-extrabold text-amber-500 uppercase tracking-tight mt-0.5">
+                      (Reemplazo - {safeEquipoTurno?.motivoOSC || 'Licencia'})
+                    </span>
                   )}
                 </div>
+
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OT (Operador Turno)</span>
-                  <select
-                    value={matchOpt(safeEquipoTurno?.ot, optionsOT, 'Matias Cisternas')}
-                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, ot: e.target.value })}
-                    className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
-                      esReemplazoOT ? 'border-amber-500 ring-1 ring-amber-400' : ''
-                    } ${
-                      modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-white font-extrabold' : 'border-slate-300 bg-white text-slate-950 font-black'
-                    }`}
-                  >
-                    <option value="Eric Godoy Diaz" className="equipo-turno-opcion bg-white text-black font-bold">Eric Godoy Diaz</option>
-                    <option value="Gerson Cofré" className="equipo-turno-opcion bg-white text-black font-bold">Gerson Cofré</option>
-                    <option value="Matias Cisternas" className="equipo-turno-opcion bg-white text-black font-bold">Matias Cisternas</option>
-                    <option value="Carlos Vivero" className="equipo-turno-opcion bg-white text-black font-bold">Carlos Vivero</option>
-                    <option value="Claudio Garrido San Martin" className="equipo-turno-opcion bg-white text-black font-bold">Claudio Garrido San Martin</option>
-                    <option value="Enzo Cornejo" className="equipo-turno-opcion bg-white text-black font-bold">Enzo Cornejo (Contingencia)</option>
-                  </select>
+                  <span className={`font-black text-xs sm:text-sm mt-0.5 px-2 py-0.5 rounded border text-center ${
+                    esReemplazoOT 
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400 font-extrabold' 
+                      : modoNocturno ? 'text-slate-100 border-transparent' : 'text-slate-900 border-transparent'
+                  }`}>
+                    {otNombre}
+                  </span>
                   {esReemplazoOT && (
-                    <div className="mt-1 flex flex-col items-center w-full max-w-[190px]">
-                      <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-tighter">
-                        ¿Motivo del cambio?
-                      </span>
-                      <select
-                        value={equipoTurno.motivoOT || 'Licencia'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, motivoOT: e.target.value })}
-                        className="equipo-turno-select w-full font-bold text-[11px] border border-amber-400 rounded px-1 py-0.5 text-center focus:outline-none bg-white text-slate-950 shadow-sm"
-                      >
-                        <option value="Licencia" className="equipo-turno-opcion bg-white text-black font-bold">Licencia</option>
-                        <option value="Día compensado" className="equipo-turno-opcion bg-white text-black font-bold">Día compensado</option>
-                        <option value="Día administrativo" className="equipo-turno-opcion bg-white text-black font-bold">Día administrativo</option>
-                        <option value="Mantenimiento" className="equipo-turno-opcion bg-white text-black font-bold">Mantenimiento</option>
-                        <option value="Problemas climáticos" className="equipo-turno-opcion bg-white text-black font-bold">Problemas climáticos</option>
-                      </select>
-                    </div>
+                    <span className="text-[10px] font-extrabold text-amber-500 uppercase tracking-tight mt-0.5">
+                      (Reemplazo - {equipoTurno.motivoOT || 'Licencia'})
+                    </span>
                   )}
                 </div>
               </div>
