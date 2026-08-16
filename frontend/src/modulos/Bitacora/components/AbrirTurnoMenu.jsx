@@ -158,40 +158,11 @@ export default function AbrirTurnoMenu({
           </span>
         </div>
 
-        {/* Banner Azul Dividido con Folio, Selector Reactivo de Turno y Reloj */}
+        {/* Banner Azul Dividido con Folio y Reloj */}
         <div className="w-full bg-[#1e40af] text-white font-bold rounded-xl shadow-md mb-6 tracking-wide flex flex-col sm:flex-row items-center justify-between divide-y sm:divide-y-0 sm:divide-x divide-blue-400/50 text-center overflow-hidden">
           <div className="w-full sm:w-1/2 py-2.5 px-4 text-xs sm:text-sm flex flex-wrap items-center justify-center gap-2">
             <span className="opacity-90 font-medium">Folio:</span>
             <span className="bg-orange-600 text-white px-2.5 py-0.5 rounded font-black text-xs sm:text-sm shadow-md">{turnoActivo?.folio || '01'}</span>
-            
-            {/* Toggle Reactivo Diurno / Nocturno */}
-            <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-lg border border-blue-400/30">
-              <button
-                type="button"
-                onClick={() => handleCambiarTipoTurno('DIURNO')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                  tipoTurnoSeleccionado === 'DIURNO'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-                <span>Diurno</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCambiarTipoTurno('NOCTURNO')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                  tipoTurnoSeleccionado === 'NOCTURNO'
-                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Moon className="w-3.5 h-3.5 text-indigo-300" />
-                <span>Nocturno</span>
-              </button>
-            </div>
           </div>
 
           <div className="w-full sm:w-1/2 py-2.5 px-4 flex items-center justify-center gap-2 text-cyan-200 font-mono font-black text-xs sm:text-sm tracking-widest drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">
