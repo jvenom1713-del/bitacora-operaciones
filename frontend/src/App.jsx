@@ -15,7 +15,7 @@ import VistaPermisosCaliente from './modulos/Bitacora/components/VistaPermisosCa
 import AnalisisQuimicos from './modulos/AnalisisQuimicos/views/AnalisisQuimicos';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo } from './shared/apiConfig';
 import { supabase } from './shared/supabaseClient';
-import { detectarContingenciasGuardia } from './shared/constants/guardias';
+import { MATRIZ_GUARDIAS, detectarContingenciasGuardia } from './shared/constants/guardias';
 
 import { 
   ShieldCheck, 
