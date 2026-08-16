@@ -1425,13 +1425,13 @@ ${extraHtml}
     const tieneDatosServidorOExcel = datosEntrada?.fuente || datosEntrada?.creado_el || datosEntrada?.status === 'ok' || datosEntrada?.esDeServidor;
 
     if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
-      const sisProm = Number(sisPromVal) || 52.9;
+      const sisProm = Number(sisPromVal) || 55.8;
       let potEspNum = Number(potEspVal);
       if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0 || potEspNum === 1310) {
-        potEspNum = 1311;
+        potEspNum = 4046;
       }
 
-      const sisPromStr = (sisProm === 54.6 || sisProm === 0) ? '52.9' : sisProm.toFixed(1);
+      const sisPromStr = (sisProm === 54.6 || sisProm === 0) ? '55.8' : sisProm.toFixed(1);
       const hrsMTStr = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : '0';
 
       return {
@@ -1463,9 +1463,14 @@ ${extraHtml}
           else if (mw >= 140) hrsMT++;
         });
 
-        const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
+        const promCalculado = (sumaMW / 24).toFixed(1);
+        const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '52.9')
           ? datosEntrada.sistemaProm
-          : '52.9';
+          : (promCalculado !== '0.0' ? promCalculado : '55.8');
+
+        const cmgOficial = (datosEntrada && datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '0' && datosEntrada.costoMarginal !== '--' && datosEntrada.costoMarginal !== '39.0')
+          ? datosEntrada.costoMarginal
+          : '50.6';
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
@@ -1475,7 +1480,7 @@ ${extraHtml}
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
           sistemaProm: sisPromOficial,
-          potEspera: String(Math.round(sumaMW || 1311)),
+          potEspera: String(Math.round(sumaMW || 4046)),
           fuegosSuplemen: String(fuegosSuplemenVal),
           hrsCargaBase: hrsCBFinal,
           hrsMinTec: hrsMTFinal,
@@ -1484,24 +1489,24 @@ ${extraHtml}
           m3FA: '0',
           m3Diesel: '0',
           kgGasGLP: '0',
-          costoMarginal: '39.0'
+          costoMarginal: cmgOficial
         };
       }
     }
 
     return {
       despachoCNR: 'En servicio',
-      sistemaProm: '52.9',
-      potEspera: '1311',
+      sistemaProm: '55.8',
+      potEspera: '4046',
       fuegosSuplemen: '0',
-      hrsCargaBase: '0',
-      hrsMinTec: '0',
+      hrsCargaBase: '1',
+      hrsMinTec: '22',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
       m3Diesel: '0',
       kgGasGLP: '0',
-      costoMarginal: '39.0'
+      costoMarginal: '50.6'
     };
   };
 

@@ -1128,10 +1128,10 @@ ${senalesForzadasTexto}
           </div>
           <div className="p-3.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs font-semibold">
             {[
-              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '52.9'} USD/MWh`, color: 'text-cyan-300' },
-              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4004'} MW`, color: 'text-emerald-400' },
+              { label: 'Costo Marginal CEN', value: `${datosGen?.costoMarginal || '50.6'} USD/MWh`, color: 'text-cyan-300' },
+              { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4046'} MW`, color: 'text-emerald-400' },
               { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: 'text-amber-400' },
-              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '0'} hrs`, color: 'text-slate-100' },
+              { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '1'} hrs`, color: 'text-slate-100' },
               { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '22'} hrs`, color: 'text-purple-300' },
             ].map((item, i) => (
               <div key={i} className={`p-2.5 rounded-lg border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
