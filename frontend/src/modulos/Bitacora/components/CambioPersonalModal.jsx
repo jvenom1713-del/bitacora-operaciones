@@ -262,8 +262,8 @@ export default function CambioPersonalModal({
           </div>
         </div>
 
-        {/* SUBHEADER CORPORATIVO INFO CON TOGGLE DE TIPO DE TURNO */}
-        <div className={`grid grid-cols-1 md:grid-cols-3 text-xs font-bold rounded-xl p-2.5 mb-4 gap-2 items-center border ${
+        {/* SUBHEADER CORPORATIVO INFO */}
+        <div className={`flex flex-wrap items-center justify-between text-xs font-bold rounded-xl p-2.5 mb-4 gap-2 border ${
           modoNocturno 
             ? 'bg-slate-950/80 border-slate-800 text-slate-200' 
             : 'bg-slate-200/80 border-slate-300 text-slate-900'
@@ -271,45 +271,6 @@ export default function CambioPersonalModal({
           <div className="flex items-center">
             <span className={modoNocturno ? "text-slate-400" : "text-slate-700 font-bold"}>Usuario:</span>
             <span className={`ml-1.5 font-extrabold ${modoNocturno ? "text-slate-200" : "text-slate-950"}`}>{usuarioActual?.nombre || 'Jorge Albornoz'}</span>
-          </div>
-
-          {/* Selector Explícito Diurno / Nocturno */}
-          <div className="flex items-center justify-center">
-            <div className={`flex gap-1.5 p-1 rounded-lg border w-full max-w-[240px] ${
-              modoNocturno ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-300 shadow-inner'
-            }`}>
-              <button
-                type="button"
-                onClick={() => {
-                  setTipoTurno('Diurno');
-                  if (setModoNocturno) setModoNocturno(false);
-                }}
-                className={`flex-1 py-1 px-2.5 rounded-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  tipoTurno === 'Diurno' || !modoNocturno
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Sun className={`w-3.5 h-3.5 shrink-0 ${tipoTurno === 'Diurno' || !modoNocturno ? 'text-slate-950' : 'text-amber-600'}`} />
-                <span>Diurno</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setTipoTurno('Nocturno');
-                  if (setModoNocturno) setModoNocturno(true);
-                }}
-                className={`flex-1 py-1 px-2.5 rounded-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  tipoTurno === 'Nocturno' && modoNocturno
-                    ? 'bg-indigo-600 text-white shadow-md font-black'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Moon className={`w-3.5 h-3.5 shrink-0 ${tipoTurno === 'Nocturno' && modoNocturno ? 'text-white' : 'text-indigo-600'}`} />
-                <span>Nocturno</span>
-              </button>
-            </div>
           </div>
 
           <div className="flex items-center justify-end font-mono text-[11px]">
