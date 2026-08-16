@@ -280,7 +280,9 @@ export default function DashboardIniciarTurno({
   const tipoAuto = (horaInicial >= 8 && horaInicial < 20) ? 'DIURNO' : 'NOCTURNO';
 
   const [tipoTurnoState, setTipoTurnoState] = useState(() => {
-    return (turnoActivoProp?.tipo_turno || turnoActivoProp?.turno || localStorage.getItem('tipo_turno_activo') || tipoAuto).toUpperCase();
+    const propVal = turnoActivoProp?.tipo_turno || turnoActivoProp?.turno;
+    if (propVal) return String(propVal).toUpperCase();
+    return tipoAuto;
   });
 
   useEffect(() => {
@@ -296,7 +298,9 @@ export default function DashboardIniciarTurno({
   useEffect(() => {
     const syncTipoTurno = () => {
       const saved = localStorage.getItem('tipo_turno_activo');
-      if (saved) setTipoTurnoState(saved.toUpperCase());
+      if (saved && (turnoActivoProp?.tipo_turno || turnoActivoProp?.turno)) {
+        setTipoTurnoState(saved.toUpperCase());
+      }
     };
     syncTipoTurno();
     window.addEventListener('turno_actualizado', syncTipoTurno);
@@ -305,16 +309,11 @@ export default function DashboardIniciarTurno({
       window.removeEventListener('turno_actualizado', syncTipoTurno);
       window.removeEventListener('storage', syncTipoTurno);
     };
-  }, []);
+  }, [turnoActivoProp]);
 
   const handleCambiarTipoTurno = (nuevoTipo) => {
     const norm = String(nuevoTipo).toUpperCase();
     setTipoTurnoState(norm);
-    if (norm === 'DIURNO') {
-      if (setModoNocturno) setModoNocturno(false);
-    } else if (norm === 'NOCTURNO') {
-      if (setModoNocturno) setModoNocturno(true);
-    }
     try {
       localStorage.setItem('tipo_turno_activo', norm);
       window.dispatchEvent(new Event('turno_actualizado'));

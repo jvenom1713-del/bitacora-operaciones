@@ -775,7 +775,7 @@ export default function App() {
 
       const tipoTurnoExtraido = (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada.tipo_turno)
         ? rotacionSeleccionada.tipo_turno.toUpperCase()
-        : (localStorage.getItem('tipo_turno_activo') || ((ahora.getHours() >= 8 && ahora.getHours() < 20) ? 'DIURNO' : 'NOCTURNO'));
+        : ((ahora.getHours() >= 8 && ahora.getHours() < 20) ? 'DIURNO' : 'NOCTURNO');
 
       const res = await fetch(getApiUrl('/api/turnos/nuevo'), {
         method: 'POST',
