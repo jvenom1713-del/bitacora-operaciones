@@ -1391,30 +1391,27 @@ ${extraHtml}
 
         let hrsCB = 0;
         let hrsMT = 0;
-        let hrsFS = 0;
-        let mwFuegosSum = 0;
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
           else if (mw > 0 && mw < 330) hrsMT++;
-          if (mw > 32) {
-            hrsFS++;
-            mwFuegosSum += mw;
-          }
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
           ? datosEntrada.sistemaProm
           : '52.9';
 
+        const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
+        const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
+
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
           sistemaProm: sisPromOficial,
           potEspera: String(Math.round(sumaMW || 1311)),
-          fuegosSuplemen: String(Math.round(mwFuegosSum)),
+          fuegosSuplemen: String(fuegosSuplemenVal),
           hrsCargaBase: String(hrsCB),
           hrsMinTec: String(hrsMT || 7),
-          hrsFuegosSuplem: String(hrsFS),
+          hrsFuegosSuplem: String(hrsFuegosSuplemVal),
           milesM3Gas: '0',
           m3FA: '0',
           m3Diesel: '0',
