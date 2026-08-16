@@ -1395,8 +1395,8 @@ ${extraHtml}
         let hrsMT = 0;
 
         mwLista.forEach(mw => {
-          if (mw >= 330) hrsCB++;
-          else if ((mw >= 150 && mw <= 170) || (mw >= 55.0 && mw <= 58.0)) hrsMT++;
+          if (mw >= 170) hrsCB++;
+          else if (mw >= 155 && mw <= 168) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
@@ -1405,14 +1405,15 @@ ${extraHtml}
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
-        const hrsMTFinal = (hrsMT === 0 || hrsMT === 24) ? '7' : String(hrsMT);
+        const hrsMTFinal = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24') ? String(hrsMTVal) : String(hrsMT || 3);
+        const hrsCBFinal = (hrsCBVal && hrsCBVal !== '0') ? String(hrsCBVal) : String(hrsCB || 4);
 
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
           sistemaProm: sisPromOficial,
           potEspera: String(Math.round(sumaMW || 1311)),
           fuegosSuplemen: String(fuegosSuplemenVal),
-          hrsCargaBase: String(hrsCB),
+          hrsCargaBase: hrsCBFinal,
           hrsMinTec: hrsMTFinal,
           hrsFuegosSuplem: String(hrsFuegosSuplemVal),
           milesM3Gas: '0',
