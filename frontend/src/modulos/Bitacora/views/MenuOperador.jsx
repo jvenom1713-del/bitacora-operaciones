@@ -225,13 +225,13 @@ export default function MenuOperador({
               return (
                 <button
                   onClick={() => {
-                    onNavegarBitacora('SALA_CONTROL');
-                    navigate('/dashboard');
+                    onNavegarBitacora('ABRIR_TURNO');
+                    navigate('/abrir-turno');
                   }}
                   className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30"
                 >
                   <FileText className="w-5 h-5 text-amber-200" />
-                  <span>Ingreso Bitácora Operacional</span>
+                  <span>Ingreso Bitácora Operacional (Selección de Guardia)</span>
                 </button>
               );
             }

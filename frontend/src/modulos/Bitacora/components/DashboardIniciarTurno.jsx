@@ -148,6 +148,7 @@ export default function DashboardIniciarTurno({
   modoNocturno, 
   setModoNocturno,
   onVolver,
+  onVolverASeleccionGuardia,
   onCambiarPersonal,
   onAbrirModalCambioPersonal,
   tabInicial = 'EQUIPOS',
