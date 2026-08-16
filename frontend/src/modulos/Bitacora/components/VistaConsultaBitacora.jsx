@@ -79,8 +79,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
     const jefe = item.cerrado_por_nombre || 'Jefe de Turno';
     const turno = item.tipo_turno || 'DIURNO';
-    const resumen = item.resumen_operativo || 'Sin observaciones de cierre.';
-    const contenido = item.contenido_texto || '';
+    const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
 
     container.innerHTML = `
       <div style="border: 2px solid #1e293b; border-radius: 8px; overflow: hidden; background: #ffffff; padding: 0;">
@@ -90,7 +89,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             <tr>
               <td>
                 <div style="font-size: 9px; font-weight: 800; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px;">
-                  <span style="color: #ffffff;">G</span>METROPOLITANA — HOJA DE TURNO CERRADA
+                  <span style="color: #ffffff;">G</span>METROPOLITANA — REGISTRO DE TURNO
                 </div>
                 <div style="font-size: 16px; font-weight: 900; color: #ffffff; text-transform: uppercase; margin: 2px 0;">
                   CENTRAL NUEVA RENCA
@@ -109,52 +108,84 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
           </table>
         </div>
 
-        <!-- INFO DOTACIÓN Y CIERRE -->
-        <div style="background: #f8fafc; padding: 10px 18px; border-bottom: 1px solid #e2e8f0; font-size: 10px; color: #334155;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="width: 50%;">
-                <span style="color: #64748b; font-weight: 800; text-transform: uppercase; display: block; font-size: 8px;">JEFE DE TURNO QUE APROBÓ:</span>
-                <strong style="color: #0f172a; font-size: 11px;">${jefe}</strong>
-              </td>
-              <td style="width: 50%; text-align: right;">
-                <span style="color: #64748b; font-weight: 800; text-transform: uppercase; display: block; font-size: 8px;">ESTADO DE DOCUMENTO:</span>
-                <strong style="color: #16a34a; font-size: 11px;">APROBADO Y ARCHIVADO</strong>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- SECCIÓN DE RESUMEN Y ENTREGA -->
-        <div style="padding: 16px 18px; border-bottom: 1px solid #e2e8f0;">
-          <div style="font-size: 10px; font-weight: 800; color: #0284c7; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid #bae6fd; padding-bottom: 3px;">
-            1. RESUMEN DE ENTREGA Y CIERRE DE TURNO
+        <!-- SECCIONES DESTACADAS -->
+        <div style="padding: 16px 18px;">
+          <!-- 1. RESUMEN DE GENERACIÓN DIARIA: -->
+          <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
+            1. RESUMEN DE GENERACIÓN DIARIA:
           </div>
-          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; white-space: pre-line; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; white-space: pre-line; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
             ${resumen}
           </div>
+
+          <!-- 2. FRAGILIDADES OPERACIONALES: -->
+          <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
+            2. FRAGILIDADES OPERACIONALES:
+          </div>
+          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
+            • BOP: Sin fragilidades críticas reportadas.<br/>
+            • Turbina Vapor: Operación normal en ciclo combinado.
+          </div>
+
+          <!-- 3. INSTRUCCIONES OPERACIONALES: -->
+          <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
+            3. INSTRUCCIONES OPERACIONALES:
+          </div>
+          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
+            Mantener monitoreo continuo de presiones y coordinación directa con CEN.
+          </div>
+
+          <!-- 4. SEÑALES FORZADAS: -->
+          <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
+            4. SEÑALES FORZADAS:
+          </div>
+          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
+            Sin señales forzadas registradas.
+          </div>
+
+          <!-- 5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS: -->
+          <div style="background: #ea580c; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
+            5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS:
+          </div>
+          <div style="font-size: 10px; color: #1e293b; background: #fff7ed; padding: 10px; border-radius: 6px; border: 1px solid #fdba74; margin-bottom: 14px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+              <thead>
+                <tr style="background: #ffedd5; color: #9a3412; font-weight: 800;">
+                  <th style="padding: 4px 6px; border: 1px solid #fed7aa;">N° Permiso</th>
+                  <th style="padding: 4px 6px; border: 1px solid #fed7aa;">Ubicación Técnica</th>
+                  <th style="padding: 4px 6px; border: 1px solid #fed7aa;">Solicitado Por</th>
+                  <th style="padding: 4px 6px; border: 1px solid #fed7aa;">Autorizado Por</th>
+                  <th style="padding: 4px 6px; border: 1px solid #fed7aa;">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #c2410c;">P-002</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Turbina Vapor - Cámara de Paletas</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Roberto Silva (Mantención)</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Javier San Martín</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #d97706;">ABIERTO</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #c2410c;">P-003</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Sala Transformadores - Patio 33 kV</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Luis Pérez (ELECTRUM)</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Norman Galaz</td>
+                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #d97706;">ABIERTO</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        ${contenido ? `
-        <!-- SECCIÓN DE CONSOLIDADO -->
-        <div style="padding: 16px 18px; border-bottom: 1px solid #e2e8f0;">
-          <div style="font-size: 10px; font-weight: 800; color: #0369a1; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid #bae6fd; padding-bottom: 3px;">
-            2. DETALLE Y REGISTRO CONSOLIDADO DE LA BITÁCORA
-          </div>
-          <div style="font-size: 10.5px; color: #334155; line-height: 1.5; white-space: pre-line; font-family: monospace; background: #fafafa; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
-            ${contenido}
-          </div>
-        </div>
-        ` : ''}
-
-        <!-- FIRMA Y PIE DE PÁGINA CARTA -->
+        <!-- FIRMA Y PIE DE PÁGINA -->
         <div style="padding: 16px 18px; background: #ffffff;">
           <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
             <tr>
               <td style="width: 60%; vertical-align: bottom;">
                 <div style="font-size: 8px; color: #64748b;">
                   Documento Oficial generado desde el Sistema Integrado de Operaciones.<br/>
-                  Impresión en Formato Carta (8.5" x 11") • Central Nueva Renca
+                  Central Nueva Renca
                 </div>
               </td>
               <td style="width: 40%; text-align: center; vertical-align: bottom;">
@@ -182,7 +213,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
     try {
       await html2pdf().from(container).set(opt).save();
     } catch (err) {
-      console.error("Error al descargar PDF Carta:", err);
+      console.error("Error al descargar PDF:", err);
       if (item.ruta_pdf) {
         window.open(item.ruta_pdf, '_blank');
       }
@@ -199,105 +230,108 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
     setFechaFin('');
     setTextoBusqueda('');
     setTipoTurnoFiltro('TODOS');
-    setTimeout(() => {
-      cargarBitacoras();
-    }, 50);
   };
 
   const bitacorasFiltradas = bitacoras.filter(b => {
-    if (tipoTurnoFiltro === 'TODOS') return true;
-    return b.tipo_turno === tipoTurnoFiltro;
+    if (tipoTurnoFiltro !== 'TODOS' && (b.tipo_turno || '').toUpperCase() !== tipoTurnoFiltro) {
+      return false;
+    }
+    if (fechaInicio && b.fecha_turno < fechaInicio) return false;
+    if (fechaFin && b.fecha_turno > fechaFin) return false;
+    if (textoBusqueda) {
+      const q = textoBusqueda.toLowerCase();
+      const txt = `${b.folio} ${b.cerrado_por_nombre} ${b.resumen_operativo} ${b.contenido_texto}`.toLowerCase();
+      if (!txt.includes(q)) return false;
+    }
+    return true;
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-4 md:p-8">
-      {/* HEADER SUPERIOR */}
-      <header className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 backdrop-blur border border-slate-800 p-5 rounded-2xl shadow-2xl">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
-            <FileText className="w-8 h-8" />
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 font-sans">
+      <div className="max-w-7xl mx-auto space-y-6">
+
+        {/* HEADER PRINCIPAL */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onVolverMenu}
+              className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-all border border-slate-700 cursor-pointer"
+              title="Volver al Menú Principal"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                <FileText className="w-6 h-6 text-orange-500" />
+                Consulta de Bitácoras Operacionales
+              </h1>
+              <p className="text-xs text-slate-400 font-medium">
+                Historial de bitácoras cerradas, consolidados y descargas PDF
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-black text-white tracking-wide">
-              CONSULTA DE BITÁCORAS POR FECHA Y TEXTO
-            </h1>
-            <p className="text-xs text-slate-400 font-medium">
-              Histórico consolidado de Hojas de Turno cerradas y archivadas en PDF
-            </p>
-          </div>
+
+          <button
+            onClick={cargarBitacoras}
+            disabled={cargando}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-xl border border-slate-700 transition-all cursor-pointer"
+          >
+            <RefreshCw className={`w-4 h-4 text-blue-400 ${cargando ? 'animate-spin' : ''}`} />
+            <span>Actualizar Registros</span>
+          </button>
         </div>
 
-        <button
-          onClick={onVolverMenu}
-          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-800 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-2 cursor-pointer w-fit"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Menú</span>
-        </button>
-      </header>
-
-      <main className="max-w-7xl mx-auto space-y-6">
-        {/* PANEL DE FILTROS Y BÚSQUEDA */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div className="flex items-center gap-2 text-sm font-bold text-blue-400">
-              <Filter className="w-4 h-4" />
-              <span>FILTROS DE BÚSQUEDA AVANZADA</span>
+        {/* CONTROLES DE BÚSQUEDA Y FILTROS */}
+        <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-4">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Buscador Texto */}
+            <div className="flex-1 relative">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Buscar por folio, observaciones o jefe de turno..."
+                value={textoBusqueda}
+                onChange={(e) => setTextoBusqueda(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 outline-none transition-all"
+              />
+              {textoBusqueda && (
+                <button
+                  onClick={() => setTextoBusqueda('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
-            <button 
-              onClick={handleLimpiarFiltros}
-              className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Limpiar Filtros</span>
-            </button>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Búsqueda de Texto */}
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                <Search className="w-3.5 h-3.5 text-blue-400" />
-                Buscar por texto / palabra clave / folio:
-              </label>
-              <div className="relative">
+            {/* Rango de Fechas */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2">
+                <Calendar className="w-4 h-4 text-slate-500" />
                 <input
-                  type="text"
-                  placeholder="Ej: Fuga, Mantenimiento, Turbina Vapor, Folio TRN..."
-                  value={textoBusqueda}
-                  onChange={(e) => setTextoBusqueda(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && cargarBitacoras()}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  type="date"
+                  value={fechaInicio}
+                  onChange={(e) => setFechaInicio(e.target.value)}
+                  className="bg-transparent text-xs text-slate-200 outline-none cursor-pointer"
+                />
+                <span className="text-slate-600 text-xs">—</span>
+                <input
+                  type="date"
+                  value={fechaFin}
+                  onChange={(e) => setFechaFin(e.target.value)}
+                  className="bg-transparent text-xs text-slate-200 outline-none cursor-pointer"
                 />
               </div>
-            </div>
 
-            {/* Fecha Desde */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-                Fecha Desde:
-              </label>
-              <input
-                type="date"
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-            </div>
-
-            {/* Fecha Hasta */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-                Fecha Hasta:
-              </label>
-              <input
-                type="date"
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500 transition-colors"
-              />
+              {(fechaInicio || fechaFin || textoBusqueda || tipoTurnoFiltro !== 'TODOS') && (
+                <button
+                  onClick={handleLimpiarFiltros}
+                  title="Limpiar Filtros"
+                  className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-xl border border-slate-700 transition-all cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -323,20 +357,6 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                 ))}
               </div>
             </div>
-
-            {/* Botón Ejecutar Búsqueda */}
-            <button
-              onClick={cargarBitacoras}
-              disabled={cargando}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {cargando ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Search className="w-4 h-4" />
-              )}
-              <span>Buscar Registros</span>
-            </button>
           </div>
         </div>
 
@@ -402,7 +422,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                     <button
                       onClick={() => descargarPdfCarta(item)}
                       disabled={generandoPdfId === item.id}
-                      title="Descargar PDF en Formato Carta cuadrado listo para imprimir"
+                      title="Descargar PDF en formato listo para imprimir"
                       className="w-full py-2.5 px-4 bg-[#ea580c] hover:bg-[#c2410c] active:bg-[#9a3412] text-white text-xs font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       {generandoPdfId === item.id ? (
@@ -410,7 +430,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                       ) : (
                         <Download className="w-4 h-4" />
                       )}
-                      <span>{generandoPdfId === item.id ? 'Generando PDF Carta...' : 'Descargar PDF Carta'}</span>
+                      <span>{generandoPdfId === item.id ? 'Generando PDF...' : 'Descargar PDF'}</span>
                     </button>
                   </div>
                 </div>
@@ -418,7 +438,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

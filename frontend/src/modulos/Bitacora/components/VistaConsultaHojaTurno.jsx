@@ -836,7 +836,7 @@ export default function VistaConsultaHojaTurno({
 
       const textos = textoBitacora || {};
       const contenidoTexto = `
-Central Nueva Renca - Hoja de Turno Consolidada
+Central Nueva Renca
 Folio: ${folioStr} | Fecha: ${fechaStr} | Turno: ${turnoBitacora}
 
 1. RESUMEN DE GENERACIÓN DIARIA:
@@ -852,6 +852,10 @@ ${instrucciones}
 
 4. SEÑALES FORZADAS:
 ${senalesForzadasTexto}
+
+5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS:
+- Permiso P-002: Turbina Vapor - Cámara de Paletas (Solicitado: Roberto Silva / Mantención, Autorizado: Javier San Martín)
+- Permiso P-003: Sala Transformadores - Patio 33 kV (Solicitado: Luis Pérez / ELECTRUM, Autorizado: Norman Galaz)
 `;
 
       // Insertar bitácora en Supabase directamente con estado 'aprobada'
@@ -1015,7 +1019,7 @@ ${senalesForzadasTexto}
                 <span className="text-white">G</span>METROPOLITANA
               </h1>
               <p className="text-xs text-slate-400 font-medium mt-1">
-                Hoja de Turno Consolidada • Fecha: <strong className="text-cyan-400 font-mono">{fechaStr}</strong>
+                Fecha: <strong className="text-cyan-400 font-mono">{fechaStr}</strong>
               </p>
             </div>
           </div>
