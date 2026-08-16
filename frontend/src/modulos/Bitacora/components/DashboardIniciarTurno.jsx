@@ -3039,23 +3039,41 @@ ${extraHtml}
               <div className="max-w-xl mx-auto space-y-4">
                 {/* PASO 1: ESTADO BORRADOR */}
                 {isBorrador(estadoTurno) && (
-                  <button
-                    onClick={() => handleEnviarAJefeTurno('NORMAL', 'Solicitud de cierre de turno enviada por el operador.')}
-                    disabled={enviandoCierre}
-                    className="w-full p-6 rounded-2xl border border-blue-400/50 bg-gradient-to-br from-blue-700 via-indigo-800 to-blue-900 hover:from-blue-600 hover:to-indigo-700 text-white shadow-xl flex flex-col items-center text-center gap-3 cursor-pointer transform hover:scale-[1.02] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <div className="p-3.5 rounded-xl bg-white/10 border border-white/20">
-                      <Send className="w-8 h-8 text-cyan-300" />
-                    </div>
-                    <div>
-                      <span className="font-black text-base sm:text-lg block uppercase tracking-wide">
-                        1. Enviar a Revisión de Jefe de Turno
-                      </span>
-                      <p className="text-xs text-blue-200/90 font-medium mt-1">
-                        Envía la bitácora completa al Jefe de Turno para su revisión y firma autorizada.
-                      </p>
-                    </div>
-                  </button>
+                  <div>
+                    {!esJefeOAdmin ? (
+                      <button
+                        onClick={() => handleEnviarAJefeTurno('NORMAL', 'Solicitud de cierre de turno enviada por el operador.')}
+                        disabled={enviandoCierre}
+                        className="w-full p-6 rounded-2xl border border-blue-400/50 bg-gradient-to-br from-blue-700 via-indigo-800 to-blue-900 hover:from-blue-600 hover:to-indigo-700 text-white shadow-xl flex flex-col items-center text-center gap-3 cursor-pointer transform hover:scale-[1.02] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <div className="p-3.5 rounded-xl bg-white/10 border border-white/20">
+                          <Send className="w-8 h-8 text-cyan-300" />
+                        </div>
+                        <div>
+                          <span className="font-black text-base sm:text-lg block uppercase tracking-wide">
+                            1. Enviar a Revisión de Jefe de Turno
+                          </span>
+                          <p className="text-xs text-blue-200/90 font-medium mt-1">
+                            Envía la bitácora completa al Jefe de Turno para su revisión y firma autorizada.
+                          </p>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="p-5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex items-center gap-4">
+                        <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
+                          <Lock className="w-6 h-6 text-amber-400" />
+                        </div>
+                        <div className="text-left">
+                          <span className="block font-black text-sm uppercase text-amber-300">
+                            🔒 Bitácora en Edición por Operador de Sala
+                          </span>
+                          <span className="text-xs text-amber-200/90 font-medium">
+                            El Operador de Sala aún no envía la bitácora a revisión. El botón de aprobación de JDT se activará en cuanto sea enviada.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* PASO 2: ESTADO ENVIADO */}
