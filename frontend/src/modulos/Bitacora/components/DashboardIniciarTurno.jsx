@@ -167,6 +167,7 @@ export default function DashboardIniciarTurno({
   instruccionesEspeciales,
   setInstruccionesEspeciales
 }) {
+  const safeEquipoTurno = equipoTurno || { rotacion: 'TIGRES', jdt: 'Norman Galaz', osc: 'Jorge Albornoz', ot: 'Matías Cisternas' };
   const [tabActiva, setTabActiva] = useState(tabInicial);
 
   useEffect(() => {
@@ -2017,7 +2018,6 @@ ${extraHtml}
             </button>
           </div>
           {(() => {
-            const safeEquipoTurno = equipoTurno || { rotacion: 'TIGRES', jdt: 'Norman Galaz', osc: 'Jorge Albornoz', ot: 'Matías Cisternas' };
             const oficialGuardia = MATRIZ_GUARDIAS[safeEquipoTurno?.rotacion || 'TIGRES'] || MATRIZ_GUARDIAS.TIGRES;
             const esReemplazoJDT = safeEquipoTurno?.jdt && safeEquipoTurno.jdt !== oficialGuardia.jdt;
             const esReemplazoOSC = safeEquipoTurno?.osc && safeEquipoTurno.osc !== oficialGuardia.osc;
