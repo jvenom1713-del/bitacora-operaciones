@@ -3431,14 +3431,6 @@ ${extraHtml}
               </div>
             </div>
 
-            {/* SECCIÓN CELDAS: MATRIZ DE GENERACIÓN DIARIA (24 HORAS) */}
-            <GeneracionDiaria
-              registros={registrosHorarios}
-              onActualizarRegistros={setRegistrosHorarios}
-              modoNocturno={modoNocturno}
-              fecha={fechaFormateada}
-            />
-
             {/* SECCIÓN 2: ESTADO DE PLANTA */}
             <div className={`rounded-xl overflow-hidden border shadow-md w-full min-w-[1100px] ${
               modoNocturno ? 'border-blue-900/70 bg-[#0a1b33]' : 'border-slate-400 bg-white'
