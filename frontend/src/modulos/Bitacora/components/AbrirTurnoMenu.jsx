@@ -314,13 +314,16 @@ export default function AbrirTurnoMenu({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              const datosEquipo = {
+                rotacion: rotacionSeleccionada,
+                jdt: rotacionActualObj.jefe.nombre,
+                osc: rotacionActualObj.operadorSala.nombre,
+                ot: rotacionActualObj.operadorTurno.nombre
+              };
               if (onNavegarCambioPersonal) {
-                onNavegarCambioPersonal({
-                  rotacion: rotacionSeleccionada,
-                  jdt: rotacionActualObj.jefe.nombre,
-                  osc: rotacionActualObj.operadorSala.nombre,
-                  ot: rotacionActualObj.operadorTurno.nombre
-                });
+                onNavegarCambioPersonal(datosEquipo);
+              } else {
+                setMostrarModalCambio(true);
               }
             }}
             className="w-full sm:w-auto min-w-[220px] bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-lg shadow-orange-600/30 transition-all duration-200 transform hover:scale-[1.01] cursor-pointer"
@@ -341,6 +344,28 @@ export default function AbrirTurnoMenu({
         </div>
 
       </div>
+
+      {/* MODAL DE CAMBIO DE PERSONAL */}
+      {mostrarModalCambio && (
+        <CambioPersonalModal
+          isOpen={true}
+          onClose={() => setMostrarModalCambio(false)}
+          usuarioActual={usuarioActual}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+          equipoTurno={{
+            rotacion: rotacionSeleccionada,
+            jdt: rotacionActualObj.jefe.nombre,
+            osc: rotacionActualObj.operadorSala.nombre,
+            ot: rotacionActualObj.operadorTurno.nombre
+          }}
+          turno={turnoActivo}
+          onConfirmarReemplazo={(nuevoEquipo) => {
+            handleConfirmarReemplazoEquipo(nuevoEquipo);
+            setMostrarModalCambio(false);
+          }}
+        />
+      )}
 
       {/* MODAL DE BLOQUEO: BITÁCORA ANTERIOR NO APROBADA */}
       {mostrarModalBloqueo && (
