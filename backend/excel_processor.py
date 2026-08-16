@@ -146,7 +146,7 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
         # Mínimo Técnico: Solo horas que indiquen 160 MW (159 a 162 MW) -> H22 (160.2) y H23 (160.2) -> 2 hrs
         if gen_mw_round >= 330:
             hrs_carga_base += 1
-        elif 159 <= gen_mw_round <= 162:
+        elif gen_mw_round >= 140:
             hrs_minimo_tecnico += 1
             
         # Regla de negocio: solo se suman e incrementan horas si los MW de fuegos son mayores a 32 MW

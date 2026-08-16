@@ -1431,8 +1431,7 @@ ${extraHtml}
       }
 
       const sisPromStr = (sisProm === 54.6 || sisProm === 0) ? '52.9' : sisProm.toFixed(1);
-
-      const hrsMTStr = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24' && hrsMTVal !== '7') ? String(hrsMTVal) : '2';
+      const hrsMTStr = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : '0';
 
       return {
         despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (sisProm > 0 ? 'En servicio' : 'Fuera de servicio'),
@@ -1460,7 +1459,7 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (mw >= 159 && mw <= 162) hrsMT++;
+          else if (mw >= 140) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
@@ -1469,8 +1468,8 @@ ${extraHtml}
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
-        const hrsMTFinal = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24' && hrsMTVal !== '7') ? String(hrsMTVal) : String(hrsMT || 2);
-        const hrsCBFinal = (hrsCBVal && hrsCBVal !== '0') ? String(hrsCBVal) : String(hrsCB || 0);
+        const hrsMTFinal = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : String(hrsMT);
+        const hrsCBFinal = (hrsCBVal !== undefined && hrsCBVal !== null && hrsCBVal !== '') ? String(hrsCBVal) : String(hrsCB);
 
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
@@ -1495,7 +1494,7 @@ ${extraHtml}
       potEspera: '1311',
       fuegosSuplemen: '0',
       hrsCargaBase: '0',
-      hrsMinTec: '2',
+      hrsMinTec: '0',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
