@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
 import CambioPersonalModal from './CambioPersonalModal';
 import GeneracionDiaria from './GeneracionDiaria';
-import { fetchGeneracionCoordinador } from '../../../shared/services/coordinadorService';
+import { fetchGeneracionCoordinador, getFechaLocalChile } from '../../../shared/services/coordinadorService';
 import ErrorBoundary from '../../../shared/components/ErrorBoundary';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
@@ -1377,7 +1377,7 @@ ${extraHtml}
     }
 
     if (Array.isArray(bloquesMW) && bloquesMW.length > 0) {
-      const mwLista = bloquesMW.map(b => Number(b?.mw ?? b)).filter(n => !isNaN(n) && n >= 0);
+      const mwLista = bloquesMW.map(b => Number(b?.potencia_mw ?? b?.generacion_mwh ?? b?.mw ?? b)).filter(n => !isNaN(n) && n >= 0);
       if (mwLista.length > 0) {
         const sumaMW = mwLista.reduce((acc, val) => acc + val, 0);
         const promMW = sumaMW / mwLista.length;
@@ -1432,41 +1432,32 @@ ${extraHtml}
   useEffect(() => {
     const fetchInicial = async () => {
       try {
-        let datosCargados = null;
-        if (supabase) {
-          try {
-            const { data } = await supabase
-              .from('turnos_generacion')
-              .select('*')
-              .order('creado_el', { ascending: false })
-              .limit(1)
-              .maybeSingle();
+        const fechaLocal = getFechaLocalChile();
+        const nemotecnico = 'NUEVARENCA_TG1+TV1_GN_A';
 
-            if (data) {
+        const horasGeneracion = await fetchGeneracionCoordinador(fechaLocal, nemotecnico);
+        if (Array.isArray(horasGeneracion) && horasGeneracion.length === 24) {
+          setRegistrosHorarios(horasGeneracion);
+          try {
+            localStorage.setItem('bitacora_registros_horarios', JSON.stringify(horasGeneracion));
+          } catch (_) {}
+        }
+
+        let datosCargados = null;
+        try {
+          const res = await fetch(getApiUrl(`/api/resumen-generacion-diaria?refresh=true&fecha=${fechaLocal}&unidad=${encodeURIComponent(nemotecnico)}`));
+          if (res.ok) {
+            const resData = await res.json();
+            if (resData && resData.status !== 'error') {
               datosCargados = {
-                ...data,
+                ...resData,
                 esDeServidor: true
               };
             }
-          } catch (_) {}
-        }
+          }
+        } catch (_) {}
 
-        if (!datosCargados) {
-          try {
-            const res = await fetch(getApiUrl('/api/resumen-generacion-diaria?refresh=true'));
-            if (res.ok) {
-              const resData = await res.json();
-              if (resData && resData.status !== 'error') {
-                datosCargados = {
-                  ...resData,
-                  esDeServidor: true
-                };
-              }
-            }
-          } catch (_) {}
-        }
-
-        const datosFinales = calcularMatrizDinamica(datosCargados || {});
+        const datosFinales = calcularMatrizDinamica(datosCargados || {}, horasGeneracion);
         aplicarDatos(datosFinales);
         setEstadoCarga('ok');
         setMensajeCarga('Datos cargados');
@@ -1480,13 +1471,27 @@ ${extraHtml}
   const handleRefrescarCenManual = async () => {
     setCargandoExcel(true);
     setEstadoCarga(null);
-    setMensajeCarga('Consultando CEN S3...');
+    setMensajeCarga('Consultando CEN...');
 
     try {
-      let rawData = null;
+      const fechaLocal = getFechaLocalChile();
+      const nemotecnico = 'NUEVARENCA_TG1+TV1_GN_A';
 
+      // 1. Obtener programa diario de 24 horas del Coordinador para el nemotécnico exacto
+      const horasGeneracion = await fetchGeneracionCoordinador(fechaLocal, nemotecnico);
+
+      if (Array.isArray(horasGeneracion) && horasGeneracion.length === 24) {
+        setRegistrosHorarios(horasGeneracion);
+        try {
+          localStorage.setItem('bitacora_registros_horarios', JSON.stringify(horasGeneracion));
+          window.dispatchEvent(new Event('registros_actualizados'));
+        } catch (_) {}
+      }
+
+      // 2. Consulta adicional al resumen del servidor
+      let rawData = null;
       try {
-        const resCen = await fetch(getApiUrl('/api/resumen-generacion-diaria?refresh=true&force=true'));
+        const resCen = await fetch(getApiUrl(`/api/resumen-generacion-diaria?refresh=true&force=true&fecha=${fechaLocal}&unidad=${encodeURIComponent(nemotecnico)}`));
         if (resCen.ok) {
           const resData = await resCen.json();
           if (resData && resData.status !== 'error') {
@@ -1494,22 +1499,10 @@ ${extraHtml}
           }
         }
       } catch (errCen) {
-        console.warn('Aviso al refrescar CEN:', errCen);
+        console.warn('Aviso al refrescar resumen CEN:', errCen);
       }
 
-      if (!rawData) {
-        try {
-          const res = await fetch(getApiUrl('/api/auto-sync-coordinador'));
-          if (res.ok) {
-            const resData = await res.json();
-            if (resData && resData.status !== 'error') {
-              rawData = { ...resData, esDeServidor: true };
-            }
-          }
-        } catch (_) {}
-      }
-
-      const datosCalculados = calcularMatrizDinamica(rawData || {});
+      const datosCalculados = calcularMatrizDinamica(rawData || {}, horasGeneracion);
       aplicarDatos(datosCalculados);
 
       if (onCambiarPersonal) {
@@ -1525,7 +1518,7 @@ ${extraHtml}
       setEstadoCarga('ok');
       setMensajeCarga('Datos CEN Sincronizados');
     } catch (err) {
-      console.error('Error actualizando Matriz:', err);
+      console.error('Fallo real al consultar CEN:', err);
       const fallbackCalculado = calcularMatrizDinamica({});
       aplicarDatos(fallbackCalculado);
       setEstadoCarga('ok');
