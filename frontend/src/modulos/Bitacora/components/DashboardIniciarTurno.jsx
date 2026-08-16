@@ -1193,34 +1193,42 @@ ${extraHtml}
   const [parametrosLocales, setParametrosLocales] = useState(() => {
     try {
       const saved = localStorage.getItem('bitacora_parametros');
-      return saved ? JSON.parse(saved) : {
+      const parsed = saved ? JSON.parse(saved) : null;
+      if (parsed) {
+        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '4213') parsed.potEspera = '1311';
+        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '39.0';
+        if (!parsed.sistemaProm || parsed.sistemaProm === '0') parsed.sistemaProm = '56.7';
+        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '15') parsed.hrsMinTec = '7';
+        return parsed;
+      }
+      return {
         despachoCNR: 'En servicio',
-        sistemaProm: '0',
-        potEspera: '0',
+        sistemaProm: '56.7',
+        potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
-        hrsMinTec: '0',
+        hrsMinTec: '7',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '0'
+        costoMarginal: '39.0'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '0',
-        potEspera: '0',
+        sistemaProm: '56.7',
+        potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
-        hrsMinTec: '0',
+        hrsMinTec: '7',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '0'
+        costoMarginal: '39.0'
       };
     }
   });
@@ -3337,7 +3345,13 @@ ${extraHtml}
               <div className={`relative flex items-center justify-center px-4 py-2 border-b ${
                 modoNocturno ? 'bg-[#0d2a4d] border-blue-800 text-white' : 'bg-blue-950 border-blue-900 text-white'
               }`}>
-                <span className="font-extrabold text-sm sm:text-base uppercase tracking-wider text-center">GENERACIÓN DIARIA</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-sm sm:text-base uppercase tracking-wider text-center">GENERACIÓN DIARIA</span>
+                  <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm">
+                    <Lock className="w-3 h-3 text-emerald-400" />
+                    CEN Protegido
+                  </span>
+                </div>
                 <div className="absolute right-4 flex items-center gap-2">
                   {estadoCarga === 'ok' && (
                     <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold">

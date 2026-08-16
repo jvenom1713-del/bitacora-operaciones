@@ -233,34 +233,42 @@ export default function App() {
   const [parametrosGeneracion, setParametrosGeneracion] = useState(() => {
     try {
       const saved = localStorage.getItem('bitacora_parametros');
-      return saved ? JSON.parse(saved) : {
+      const parsed = saved ? JSON.parse(saved) : null;
+      if (parsed) {
+        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '4213') parsed.potEspera = '1311';
+        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '39.0';
+        if (!parsed.sistemaProm || parsed.sistemaProm === '0') parsed.sistemaProm = '56.7';
+        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '15') parsed.hrsMinTec = '7';
+        return parsed;
+      }
+      return {
         despachoCNR: 'En servicio',
-        sistemaProm: '0',
-        potEspera: '0',
+        sistemaProm: '56.7',
+        potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
-        hrsMinTec: '0',
+        hrsMinTec: '7',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '0'
+        costoMarginal: '39.0'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '0',
-        potEspera: '0',
+        sistemaProm: '56.7',
+        potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
-        hrsMinTec: '0',
+        hrsMinTec: '7',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '0'
+        costoMarginal: '39.0'
       };
     }
   });
