@@ -989,7 +989,7 @@ def buscar_bitacoras(fecha_inicio: Optional[str] = None, fecha_fin: Optional[str
 # --- ENDPOINT DINÁMICO DE GENERACIÓN DIARIA DESDE EXCEL Y BBDD ---
 
 @app.get("/api/resumen-generacion-diaria")
-def obtener_resumen_generacion_diaria():
+def obtener_resumen_generacion_diaria(refresh: Optional[bool] = False, force: Optional[bool] = False):
     """
     Obtiene los parámetros calculados dinámicamente desde la BBDD/Excel:
     - Costo Marginal (AC8)
@@ -1017,6 +1017,7 @@ def obtener_resumen_generacion_diaria():
     }
 
     conn = None
+    hoy_str = datetime.now().strftime('%Y-%m-%d')
     try:
         conn = database.get_db_connection()
         row = conn.execute("""
@@ -1032,6 +1033,25 @@ def obtener_resumen_generacion_diaria():
             FROM resumen_generacion_diaria
             ORDER BY fecha_turno DESC, id DESC LIMIT 1
         """).fetchone()
+
+        if refresh or force or not row or str(row["fecha_turno"]) != hoy_str:
+            resumen_cen = descargar_y_procesar_coordinador()
+            if resumen_cen.get("status") == "ok":
+                guardar_resumen_en_db(resumen_cen)
+                return {
+                    "status": "ok",
+                    "source": "coordinador_s3",
+                    "fuente": resumen_cen.get("fuente", "coordinador.cl"),
+                    "despachoCNR": "En servicio",
+                    "sistemaProm": str(resumen_cen.get("sistema_prom_mw", "56.7")),
+                    "potEspera": str(resumen_cen.get("potencia_esperada_mw", "4004")),
+                    "fuegosSuplemen": str(resumen_cen.get("mw_fuegos_suplementarios", "0")),
+                    "hrsCargaBase": str(resumen_cen.get("hrs_carga_base", "0")),
+                    "hrsMinTec": str(resumen_cen.get("hrs_minimo_tecnico", "0")),
+                    "hrsFuegosSuplem": str(resumen_cen.get("hrs_fuegos_suplementarios", "0")),
+                    "milesM3Gas": "0", "m3FA": "0", "m3Diesel": "0", "kgGasGLP": "0",
+                    "costoMarginal": str(resumen_cen.get("costo_marginal_usd_mw", "52.9"))
+                }
 
         if row:
             return {

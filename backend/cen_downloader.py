@@ -93,19 +93,23 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
         fechas_a_probar = [hoy + timedelta(days=1)] + [hoy - timedelta(days=d) for d in range(max_dias_atras + 1)]
 
     candidatos_zip = []
+    version_suffixes = ['_v10', '_v9', '_v8', '_v7', '_v6', '_v5', '_v4', '_v3', '_v2', '_v1', '', '_def', '_final']
+
     for f in fechas_a_probar:
         fecha8 = f.strftime('%Y%m%d')
         coincidencias = [z for z in zips_disponibles if fecha8 in z]
         if coincidencias:
             candidatos_zip.extend(coincidencias)
         else:
-            candidatos_zip.append(f"PROGRAMA{fecha8}.zip")
+            for suff in version_suffixes:
+                candidatos_zip.append((f"PROGRAMA{fecha8}{suff}.zip", f.strftime('%Y-%m-%d')))
 
     for z in zips_disponibles:
-        if z not in candidatos_zip:
-            candidatos_zip.append(z)
+        if not any(z == (c[0] if isinstance(c, tuple) else c) for c in candidatos_zip):
+            candidatos_zip.append((z, datetime.now().strftime('%Y-%m-%d')))
 
-    for zip_name in candidatos_zip:
+    for item in candidatos_zip:
+        zip_name, f_str = item if isinstance(item, tuple) else (item, datetime.now().strftime('%Y-%m-%d'))
         print(f"[CEN API] Intentando descargar {zip_name} desde AWS S3...")
         url_s3 = obtener_url_descarga_s3("PCP", zip_name)
 
@@ -133,8 +137,7 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
                             print(f"[CEN API] [OK] Extrayendo Excel PRG: {prg_target}")
                             prg_bytes = zf.read(prg_target)
                             po_bytes = zf.read(po_target) if po_target else None
-                            fecha_extraida = datetime.now().strftime('%Y-%m-%d')
-                            return prg_bytes, po_bytes, f"Coordinador Eléctrico Nacional ({zip_name} / {prg_target})", fecha_extraida
+                            return prg_bytes, po_bytes, f"Coordinador Eléctrico Nacional ({zip_name} / {prg_target})", f_str
             except Exception as e:
                 print(f"[CEN API] Error procesando {zip_name}: {e}")
 
