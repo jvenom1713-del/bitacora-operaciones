@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
+import CambioPersonalModal from './CambioPersonalModal';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
 import { MATRIZ_GUARDIAS, MOTIVOS_CONTINGENCIA, detectarContingenciasGuardia } from '../../../shared/constants/guardias';
@@ -188,6 +189,7 @@ export default function DashboardIniciarTurno({
   const [datosConsolidado, setDatosConsolidado] = useState(null);
   const [cargandoConsolidado, setCargandoConsolidado] = useState(false);
   const [mostrarModalResumenOperativo, setMostrarModalResumenOperativo] = useState(false);
+  const [mostrarModalCambioPersonal, setMostrarModalCambioPersonal] = useState(false);
   const [permisosTurno, setPermisosTurno] = useState([]);
 
   const cargarPermisosLocales = () => {
@@ -1929,6 +1931,19 @@ ${extraHtml}
             modoNocturno ? 'bg-[#0e3563] text-blue-200 border-blue-800' : 'bg-slate-200/90 text-slate-800 border-slate-300 font-black'
           }`}>
             <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
+            <button
+              type="button"
+              onClick={() => {
+                if (onAbrirModalCambioPersonal) {
+                  onAbrirModalCambioPersonal();
+                } else {
+                  setMostrarModalCambioPersonal(true);
+                }
+              }}
+              className="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
+            >
+              <span>Cambio de personal de turno</span>
+            </button>
           </div>
           {(() => {
             const oficialGuardia = MATRIZ_GUARDIAS[equipoTurno.rotacion || 'TIGRES'] || MATRIZ_GUARDIAS.TIGRES;
@@ -4096,6 +4111,24 @@ ${extraHtml}
 
           </div>
         </div>
+      )}
+
+      {mostrarModalCambioPersonal && (
+        <CambioPersonalModal
+          isOpen={mostrarModalCambioPersonal}
+          onClose={() => setMostrarModalCambioPersonal(false)}
+          usuarioActual={usuarioActual}
+          modoNocturno={modoNocturno}
+          setModoNocturno={setModoNocturno}
+          equipoTurno={turnoActivo?.equipoTurno || equipoTurno}
+          folio={folioStr}
+          onConfirmarReemplazo={(nuevoEquipo) => {
+            if (onCambiarPersonal) {
+              onCambiarPersonal(nuevoEquipo);
+            }
+            setMostrarModalCambioPersonal(false);
+          }}
+        />
       )}
 
     </div>
