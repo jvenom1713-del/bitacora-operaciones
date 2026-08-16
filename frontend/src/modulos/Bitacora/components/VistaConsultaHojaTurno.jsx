@@ -81,8 +81,6 @@ export default function VistaConsultaHojaTurno({
     'atorres@generadora.cl', 
     'ngalaz@generadora.cl', 
     'cvaldivia@generadora.cl', 
-    'jalbornoz@generadora.cl',
-    'mcisternas@generadora.cl',
     'admin@generadora.cl'
   ];
 
