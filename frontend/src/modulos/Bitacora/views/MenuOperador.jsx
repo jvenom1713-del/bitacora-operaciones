@@ -25,6 +25,13 @@ export default function MenuOperador({
   });
 
   useEffect(() => {
+    try {
+      localStorage.setItem('origen_menu', 'MENU_OPERADOR');
+      localStorage.setItem('rol_activo', 'Operador');
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
     const syncEstado = () => {
       const stored = localStorage.getItem('estado_turno_activo');
       if (stored) {

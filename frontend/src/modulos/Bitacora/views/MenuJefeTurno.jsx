@@ -24,6 +24,13 @@ export default function MenuJefeTurno({
   });
 
   useEffect(() => {
+    try {
+      localStorage.setItem('origen_menu', 'MENU_JEFE');
+      localStorage.setItem('rol_activo', 'Jefe de Turno');
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
     const syncEstado = async () => {
       const stored = localStorage.getItem('estado_turno_activo');
       if (stored) {
