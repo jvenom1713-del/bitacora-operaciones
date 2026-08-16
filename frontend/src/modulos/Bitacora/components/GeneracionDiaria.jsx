@@ -1,14 +1,43 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Zap, Activity, Clock, ShieldCheck, Database, RefreshCw, BarChart2 } from 'lucide-react';
+import { fetchGeneracionCoordinador, getFechaLocalChile } from '../../../shared/services/coordinadorService';
 
 export default function GeneracionDiaria({
-  fecha = new Date().toISOString().split('T')[0],
+  fecha = getFechaLocalChile(),
   registros = [],
   onActualizarRegistros = () => {},
   parametros = {},
   onActualizarParametros = () => {},
   modoNocturno = false
 }) {
+  // Suscripción al evento FORZAR_CARGA_CELDAS_CEN emitido por el botón azul lateral
+  useEffect(() => {
+    const actualizarCeldas = async () => {
+      console.log("Celdas enteradas: Buscando datos del día...");
+      try {
+        const nuevosDatos = await fetchGeneracionCoordinador(
+          fecha || getFechaLocalChile(),
+          'NUEVARENCA_TG1+TV1_GN_A'
+        );
+        if (Array.isArray(nuevosDatos) && nuevosDatos.length === 24) {
+          if (typeof onActualizarRegistros === 'function') {
+            onActualizarRegistros(nuevosDatos);
+          }
+        }
+      } catch (error) {
+        console.error("Fallo al inyectar datos en celdas:", error);
+      }
+    };
+
+    window.addEventListener('FORZAR_CARGA_CELDAS_CEN', actualizarCeldas);
+    window.addEventListener('registros_actualizados', actualizarCeldas);
+
+    return () => {
+      window.removeEventListener('FORZAR_CARGA_CELDAS_CEN', actualizarCeldas);
+      window.removeEventListener('registros_actualizados', actualizarCeldas);
+    };
+  }, [fecha, onActualizarRegistros]);
+
   // Asegurar que existan siempre 24 registros para la matriz horaria
   const safeRegistros = useMemo(() => {
     if (Array.isArray(registros) && registros.length === 24) {

@@ -1469,6 +1469,8 @@ ${extraHtml}
   }, []);
 
   const handleRefrescarCenManual = async () => {
+    console.log("Botón azul presionado: Solicitando datos CEN...");
+    window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN'));
     setCargandoExcel(true);
     setEstadoCarga(null);
     setMensajeCarga('Consultando CEN...');
@@ -3428,6 +3430,14 @@ ${extraHtml}
                 </div>
               </div>
             </div>
+
+            {/* SECCIÓN CELDAS: MATRIZ DE GENERACIÓN DIARIA (24 HORAS) */}
+            <GeneracionDiaria
+              registros={registrosHorarios}
+              onActualizarRegistros={setRegistrosHorarios}
+              modoNocturno={modoNocturno}
+              fecha={fechaFormateada}
+            />
 
             {/* SECCIÓN 2: ESTADO DE PLANTA */}
             <div className={`rounded-xl overflow-hidden border shadow-md w-full min-w-[1100px] ${
