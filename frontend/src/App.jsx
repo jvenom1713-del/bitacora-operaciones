@@ -225,17 +225,40 @@ export default function App() {
     return () => clearInterval(checkTurnoShift);
   }, [diaOperativoActivo]);
 
-  const [matrizEquipos, setMatrizEquipos] = useState([
-    { codigo: 'GT11', nombre_equipo: 'Turbina de Gas GT11', estado: 'En servicio' },
-    { codigo: 'TV', nombre_equipo: 'Turbina de Vapor TV', estado: 'En servicio' },
-    { codigo: 'BOP', nombre_equipo: 'Sistemas Auxiliares BOP', estado: 'Operativo con fragilidad' },
-    { codigo: 'VTR_A', nombre_equipo: 'Ventilador VTR A', estado: 'En servicio' },
-    { codigo: 'VTR_B', nombre_equipo: 'Ventilador VTR B', estado: 'Indisponible' },
-    { codigo: 'VTR_G', nombre_equipo: 'Ventilador VTR G', estado: 'Limitado baja velocidad' },
-    { codigo: 'B-101', nombre_equipo: 'Bomba Alimentación B-101', estado: 'En servicio' },
-    { codigo: 'B-102', nombre_equipo: 'Bomba Alimentación B-102', estado: 'En reserva' },
-    { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
-  ]);
+  const [matrizEquipos, setMatrizEquipos] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bitacora_matriz_equipos');
+      return saved ? JSON.parse(saved) : [
+        { codigo: 'GT11', nombre_equipo: 'Turbina de Gas GT11', estado: 'En servicio' },
+        { codigo: 'TV', nombre_equipo: 'Turbina de Vapor TV', estado: 'En servicio' },
+        { codigo: 'BOP', nombre_equipo: 'Sistemas Auxiliares BOP', estado: 'Operativo con fragilidad' },
+        { codigo: 'VTR_A', nombre_equipo: 'Ventilador VTR A', estado: 'En servicio' },
+        { codigo: 'VTR_B', nombre_equipo: 'Ventilador VTR B', estado: 'Indisponible' },
+        { codigo: 'VTR_G', nombre_equipo: 'Ventilador VTR G', estado: 'Limitado baja velocidad' },
+        { codigo: 'B-101', nombre_equipo: 'Bomba Alimentación B-101', estado: 'En servicio' },
+        { codigo: 'B-102', nombre_equipo: 'Bomba Alimentación B-102', estado: 'En reserva' },
+        { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
+      ];
+    } catch {
+      return [
+        { codigo: 'GT11', nombre_equipo: 'Turbina de Gas GT11', estado: 'En servicio' },
+        { codigo: 'TV', nombre_equipo: 'Turbina de Vapor TV', estado: 'En servicio' },
+        { codigo: 'BOP', nombre_equipo: 'Sistemas Auxiliares BOP', estado: 'Operativo con fragilidad' },
+        { codigo: 'VTR_A', nombre_equipo: 'Ventilador VTR A', estado: 'En servicio' },
+        { codigo: 'VTR_B', nombre_equipo: 'Ventilador VTR B', estado: 'Indisponible' },
+        { codigo: 'VTR_G', nombre_equipo: 'Ventilador VTR G', estado: 'Limitado baja velocidad' },
+        { codigo: 'B-101', nombre_equipo: 'Bomba Alimentación B-101', estado: 'En servicio' },
+        { codigo: 'B-102', nombre_equipo: 'Bomba Alimentación B-102', estado: 'En reserva' },
+        { codigo: 'COL_220', nombre_equipo: 'Colector Principal 220kV', estado: 'En servicio' }
+      ];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bitacora_matriz_equipos', JSON.stringify(matrizEquipos));
+    } catch (_) {}
+  }, [matrizEquipos]);
 
   const [parametrosGeneracion, setParametrosGeneracion] = useState(() => {
     try {
