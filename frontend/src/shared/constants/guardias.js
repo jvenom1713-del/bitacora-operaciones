@@ -40,6 +40,22 @@ export const MOTIVOS_CONTINGENCIA = [
   'Otro'
 ];
 
+export function getGuardiaConFecha(rotacionKey) {
+  const ahora = new Date();
+  const fechaLocal = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
+    .toISOString()
+    .split('T')[0];
+  const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const key = rotacionKey?.toUpperCase() || 'TIGRES';
+  const base = MATRIZ_GUARDIAS[key] || MATRIZ_GUARDIAS.TIGRES;
+  return {
+    ...base,
+    fecha: fechaLocal,
+    hora_inicio: horaLocal,
+    creado_el: ahora.toISOString()
+  };
+}
+
 export function detectarContingenciasGuardia(equipoTurno) {
   const rotacion = equipoTurno?.rotacion || 'TIGRES';
   const oficial = MATRIZ_GUARDIAS[rotacion] || MATRIZ_GUARDIAS.TIGRES;

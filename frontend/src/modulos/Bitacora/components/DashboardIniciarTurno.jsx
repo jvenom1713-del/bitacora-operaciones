@@ -482,7 +482,7 @@ export default function DashboardIniciarTurno({
             <tr>
               <td style="width: 25%; padding: 2px 4px;">
                 <span style="color: #64748b; font-weight: 700; display: block; font-size: 8px; text-transform: uppercase;">FECHA OPERATIVA</span>
-                <strong style="color: #0f172a; font-size: 10.5px;">29-07-2026</strong>
+                <strong style="color: #0f172a; font-size: 10.5px;">${turnoActivo?.fecha || turnoActivoProp?.fecha || new Date().toISOString().slice(0, 10)}</strong>
               </td>
               <td style="width: 25%; padding: 2px 4px;">
                 <span style="color: #64748b; font-weight: 700; display: block; font-size: 8px; text-transform: uppercase;">JEFE DE TURNO (JDT)</span>

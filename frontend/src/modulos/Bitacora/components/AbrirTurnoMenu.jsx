@@ -16,6 +16,15 @@ export default function AbrirTurnoMenu({
   const [mostrarModalBloqueo, setMostrarModalBloqueo] = useState(false);
   const [cargandoNuevo, setCargandoNuevo] = useState(false);
 
+  // Fecha actual dinámica
+  const fechaActualHeader = (() => {
+    const ahora = new Date();
+    const d = String(ahora.getDate()).padStart(2, '0');
+    const m = String(ahora.getMonth() + 1).padStart(2, '0');
+    const y = ahora.getFullYear();
+    return `${d}-${m}-${y}`;
+  })();
+
   // Reloj en vivo (12 Horas AM/PM)
   const [horaActual, setHoraActual] = useState(() => 
     new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })
@@ -129,7 +138,7 @@ export default function AbrirTurnoMenu({
             <span className="text-white">G</span>METROPOLITANA
           </h1>
           <span className="text-base sm:text-lg font-black tracking-wider text-blue-300 font-mono">
-            Fecha: 29-07-2026
+            Fecha: {fechaActualHeader}
           </span>
         </div>
 
@@ -248,16 +257,25 @@ export default function AbrirTurnoMenu({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
           <button
             onClick={async () => {
-              /* 
-              // Validación deshabilitada: no se requiere aprobación de jefe de turno para abrir nuevo turno
-              if (turnoActivo && turnoActivo.estado !== 'CERRADO' && turnoActivo.estado !== 'APROBADO') {
-                setMostrarModalBloqueo(true);
-                return;
-              }
-              */
               try {
                 setCargandoNuevo(true);
-                await onIniciarTurno(rotacionSeleccionada);
+                const ahora = new Date();
+                const fechaLocal = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
+                  .toISOString()
+                  .split('T')[0];
+                const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const nuevoTurnoData = {
+                  rotacion: rotacionSeleccionada,
+                  jefe: rotacionActualObj.jefe,
+                  operadorSala: rotacionActualObj.operadorSala,
+                  operadorTurno: rotacionActualObj.operadorTurno,
+                  fecha: fechaLocal,
+                  hora_inicio: horaLocal,
+                  creado_el: ahora.toISOString()
+                };
+
+                await onIniciarTurno(nuevoTurnoData);
               } catch (e) {
                 console.error("Error al iniciar turno:", e);
               } finally {
@@ -267,7 +285,7 @@ export default function AbrirTurnoMenu({
             disabled={cargandoNuevo}
             className="w-full sm:w-auto min-w-[220px] bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-lg shadow-blue-600/30 transition-all duration-200 transform hover:scale-[1.01] cursor-pointer"
           >
-            {cargandoNuevo ? 'Abriendo Turno...' : 'Iniciar Turno 2428-A'}
+            {cargandoNuevo ? 'Abriendo Turno...' : `Iniciar Turno ${rotacionSeleccionada}`}
           </button>
 
           <button

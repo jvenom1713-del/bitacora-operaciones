@@ -696,16 +696,44 @@ export default function App() {
 
   const handleAbrirTurno = async (rotacionSeleccionada) => {
     try {
+      const ahora = new Date();
+      const fechaLocal = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+      const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const rotName = typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.rotacion || 'TIGRES') : (rotacionSeleccionada || 'TIGRES');
+
       const res = await fetch(getApiUrl('/api/turnos/nuevo'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           usuario_id: usuarioActual?.id || 1,
-          rotacion: rotacionSeleccionada || 'TIGRES'
+          rotacion: rotName,
+          fecha: typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.fecha || fechaLocal) : fechaLocal,
+          hora_inicio: typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.hora_inicio || horaLocal) : horaLocal
         })
       });
       const respuesta = res.ok ? await res.json() : null;
-      const turnoData = respuesta?.data || respuesta?.turno || { estado: 'ABIERTO', eventos: [] };
+      let turnoData = respuesta?.data || respuesta?.turno;
+
+      if (!turnoData) {
+        turnoData = {
+          estado: 'ABIERTO',
+          rotacion: rotName,
+          fecha: fechaLocal,
+          hora_inicio: horaLocal,
+          creado_el: ahora.toISOString(),
+          eventos: []
+        };
+      } else {
+        turnoData = {
+          ...turnoData,
+          fecha: turnoData.fecha || fechaLocal,
+          hora_inicio: turnoData.hora_inicio || horaLocal,
+          creado_el: turnoData.creado_el || ahora.toISOString()
+        };
+      }
 
       const keyActual = getDiaOperativoKey();
       const resetObj = crearResetTurno(textoBitacora);
@@ -723,8 +751,20 @@ export default function App() {
       setVistaActual('BITACORA_DASHBOARD');
     } catch (e) {
       console.error(e);
-      setTurnoActual({ estado: 'ABIERTO', eventos: [] });
-      setTurnoActivo({ estado: 'ABIERTO', eventos: [] });
+      const ahora = new Date();
+      const fechaLocal = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+      const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const fallbackTurno = { 
+        estado: 'ABIERTO', 
+        fecha: fechaLocal, 
+        hora_inicio: horaLocal, 
+        creado_el: ahora.toISOString(), 
+        eventos: [] 
+      };
+      setTurnoActual(fallbackTurno);
+      setTurnoActivo(fallbackTurno);
     }
   };
 
