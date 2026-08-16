@@ -56,13 +56,13 @@ export default function AbrirTurnoMenu({
   const [rotacionesLista, setRotacionesLista] = useState([
     {
       nombre: 'JAGUAR',
-      jefe: { nombre: 'Javier San Martín', email: 'jsanmartin@generadora.cl' },
+      jefe: { nombre: 'Javier San Martin', email: 'jsanmartin@generadora.cl' },
       operadorSala: { nombre: 'Humberto Barra Tapia', email: 'hbarra@generadora.cl' },
-      operadorTurno: { nombre: 'Eric Godoy Díaz', email: 'egodoy@generadora.cl' }
+      operadorTurno: { nombre: 'Eric Godoy Diaz', email: 'egodoy@generadora.cl' }
     },
     {
       nombre: 'HALCONES',
-      jefe: { nombre: 'Pablo Flores Vásquez', email: 'pflores@generadora.cl' },
+      jefe: { nombre: 'Pablo Flores Vasquez', email: 'pflores@generadora.cl' },
       operadorSala: { nombre: 'Luis Morales', email: 'lmorales@generadora.cl' },
       operadorTurno: { nombre: 'Gerson Cofré', email: 'gcofre@generadora.cl' }
     },
@@ -70,7 +70,7 @@ export default function AbrirTurnoMenu({
       nombre: 'TIGRES',
       jefe: { nombre: 'Ariel Torres', email: 'atorres@generadora.cl' },
       operadorSala: { nombre: 'Jorge Albornoz', email: 'jalbornoz@generadora.cl' },
-      operadorTurno: { nombre: 'Matías Cisternas', email: 'mcisternas@generadora.cl' }
+      operadorTurno: { nombre: 'Matias Cisternas', email: 'mcisternas@generadora.cl' }
     },
     {
       nombre: 'LEONES',
@@ -79,10 +79,10 @@ export default function AbrirTurnoMenu({
       operadorTurno: { nombre: 'Carlos Vivero', email: 'cvivero@generadora.cl' }
     },
     {
-      nombre: 'ÁGUILAS',
+      nombre: 'AGUILAS',
       jefe: { nombre: 'Cristian Valdivia Maldonado', email: 'cvaldivia@generadora.cl' },
-      operadorSala: { nombre: 'Arístides Toledo Peña', email: 'atoledo@generadora.cl' },
-      operadorTurno: { nombre: 'Claudio Garrido San Martín', email: 'cgarrido@generadora.cl' }
+      operadorSala: { nombre: 'Aristides Toledo Peña', email: 'atoledo@generadora.cl' },
+      operadorTurno: { nombre: 'Claudio Garrido San Martin', email: 'cgarrido@generadora.cl' }
     }
   ]);
 
