@@ -89,10 +89,13 @@ export default function VistaConsultaHojaTurno({
   let storedUserObj = null;
   try { storedUserObj = storedUser ? JSON.parse(storedUser) : null; } catch (_) {}
 
+  const storedOrigen = localStorage.getItem('origen_menu');
+
   const esJefeTurnoEfectivo = Boolean(
     esJefeTurno ||
     rolActivo === 'Jefe de Turno' ||
     storedRol === 'Jefe de Turno' ||
+    storedOrigen === 'MENU_JEFE' ||
     usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') || 
     usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
     usuarioActual?.email?.toLowerCase()?.includes('jefe') ||
