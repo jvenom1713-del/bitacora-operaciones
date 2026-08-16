@@ -1322,7 +1322,7 @@ export default function App() {
           onVolver={() => setVistaActual('MENU_OPERADOR')}
           onNavegarCambioPersonal={(datosEquipo) => {
             if (datosEquipo) {
-              setEquipoTurnoSeleccionado(prev => ({ ...prev, ...datosEquipo }));
+              handleActualizarEquipoTurno(datosEquipo);
             }
             setVistaAnteriorCambioPersonal('ABRIR_TURNO_MENU');
             setVistaActual('CAMBIO_PERSONAL_MENU');
@@ -1348,7 +1348,7 @@ export default function App() {
             usuarioActual={usuarioActual ?? {}}
             modoNocturno={modoNocturno ?? false}
             setModoNocturno={setModoNocturno}
-            equipoTurno={turnoActivo?.equipoTurno ?? equipoTurnoSeleccionado ?? {}}
+            equipoTurno={equipoTurnoSeleccionado ?? turnoActivo?.equipoTurno ?? {}}
             turno={turnoActivo ?? {}}
             onConfirmarReemplazo={(nuevoEquipo) => {
               handleActualizarEquipoTurno(nuevoEquipo);

@@ -219,7 +219,18 @@ export default function AbrirTurnoMenu({
                 return (
                   <tr 
                     key={rot.nombre}
-                    onClick={() => setRotacionSeleccionada(rot.nombre)}
+                    onClick={() => {
+                      setRotacionSeleccionada(rot.nombre);
+                      const nuevoEquipo = {
+                        rotacion: rot.nombre,
+                        jdt: rot.jefe.nombre,
+                        osc: rot.operadorSala.nombre,
+                        ot: rot.operadorTurno.nombre
+                      };
+                      try {
+                        localStorage.setItem('equipo_turno_actual', JSON.stringify(nuevoEquipo));
+                      } catch (_) {}
+                    }}
                     className={`cursor-pointer transition-all duration-200 rounded-xl ${
                       esActiva
                         ? modoNocturno
