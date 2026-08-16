@@ -1396,7 +1396,7 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (mw >= 55.0 && mw <= 58.0) hrsMT++;
+          else if ((mw >= 150 && mw <= 170) || (mw >= 55.0 && mw <= 58.0)) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
