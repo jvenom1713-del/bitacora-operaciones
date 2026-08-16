@@ -86,7 +86,8 @@ export default function AbrirTurnoMenu({
     }
   ]);
 
-  const rotacionActualObj = rotacionesLista.find(r => r.nombre === rotacionSeleccionada) || rotacionesLista[2];
+  const normKey = (str) => String(str || '').toUpperCase().replace('Á', 'A');
+  const rotacionActualObj = rotacionesLista.find(r => normKey(r.nombre) === normKey(rotacionSeleccionada)) || rotacionesLista[2];
 
   const handleConfirmarReemplazoEquipo = (nuevoEquipo) => {
     setRotacionesLista(prev => prev.map(r => {
