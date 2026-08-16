@@ -174,14 +174,17 @@ export default function DashboardIniciarTurno({
     try {
       const savedStr = localStorage.getItem('equipo_turno_actual');
       const saved = savedStr ? JSON.parse(savedStr) : null;
-      const rot = equipoTurno?.rotacion || saved?.rotacion || turnoActivoProp?.rotacion || turnoActivoProp?.equipoTurno?.rotacion || 'TIGRES';
+      const rot = (equipoTurno?.rotacion || saved?.rotacion || turnoActivoProp?.rotacion || turnoActivoProp?.equipoTurno?.rotacion || 'TIGRES').toUpperCase();
       const baseOficial = MATRIZ_GUARDIAS[rot] || MATRIZ_GUARDIAS.TIGRES;
+
+      const coincideProp = equipoTurno?.rotacion?.toUpperCase() === rot;
+      const coincideSaved = saved?.rotacion?.toUpperCase() === rot;
 
       return {
         rotacion: rot,
-        jdt: equipoTurno?.jdt || saved?.jdt || turnoActivoProp?.equipoTurno?.jdt || baseOficial.jdt,
-        osc: equipoTurno?.osc || saved?.osc || turnoActivoProp?.equipoTurno?.osc || baseOficial.osc,
-        ot: equipoTurno?.ot || saved?.ot || turnoActivoProp?.equipoTurno?.ot || baseOficial.ot,
+        jdt: (coincideProp && equipoTurno?.jdt) || (coincideSaved && saved?.jdt) || baseOficial.jdt,
+        osc: (coincideProp && equipoTurno?.osc) || (coincideSaved && saved?.osc) || baseOficial.osc,
+        ot: (coincideProp && equipoTurno?.ot) || (coincideSaved && saved?.ot) || baseOficial.ot,
         motivoJDT: equipoTurno?.motivoJDT || saved?.motivoJDT,
         motivoOSC: equipoTurno?.motivoOSC || saved?.motivoOSC,
         motivoOT: equipoTurno?.motivoOT || saved?.motivoOT

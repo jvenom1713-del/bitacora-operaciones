@@ -604,8 +604,18 @@ export default function App() {
 
   const handleActualizarEquipoTurno = (nuevoEquipo) => {
     if (!nuevoEquipo) return;
+    const rotUsar = (nuevoEquipo.rotacion || 'TIGRES').toUpperCase();
+    const baseOficial = MATRIZ_GUARDIAS[rotUsar] || MATRIZ_GUARDIAS.TIGRES;
+
+    const datosFinales = {
+      rotacion: nuevoEquipo.rotacion || baseOficial.rotacion,
+      jdt: nuevoEquipo.jdt || baseOficial.jdt,
+      osc: nuevoEquipo.osc || baseOficial.osc,
+      ot: nuevoEquipo.ot || baseOficial.ot
+    };
+
     setEquipoTurnoSeleccionado(prev => {
-      const actualizado = { ...prev, ...nuevoEquipo };
+      const actualizado = { ...prev, ...datosFinales };
       try {
         localStorage.setItem('equipo_turno_actual', JSON.stringify(actualizado));
       } catch (e) {}
@@ -613,25 +623,21 @@ export default function App() {
     });
 
     setTurnoActivo(prev => {
-      const datosCombinados = {
-        rotacion: nuevoEquipo.rotacion || prev?.rotacion || 'TIGRES',
-        jdt: nuevoEquipo.jdt || prev?.jdt || 'Ariel Torres',
-        osc: nuevoEquipo.osc || prev?.osc || 'Jorge Albornoz',
-        ot: nuevoEquipo.ot || prev?.ot || 'Matias Cisternas'
-      };
-
-      const infoContingencia = detectarContingenciasGuardia(datosCombinados);
+      const infoContingencia = detectarContingenciasGuardia(datosFinales);
       const motivoAuto = infoContingencia.hayContingencia
         ? (nuevoEquipo.motivoContingencia && nuevoEquipo.motivoContingencia !== 'Dotación Normal / Sin contingencia' ? nuevoEquipo.motivoContingencia : (prev?.motivoContingencia || 'Licencia'))
         : 'Dotación Normal / Sin contingencia';
 
       const objActualizado = {
         ...(prev || {}),
-        equipoTurno: { ...(prev?.equipoTurno || {}), ...nuevoEquipo, motivoContingencia: motivoAuto },
-        jdt: datosCombinados.jdt,
-        osc: datosCombinados.osc,
-        ot: datosCombinados.ot,
-        rotacion: datosCombinados.rotacion,
+        rotacion: datosFinales.rotacion,
+        jdt: datosFinales.jdt,
+        osc: datosFinales.osc,
+        ot: datosFinales.ot,
+        jefe_turno: datosFinales.jdt,
+        operador: datosFinales.osc,
+        personal_turno: datosFinales.ot,
+        equipoTurno: { ...(prev?.equipoTurno || {}), ...datosFinales, motivoContingencia: motivoAuto },
         hayContingencia: infoContingencia.hayContingencia,
         reemplazosContingencia: infoContingencia.reemplazos,
         resumenReemplazos: infoContingencia.resumenReemplazos,
@@ -640,13 +646,11 @@ export default function App() {
         generacionPromedio: nuevoEquipo.generacionPromedio || nuevoEquipo.sistemaProm || prev?.generacionPromedio || prev?.sistemaProm || '0',
         sistemaProm: nuevoEquipo.sistemaProm || nuevoEquipo.generacionPromedio || prev?.sistemaProm || prev?.generacionPromedio || '0',
         costoMarginal: nuevoEquipo.costoMarginal || prev?.costoMarginal || '0',
-        potEspera: nuevoEquipo.potEspera || prev?.potEspera || '0',
-        jefe_turno: datosCombinados.jdt,
-        operador: datosCombinados.osc,
-        personal_turno: datosCombinados.ot
+        potEspera: nuevoEquipo.potEspera || prev?.potEspera || '0'
       };
       try {
         localStorage.setItem('turno_activo_guardado', JSON.stringify(objActualizado));
+        localStorage.setItem('equipo_turno_actual', JSON.stringify(datosFinales));
       } catch (e) {}
 
       // Sincronizar en Supabase de fondo si está disponible
