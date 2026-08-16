@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
 import CambioPersonalModal from './CambioPersonalModal';
+import GeneracionDiaria from './GeneracionDiaria';
+import { fetchGeneracionCoordinador } from '../../../shared/services/coordinadorService';
 import ErrorBoundary from '../../../shared/components/ErrorBoundary';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
@@ -1604,6 +1606,34 @@ ${extraHtml}
       if (inputFileRef.current) inputFileRef.current.value = '';
     }
   };
+
+  // Registros Horarios de Generación (24 Hrs)
+  const [registrosHorarios, setRegistrosHorarios] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bitacora_registros_horarios');
+      return saved ? JSON.parse(saved) : Array.from({ length: 24 }, (_, i) => ({
+        hora: i + 1,
+        potencia_mw: 0,
+        generacion_mwh: 0,
+        ssaa_mwh: 0,
+        generacion_neta: 0
+      }));
+    } catch {
+      return Array.from({ length: 24 }, (_, i) => ({
+        hora: i + 1,
+        potencia_mw: 0,
+        generacion_mwh: 0,
+        ssaa_mwh: 0,
+        generacion_neta: 0
+      }));
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bitacora_registros_horarios', JSON.stringify(registrosHorarios));
+    } catch (_) {}
+  }, [registrosHorarios]);
 
   // Estado de Planta (con auto-guardado en localStorage)
   const [estadoPlanta, setEstadoPlanta] = useState(() => {
@@ -3469,6 +3499,24 @@ ${extraHtml}
                   />
                 </div>
 
+              </div>
+
+              {/* COMPONENTE MODULAR DE GENERACIÓN DIARIA 24 HRS */}
+              <div className="mt-4 w-full">
+                <GeneracionDiaria
+                  fecha={new Date().toISOString().split('T')[0]}
+                  registros={registrosHorarios}
+                  onActualizarRegistros={(nuevosRegs) => {
+                    setRegistrosHorarios(nuevosRegs);
+                    const totalMwh = nuevosRegs.reduce((acc, r) => acc + (parseFloat(r.generacion_mwh || r.potencia_mw || 0)), 0);
+                    if (totalMwh > 0) {
+                      actualizarParametrosGeneracion('potEspera', String(Math.round(totalMwh)));
+                    }
+                  }}
+                  parametros={parametros}
+                  onActualizarParametros={actualizarParametrosGeneracion}
+                  modoNocturno={modoNocturno}
+                />
               </div>
             </div>
 
