@@ -1416,7 +1416,7 @@ export default function App() {
             setVistaAnteriorCambioPersonal('BITACORA_DASHBOARD');
             setVistaActual('CAMBIO_PERSONAL_MENU');
           }}
-          equipoTurno={turnoActivo?.equipoTurno || equipoTurnoSeleccionado}
+          equipoTurno={equipoTurnoSeleccionado ?? turnoActivo?.equipoTurno ?? {}}
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
           onVolver={volverMenuGenerico}

@@ -170,7 +170,23 @@ export default function DashboardIniciarTurno({
   instruccionesEspeciales,
   setInstruccionesEspeciales
 }) {
-  const safeEquipoTurno = equipoTurno || { rotacion: 'TIGRES', jdt: 'Norman Galaz', osc: 'Jorge Albornoz', ot: 'Matías Cisternas' };
+  const getEquipoGuardadoLocal = () => {
+    try {
+      const saved = localStorage.getItem('equipo_turno_actual');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  };
+  const equipoLocal = getEquipoGuardadoLocal();
+  const safeEquipoTurno = {
+    rotacion: 'TIGRES',
+    jdt: 'Ariel Torres',
+    osc: 'Jorge Albornoz',
+    ot: 'Matías Cisternas',
+    ...equipoLocal,
+    ...equipoTurno
+  };
   const [tabActiva, setTabActiva] = useState(tabInicial);
 
   useEffect(() => {
@@ -2094,17 +2110,6 @@ ${extraHtml}
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Cambiar Guardia</span>
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setMostrarModalCambioPersonal(true);
-                }}
-                className="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
-              >
-                <span>Cambio de personal de turno</span>
               </button>
             </div>
           </div>
