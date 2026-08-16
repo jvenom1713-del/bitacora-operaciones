@@ -337,6 +337,25 @@ export default function AbrirTurnoMenu({
           >
             {cargandoNuevo ? 'Abriendo Turno...' : `Iniciar Turno ${rotacionSeleccionada}`}
           </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (onNavegarCambioPersonal) {
+                onNavegarCambioPersonal({
+                  rotacion: rotacionSeleccionada,
+                  jdt: rotacionActualObj.jefe.nombre,
+                  osc: rotacionActualObj.operadorSala.nombre,
+                  ot: rotacionActualObj.operadorTurno.nombre
+                });
+              }
+            }}
+            className="w-full sm:w-auto min-w-[220px] bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-lg shadow-orange-600/30 transition-all duration-200 transform hover:scale-[1.01] cursor-pointer"
+          >
+            Cambio Personal de Turno
+          </button>
         </div>
 
         {/* Botón Atrás (Flecha Izquierda) */}

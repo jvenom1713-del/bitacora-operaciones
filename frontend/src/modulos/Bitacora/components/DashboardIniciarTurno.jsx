@@ -170,23 +170,27 @@ export default function DashboardIniciarTurno({
   instruccionesEspeciales,
   setInstruccionesEspeciales
 }) {
-  const getEquipoGuardadoLocal = () => {
+  const getEquipoActualConsolidado = () => {
     try {
-      const saved = localStorage.getItem('equipo_turno_actual');
-      return saved ? JSON.parse(saved) : null;
+      const savedStr = localStorage.getItem('equipo_turno_actual');
+      const saved = savedStr ? JSON.parse(savedStr) : null;
+      const rot = equipoTurno?.rotacion || saved?.rotacion || turnoActivoProp?.rotacion || turnoActivoProp?.equipoTurno?.rotacion || 'TIGRES';
+      const baseOficial = MATRIZ_GUARDIAS[rot] || MATRIZ_GUARDIAS.TIGRES;
+
+      return {
+        rotacion: rot,
+        jdt: equipoTurno?.jdt || saved?.jdt || turnoActivoProp?.equipoTurno?.jdt || baseOficial.jdt,
+        osc: equipoTurno?.osc || saved?.osc || turnoActivoProp?.equipoTurno?.osc || baseOficial.osc,
+        ot: equipoTurno?.ot || saved?.ot || turnoActivoProp?.equipoTurno?.ot || baseOficial.ot,
+        motivoJDT: equipoTurno?.motivoJDT || saved?.motivoJDT,
+        motivoOSC: equipoTurno?.motivoOSC || saved?.motivoOSC,
+        motivoOT: equipoTurno?.motivoOT || saved?.motivoOT
+      };
     } catch {
-      return null;
+      return MATRIZ_GUARDIAS.TIGRES;
     }
   };
-  const equipoLocal = getEquipoGuardadoLocal();
-  const safeEquipoTurno = {
-    rotacion: 'TIGRES',
-    jdt: 'Ariel Torres',
-    osc: 'Jorge Albornoz',
-    ot: 'Matías Cisternas',
-    ...equipoLocal,
-    ...equipoTurno
-  };
+  const safeEquipoTurno = getEquipoActualConsolidado();
   const [tabActiva, setTabActiva] = useState(tabInicial);
 
   useEffect(() => {
