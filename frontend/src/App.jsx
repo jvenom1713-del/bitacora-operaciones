@@ -265,43 +265,62 @@ export default function App() {
       const saved = localStorage.getItem('bitacora_parametros');
       const parsed = saved ? JSON.parse(saved) : null;
       if (parsed) {
-        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '4213') parsed.potEspera = '1311';
-        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '39.0';
-        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '56.7' || parsed.sistemaProm === '54.6') parsed.sistemaProm = '52.9';
-        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '15') parsed.hrsMinTec = '7';
+        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '1311' || parsed.potEspera === '4213') parsed.potEspera = '4046';
+        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '39.0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '50.6';
+        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '52.9' || parsed.sistemaProm === '56.7') parsed.sistemaProm = '55.8';
+        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '22';
+        if (!parsed.hrsCargaBase || parsed.hrsCargaBase === '0') parsed.hrsCargaBase = '1';
         return parsed;
       }
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '52.9',
-        potEspera: '1311',
+        sistemaProm: '55.8',
+        potEspera: '4046',
         fuegosSuplemen: '0',
-        hrsCargaBase: '0',
-        hrsMinTec: '7',
+        hrsCargaBase: '1',
+        hrsMinTec: '22',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '39.0'
+        costoMarginal: '50.6'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '52.9',
-        potEspera: '1311',
+        sistemaProm: '55.8',
+        potEspera: '4046',
         fuegosSuplemen: '0',
-        hrsCargaBase: '0',
-        hrsMinTec: '7',
+        hrsCargaBase: '1',
+        hrsMinTec: '22',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '39.0'
+        costoMarginal: '50.6'
       };
     }
   });
+
+  useEffect(() => {
+    const handleParametrosSync = () => {
+      try {
+        const saved = localStorage.getItem('bitacora_parametros');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setParametrosGeneracion(parsed);
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('parametros_actualizados', handleParametrosSync);
+    window.addEventListener('storage', handleParametrosSync);
+    return () => {
+      window.removeEventListener('parametros_actualizados', handleParametrosSync);
+      window.removeEventListener('storage', handleParametrosSync);
+    };
+  }, []);
 
   useEffect(() => {
     const cargarParametrosGeneracion = async () => {

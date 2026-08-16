@@ -1003,17 +1003,17 @@ def obtener_resumen_generacion_diaria(refresh: Optional[bool] = False, force: Op
         "status": "ok",
         "source": "fallback",
         "despachoCNR": "En servicio",
-        "sistemaProm": "0",
-        "potEspera": "4213",
+        "sistemaProm": "55.8",
+        "potEspera": "4046",
         "fuegosSuplemen": "0",
-        "hrsCargaBase": "0",
-        "hrsMinTec": "15",
+        "hrsCargaBase": "1",
+        "hrsMinTec": "22",
         "hrsFuegosSuplem": "0",
         "milesM3Gas": "0",
         "m3FA": "0",
         "m3Diesel": "0",
         "kgGasGLP": "0",
-        "costoMarginal": "44.6"
+        "costoMarginal": "50.6"
     }
 
     conn = None
