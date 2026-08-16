@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import html2pdf from 'html2pdf.js';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
 import CambioPersonalModal from './CambioPersonalModal';
 import ErrorBoundary from '../../../shared/components/ErrorBoundary';
@@ -460,7 +459,9 @@ export default function DashboardIniciarTurno({
     };
 
     try {
-      const pdfBase64 = await html2pdf().from(container).set(opt).outputPdf('datauristring');
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdfLib = html2pdfModule.default || html2pdfModule;
+      const pdfBase64 = await html2pdfLib().from(container).set(opt).outputPdf('datauristring');
       document.body.removeChild(container);
       return pdfBase64;
     } catch (err) {
@@ -729,7 +730,9 @@ export default function DashboardIniciarTurno({
     };
 
     try {
-      await html2pdf().from(container).set(opt).save();
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdfLib = html2pdfModule.default || html2pdfModule;
+      await html2pdfLib().from(container).set(opt).save();
     } catch (err) {
       console.error("Error descargando Resumen Ejecutivo PDF:", err);
     } finally {
@@ -2014,10 +2017,11 @@ ${extraHtml}
             </button>
           </div>
           {(() => {
-            const oficialGuardia = MATRIZ_GUARDIAS[equipoTurno.rotacion || 'TIGRES'] || MATRIZ_GUARDIAS.TIGRES;
-            const esReemplazoJDT = equipoTurno.jdt && equipoTurno.jdt !== oficialGuardia.jdt;
-            const esReemplazoOSC = equipoTurno.osc && equipoTurno.osc !== oficialGuardia.osc;
-            const esReemplazoOT = equipoTurno.ot && equipoTurno.ot !== oficialGuardia.ot;
+            const safeEquipoTurno = equipoTurno || { rotacion: 'TIGRES', jdt: 'Norman Galaz', osc: 'Jorge Albornoz', ot: 'Matías Cisternas' };
+            const oficialGuardia = MATRIZ_GUARDIAS[safeEquipoTurno?.rotacion || 'TIGRES'] || MATRIZ_GUARDIAS.TIGRES;
+            const esReemplazoJDT = safeEquipoTurno?.jdt && safeEquipoTurno.jdt !== oficialGuardia.jdt;
+            const esReemplazoOSC = safeEquipoTurno?.osc && safeEquipoTurno.osc !== oficialGuardia.osc;
+            const esReemplazoOT = safeEquipoTurno?.ot && safeEquipoTurno.ot !== oficialGuardia.ot;
 
             return (
               <div className={`grid grid-cols-4 text-center font-bold text-xs sm:text-sm py-2 divide-x ${
@@ -2026,13 +2030,13 @@ ${extraHtml}
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>GUARDIA / TURNO</span>
                   <select
-                    value={equipoTurno.rotacion || 'TIGRES'}
+                    value={safeEquipoTurno?.rotacion || 'TIGRES'}
                     onChange={(e) => {
                       const val = e.target.value;
                       const dataGuardia = MATRIZ_GUARDIAS[val] || MATRIZ_GUARDIAS.TIGRES;
                       if (onCambiarPersonal) {
                         onCambiarPersonal({
-                          ...equipoTurno,
+                          ...safeEquipoTurno,
                           rotacion: val,
                           jdt: dataGuardia.jdt,
                           osc: dataGuardia.osc,
@@ -2055,8 +2059,8 @@ ${extraHtml}
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>JDT (Jefe)</span>
                   <select
-                    value={equipoTurno.jdt || 'Ariel Torres'}
-                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, jdt: e.target.value })}
+                    value={safeEquipoTurno?.jdt || 'Ariel Torres'}
+                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, jdt: e.target.value })}
                     className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
                       esReemplazoJDT ? 'border-amber-500 ring-1 ring-amber-400' : ''
                     } ${
@@ -2093,8 +2097,8 @@ ${extraHtml}
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OSC (Operador)</span>
                   <select
-                    value={equipoTurno.osc || 'Jorge Albornoz'}
-                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, osc: e.target.value })}
+                    value={safeEquipoTurno?.osc || 'Jorge Albornoz'}
+                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, osc: e.target.value })}
                     className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
                       esReemplazoOSC ? 'border-amber-500 ring-1 ring-amber-400' : ''
                     } ${
@@ -2114,8 +2118,8 @@ ${extraHtml}
                         ¿Motivo del cambio?
                       </span>
                       <select
-                        value={equipoTurno.motivoOSC || 'Licencia'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, motivoOSC: e.target.value })}
+                        value={safeEquipoTurno?.motivoOSC || 'Licencia'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, motivoOSC: e.target.value })}
                         className="equipo-turno-select w-full font-bold text-[11px] border border-amber-400 rounded px-1 py-0.5 text-center focus:outline-none bg-white text-slate-950 shadow-sm"
                       >
                         <option value="Licencia" className="equipo-turno-opcion bg-white text-black font-bold">Licencia</option>
@@ -2127,12 +2131,11 @@ ${extraHtml}
                     </div>
                   )}
                 </div>
-
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>OT (Operador Turno)</span>
                   <select
-                    value={equipoTurno.ot || 'Matias Cisternas'}
-                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, ot: e.target.value })}
+                    value={safeEquipoTurno?.ot || 'Matias Cisternas'}
+                    onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, ot: e.target.value })}
                     className={`equipo-turno-select w-full max-w-[190px] font-black text-xs border rounded px-1 py-0.5 text-center focus:outline-none cursor-pointer ${
                       esReemplazoOT ? 'border-amber-500 ring-1 ring-amber-400' : ''
                     } ${
@@ -2700,13 +2703,13 @@ ${extraHtml}
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">TURNO</span>
                       <select
-                        value={equipoTurno.rotacion || 'TIGRES'}
+                        value={safeEquipoTurno?.rotacion || 'TIGRES'}
                         onChange={(e) => {
                           const val = e.target.value;
                           const dataGuardia = MATRIZ_GUARDIAS[val] || MATRIZ_GUARDIAS.TIGRES;
                           if (onCambiarPersonal) {
                             onCambiarPersonal({
-                              ...equipoTurno,
+                              ...safeEquipoTurno,
                               rotacion: val,
                               jdt: dataGuardia.jdt,
                               osc: dataGuardia.osc,
@@ -2722,14 +2725,14 @@ ${extraHtml}
                         <option value="LEONES" className="equipo-turno-opcion bg-white text-black font-bold">LEONES</option>
                         <option value="AGUILAS" className="equipo-turno-opcion bg-white text-black font-bold">AGUILAS</option>
                       </select>
-                      <span className="hidden print:inline text-amber-700 font-black text-xs">Día - {equipoTurno.rotacion || 'TIGRES'}</span>
+                      <span className="hidden print:inline text-amber-700 font-black text-xs">Día - {safeEquipoTurno?.rotacion || 'TIGRES'}</span>
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">JDT</span>
                       <select
-                        value={equipoTurno.jdt || 'Ariel Torres'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, jdt: e.target.value })}
+                        value={safeEquipoTurno?.jdt || 'Ariel Torres'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, jdt: e.target.value })}
                         className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
                       >
                         <option value="Javier San Martin" className="equipo-turno-opcion bg-white text-black font-bold">Javier San Martin</option>
@@ -2739,14 +2742,14 @@ ${extraHtml}
                         <option value="Cristian Valdivia Maldonado" className="equipo-turno-opcion bg-white text-black font-bold">Cristian Valdivia Maldonado</option>
                         <option value="Rodrigo Troncoso" className="equipo-turno-opcion bg-white text-black font-bold">Rodrigo Troncoso (Contingencia)</option>
                       </select>
-                      <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.jdt || 'Ariel Torres'}</span>
+                      <span className="hidden print:inline font-black text-xs text-black">{safeEquipoTurno?.jdt || 'Ariel Torres'}</span>
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OSC</span>
                       <select
-                        value={equipoTurno.osc || 'Jorge Albornoz'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, osc: e.target.value })}
+                        value={safeEquipoTurno?.osc || 'Jorge Albornoz'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, osc: e.target.value })}
                         className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
                       >
                         <option value="Humberto Barra Tapia" className="equipo-turno-opcion bg-white text-black font-bold">Humberto Barra Tapia</option>
@@ -2756,14 +2759,14 @@ ${extraHtml}
                         <option value="Aristides Toledo Peña" className="equipo-turno-opcion bg-white text-black font-bold">Aristides Toledo Peña</option>
                         <option value="Máximo Cortés" className="equipo-turno-opcion bg-white text-black font-bold">Máximo Cortés (Contingencia)</option>
                       </select>
-                      <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.osc || 'Jorge Albornoz'}</span>
+                      <span className="hidden print:inline font-black text-xs text-black">{safeEquipoTurno?.osc || 'Jorge Albornoz'}</span>
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">OT / Personal</span>
                       <select
-                        value={equipoTurno.ot || 'Matias Cisternas'}
-                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...equipoTurno, ot: e.target.value })}
+                        value={safeEquipoTurno?.ot || 'Matias Cisternas'}
+                        onChange={(e) => onCambiarPersonal && onCambiarPersonal({ ...safeEquipoTurno, ot: e.target.value })}
                         className="print:hidden equipo-turno-select font-black text-xs text-slate-950 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer w-full max-w-[190px] shadow-sm"
                       >
                         <option value="Eric Godoy Diaz" className="equipo-turno-opcion bg-white text-black font-bold">Eric Godoy Diaz</option>
@@ -2773,7 +2776,7 @@ ${extraHtml}
                         <option value="Claudio Garrido San Martin" className="equipo-turno-opcion bg-white text-black font-bold">Claudio Garrido San Martin</option>
                         <option value="Enzo Cornejo" className="equipo-turno-opcion bg-white text-black font-bold">Enzo Cornejo (Contingencia)</option>
                       </select>
-                      <span className="hidden print:inline font-black text-xs text-black">{equipoTurno.ot || 'Matias Cisternas'}</span>
+                      <span className="hidden print:inline font-black text-xs text-black">{safeEquipoTurno?.ot || 'Matias Cisternas'}</span>
                     </div>
                   </div>
                 </div>

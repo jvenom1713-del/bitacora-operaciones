@@ -1320,7 +1320,7 @@ export default function App() {
 
   if (vistaActual === 'BITACORA_DASHBOARD') {
     return (
-      <>
+      <ErrorBoundary title="Error al cargar la Bitácora Operacional" onReset={volverMenuGenerico}>
         <DashboardIniciarTurno 
           usuarioActual={usuarioActual}
           turnoActivo={turnoActivo}
@@ -1425,7 +1425,7 @@ export default function App() {
           </div>
         )}
         {demoBarra}
-      </>
+      </ErrorBoundary>
     );
   }
 
