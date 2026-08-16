@@ -95,29 +95,10 @@ export default function GeneracionDiaria({
       modoNocturno ? 'bg-[#061527] border-blue-900/80 text-slate-100' : 'bg-white border-slate-300 text-slate-900'
     }`}>
       {/* Encabezado del Módulo */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-700/60 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-            <Zap className="w-6 h-6 animate-pulse" />
-          </div>
-          <div>
-            <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight flex items-center gap-2">
-              Balance y Resumen de Generación Diaria
-              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono border border-blue-500/30">
-                24 HRS
-              </span>
-            </h3>
-            <p className={`text-xs ${modoNocturno ? 'text-slate-400' : 'text-slate-600'}`}>
-              Monitoreo reactivo de potencia, generación bruta/neta y métricas operativas por bloque horario.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="px-3 py-1 rounded-lg bg-slate-800 text-cyan-300 border border-slate-700">
-            Fecha: {fecha}
-          </span>
-        </div>
+      <div className={`text-center font-extrabold text-sm sm:text-base py-2 uppercase tracking-wider border-b ${
+        modoNocturno ? 'border-blue-900/60 text-slate-100' : 'border-slate-300 text-slate-900'
+      }`}>
+        GENERACIÓN DIARIA
       </div>
 
       {/* Tarjetas de Métricas Recalculadas en Tiempo Real */}

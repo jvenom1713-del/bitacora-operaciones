@@ -1834,20 +1834,15 @@ ${extraHtml}
         modoNocturno ? 'bg-[#06152a] border-blue-900/60 text-slate-300' : 'bg-slate-100/90 border-slate-300/80 shadow-md text-slate-700'
       }`}>
         <button
-          title={cargandoExcel ? "Actualizando datos del CEN..." : "Refrescar datos del Coordinador"}
+          title={cargandoExcel ? "Actualizando datos del Coordinador..." : "Refrescar datos del Coordinador"}
           onClick={handleRefrescarCenManual}
           disabled={cargandoExcel}
           className={`p-3.5 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-sm relative ${
             cargandoExcel 
-              ? 'bg-amber-500/20 text-amber-500 cursor-wait' 
+              ? 'bg-blue-600/20 text-blue-400 cursor-wait' 
               : 'hover:bg-blue-600/30 text-blue-600 dark:text-blue-400'
           }`}>
-          <RefreshCw className={`w-7 h-7 sm:w-8 sm:h-8 ${cargandoExcel ? 'animate-spin text-amber-500' : ''}`} />
-          {cargandoExcel && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[9px] font-black text-amber-500 whitespace-nowrap bg-slate-900 px-1 rounded border border-amber-500/40">
-              Bot...
-            </span>
-          )}
+          <RefreshCw className={`w-7 h-7 sm:w-8 sm:h-8 ${cargandoExcel ? 'animate-spin text-blue-400' : ''}`} />
         </button>
 
         {/* Botón Bitácora Diaria (Nuevo Documento Word) */}
@@ -3309,65 +3304,10 @@ ${extraHtml}
             <div className={`rounded-xl overflow-hidden border shadow-md w-full min-w-[1100px] ${
               modoNocturno ? 'border-blue-900/70 bg-[#0a1b33]' : 'border-slate-400 bg-white'
             }`}>
-              {/* Header con botón de carga del Excel del Coordinador */}
-              <div className={`relative flex items-center justify-center px-4 py-2 border-b ${
+              <div className={`text-center font-extrabold text-sm sm:text-base py-2.5 uppercase tracking-wider border-b ${
                 modoNocturno ? 'bg-[#0d2a4d] border-blue-800 text-white' : 'bg-blue-950 border-blue-900 text-white'
               }`}>
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-sm sm:text-base uppercase tracking-wider text-center">GENERACIÓN DIARIA</span>
-                  <span className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm">
-                    <Lock className="w-3 h-3 text-emerald-400" />
-                    CEN Protegido
-                  </span>
-                </div>
-                <div className="absolute right-4 flex items-center gap-2">
-                  {estadoCarga === 'ok' && (
-                    <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
-                      <CheckCircle className="w-3.5 h-3.5" />{mensajeCarga}
-                    </span>
-                  )}
-                  {estadoCarga === 'error' && (
-                    <span className="flex items-center gap-1 text-red-400 text-xs font-bold">
-                      <AlertCircle className="w-3.5 h-3.5" />{mensajeCarga}
-                    </span>
-                  )}
-                  <input
-                    type="file"
-                    accept=".xlsx,.xlsm,.xls"
-                    className="hidden"
-                    ref={inputFileRef}
-                    onChange={handleSubirExcel}
-                  />
-                  <button
-                    onClick={handleRefrescarCenManual}
-                    disabled={cargandoExcel}
-                    title="Sincronizar directamente con el Coordinador (AWS S3)"
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                      cargandoExcel
-                        ? 'bg-blue-900/40 border-blue-700 text-blue-400 cursor-wait'
-                        : 'bg-blue-600 hover:bg-blue-500 border-blue-500 text-white cursor-pointer shadow-md'
-                    }`}
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${cargandoExcel ? 'animate-spin' : ''}`} />
-                    {cargandoExcel ? 'Sincronizando...' : 'Refrescar CEN'}
-                  </button>
-                  <button
-                    onClick={() => inputFileRef.current?.click()}
-                    disabled={cargandoExcel}
-                    title="Cargar planilla Coordinador manualmente (.xlsx)"
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                      cargandoExcel
-                        ? 'bg-emerald-900/40 border-emerald-700 text-emerald-400 cursor-wait'
-                        : 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500 text-white cursor-pointer shadow-md'
-                    }`}
-                  >
-                    {cargandoExcel
-                      ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      : <Upload className="w-3.5 h-3.5" />
-                    }
-                    {cargandoExcel ? 'Procesando...' : 'Subir Planilla'}
-                  </button>
-                </div>
+                GENERACIÓN DIARIA
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 w-full gap-2.5 p-3 text-center font-mono">
                 
