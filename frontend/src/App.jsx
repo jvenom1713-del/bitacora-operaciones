@@ -1285,7 +1285,12 @@ export default function App() {
       'admin@generadora.cl'
     ];
 
+    const storedOrigenApp = localStorage.getItem('origen_menu');
+    const storedRolApp = localStorage.getItem('rol_activo');
+
     const esJefeTurno = Boolean(
+      storedOrigenApp === 'MENU_JEFE' ||
+      storedRolApp === 'Jefe de Turno' ||
       usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') || 
       usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
       usuarioActual?.email?.toLowerCase()?.includes('jefe') ||
