@@ -1596,65 +1596,20 @@ ${senalesForzadasTexto}
             </div>
           </div>
 
-          {/* ACCIONES DE CIERRE Y APROBACIÓN */}
+          {/* ACCIONES DE CIERRE Y APROBACIÓN - BOTÓN ÚNICO DE JEFETURA DE TURNO */}
           {!isAprobada(estadoTurnoCierre) && (
             <div>
-              {(esJefeTurnoEfectivo || isEnviado(estadoTurnoCierre)) ? (
-                /* Botón Único para Jefe de Turno: Aprobar y Cerrar Bitácora */
-                <button
-                  onClick={handleAbrirModalPassword}
-                  disabled={enviandoCierre}
-                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ShieldCheck className="w-6 h-6 text-white" />
-                  <div className="text-left">
-                    <span className="block font-black text-sm uppercase">APROBAR Y FIRMAR BITÁCORA JDT</span>
-                    <span className="text-[11px] font-normal opacity-90">Ingresar clave JDT para autorizar firma y cierre oficial del turno.</span>
-                  </div>
-                </button>
-              ) : isBorrador(estadoTurnoCierre) ? (
-                /* Para Operador de Sala en Borrador: Botón Enviar a Revisión */
-                <button
-                  onClick={handleSolicitarCierreOperador}
-                  disabled={enviandoCierre}
-                  className="w-full p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Send className="w-5 h-5 text-cyan-300" />
-                  <div className="text-left">
-                    <span className="block font-black text-sm uppercase">Enviar a Revisión de Jefe de Turno</span>
-                    <span className="text-[11px] font-normal opacity-90">Completar bitácora y enviar a revisión del Jefe de Turno para su autorización y firma.</span>
-                  </div>
-                </button>
-              ) : (
-                /* Para Operador de Sala en Revisión: Alerta e Indicación Bloqueada */
-                <div className="space-y-3">
-                  <button
-                    disabled
-                    title="La bitácora ha sido enviada a revisión y el botón permanecerá bloqueado hasta que el Jefe de Turno la apruebe"
-                    className="w-full p-5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex items-center justify-center gap-3 font-black disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Lock className="w-5 h-5 text-amber-400 animate-pulse" />
-                    <div className="text-left">
-                      <span className="block font-black text-sm uppercase text-amber-300">
-                        🔒 Enviar a Revisión de Jefe de Turno (Bloqueado)
-                      </span>
-                      <span className="text-[11px] font-medium text-amber-200/90 block">
-                        La bitácora se encuentra en revisión. El botón permanecerá bloqueado hasta que el Jefe de Turno apruebe la bitácora.
-                      </span>
-                    </div>
-                  </button>
-
-                  <div className="p-5 rounded-xl border border-amber-500/60 bg-amber-950/60 text-amber-200 flex items-center gap-4 shadow-xl">
-                    <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
-                      <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
-                    </div>
-                    <div>
-                      <span className="block font-black text-sm uppercase text-amber-300">Esperando aprobación del Jefe de Turno</span>
-                      <span className="text-xs text-amber-200/90 font-medium">La bitácora ha sido enviada a revisión y se encuentra bloqueada para edición en espera de la firma de jefatura.</span>
-                    </div>
-                  </div>
+              <button
+                onClick={handleAbrirModalPassword}
+                disabled={enviandoCierre}
+                className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50 shadow-emerald-950/50"
+              >
+                <ShieldCheck className="w-6 h-6 text-white" />
+                <div className="text-left">
+                  <span className="block font-black text-sm sm:text-base uppercase tracking-wide">APROBAR Y FIRMAR BITÁCORA JDT</span>
+                  <span className="text-[11px] font-normal opacity-90 block mt-0.5">Ingresar clave JDT para autorizar firma y cierre oficial del turno.</span>
                 </div>
-              )}
+              </button>
             </div>
           )}
 
