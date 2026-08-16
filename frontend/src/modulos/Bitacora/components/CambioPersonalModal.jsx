@@ -24,6 +24,30 @@ export default function CambioPersonalModal({
   const safeEquipo = equipoTurno ?? turno ?? {};
   const safePersonal = Array.isArray(personal) ? personal : [];
 
+  // Helper para extraer nombre si viene objeto { nombre, email } o string
+  const getNombreIntegrante = (rawObj) => {
+    if (!rawObj) return null;
+    if (typeof rawObj === 'string') return rawObj;
+    if (typeof rawObj === 'object' && rawObj.nombre) return rawObj.nombre;
+    return null;
+  };
+
+  // Obtener datos guardados de localStorage como respaldo inmediato
+  const getEquipoGuardado = () => {
+    try {
+      const saved = localStorage.getItem('equipo_turno_actual');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  };
+  const equipoGuardado = getEquipoGuardado();
+
+  const jdtActual = safeEquipo?.jdt || getNombreIntegrante(safeEquipo?.jefe) || safeEquipo?.jefe_turno || equipoGuardado?.jdt || 'Ariel Torres';
+  const oscActual = safeEquipo?.osc || getNombreIntegrante(safeEquipo?.operadorSala) || safeEquipo?.operador || equipoGuardado?.osc || 'Jorge Albornoz';
+  const otActual = safeEquipo?.ot || getNombreIntegrante(safeEquipo?.operadorTurno) || safeEquipo?.personal_turno || equipoGuardado?.ot || 'Matías Cisternas';
+  const rotacionActual = safeEquipo?.rotacion || equipoGuardado?.rotacion || 'Guardia Activa';
+
   // Estado local para Tipo de Turno (Diurno / Nocturno)
   const [tipoTurno, setTipoTurno] = useState(() => {
     const t = safeEquipo?.tipo_turno ?? safeEquipo?.turno ?? localStorage.getItem('tipo_turno_activo') ?? 'DIURNO';
@@ -83,7 +107,7 @@ export default function CambioPersonalModal({
       rolKey: 'jdt', 
       cargo: 'Jefe de Turno', 
       etiqueta: 'JDT (Jefe de Turno)', 
-      nombre: safeEquipo?.jdt, 
+      nombre: jdtActual, 
       esReemplazado: reemplazarCheck && Boolean(reemplazoJDT), 
       nuevoNombre: reemplazoJDT?.nombre 
     },
@@ -91,7 +115,7 @@ export default function CambioPersonalModal({
       rolKey: 'osc', 
       cargo: 'Operador Sala Control', 
       etiqueta: 'OSC (Operador Sala)', 
-      nombre: safeEquipo?.osc, 
+      nombre: oscActual, 
       esReemplazado: reemplazarCheck && Boolean(reemplazoOSC), 
       nuevoNombre: reemplazoOSC?.nombre 
     },
@@ -99,13 +123,13 @@ export default function CambioPersonalModal({
       rolKey: 'ot', 
       cargo: 'Operador Terreno', 
       etiqueta: 'OT (Operador Terreno)', 
-      nombre: safeEquipo?.ot, 
+      nombre: otActual, 
       esReemplazado: reemplazarCheck && Boolean(reemplazoOT), 
       nuevoNombre: reemplazoOT?.nombre 
     }
   ];
 
-  const hayEquipoAsignado = Boolean(safeEquipo?.jdt || safeEquipo?.osc || safeEquipo?.ot);
+  const hayEquipoAsignado = Boolean(jdtActual || oscActual || otActual);
 
   // Personas actualmente asignadas al equipo de turno
   const nombresEnEquipo = new Set([
@@ -275,7 +299,7 @@ export default function CambioPersonalModal({
 
           <div className="flex items-center justify-end font-mono text-[11px]">
             <span className={modoNocturno ? "text-slate-400 mr-2" : "text-slate-700 mr-2 font-bold"}>Guardia:</span>
-            <span className="text-amber-600 dark:text-amber-400 font-extrabold uppercase mr-3">{safeEquipo?.rotacion || 'Guardia Activa'}</span>
+            <span className="text-amber-600 dark:text-amber-400 font-extrabold uppercase mr-3">{rotacionActual || 'Guardia Activa'}</span>
             <span className={modoNocturno ? "text-slate-400 mr-1.5" : "text-slate-700 mr-1.5 font-bold"}>Folio:</span>
             <span className={`px-2 py-0.5 rounded border font-extrabold ${
               modoNocturno ? 'bg-slate-800 text-amber-400 border-slate-700' : 'bg-slate-100 text-amber-800 border-slate-300 shadow-sm'

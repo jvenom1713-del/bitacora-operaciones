@@ -729,7 +729,39 @@ export default function App() {
         .split('T')[0];
       const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      const rotName = typeof rotacionSeleccionada === 'object' ? (rotacionSeleccionada.rotacion || 'TIGRES') : (rotacionSeleccionada || 'TIGRES');
+      let rotName = 'TIGRES';
+      let jdtVal = 'Ariel Torres';
+      let oscVal = 'Jorge Albornoz';
+      let otVal = 'Matias Cisternas';
+
+      if (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada !== null) {
+        rotName = rotacionSeleccionada.rotacion || rotacionSeleccionada.rotacionKey || 'TIGRES';
+        const oficial = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
+
+        const getNombre = (val) => (typeof val === 'object' ? val?.nombre : val);
+        jdtVal = getNombre(rotacionSeleccionada.jdt || rotacionSeleccionada.jefe) || oficial.jdt;
+        oscVal = getNombre(rotacionSeleccionada.osc || rotacionSeleccionada.operadorSala) || oficial.osc;
+        otVal = getNombre(rotacionSeleccionada.ot || rotacionSeleccionada.operadorTurno) || oficial.ot;
+      } else if (typeof rotacionSeleccionada === 'string') {
+        rotName = rotacionSeleccionada;
+        const oficial = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
+        jdtVal = oficial.jdt;
+        oscVal = oficial.osc;
+        otVal = oficial.ot;
+      }
+
+      const nuevoEquipoObj = {
+        rotacion: rotName,
+        jdt: jdtVal,
+        osc: oscVal,
+        ot: otVal
+      };
+
+      setEquipoTurnoSeleccionado(nuevoEquipoObj);
+      try {
+        localStorage.setItem('equipo_turno_actual', JSON.stringify(nuevoEquipoObj));
+      } catch (_) {}
+
       const tipoTurnoExtraido = (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada.tipo_turno)
         ? rotacionSeleccionada.tipo_turno.toUpperCase()
         : (localStorage.getItem('tipo_turno_activo') || ((ahora.getHours() >= 8 && ahora.getHours() < 20) ? 'DIURNO' : 'NOCTURNO'));
@@ -756,15 +788,24 @@ export default function App() {
           fecha: fechaLocal,
           hora_inicio: horaLocal,
           creado_el: ahora.toISOString(),
+          equipoTurno: nuevoEquipoObj,
+          jdt: jdtVal,
+          osc: oscVal,
+          ot: otVal,
           eventos: []
         };
       } else {
         turnoData = {
           ...turnoData,
+          rotacion: rotName,
           tipo_turno: turnoData.tipo_turno || tipoTurnoExtraido,
           fecha: turnoData.fecha || fechaLocal,
           hora_inicio: turnoData.hora_inicio || horaLocal,
-          creado_el: turnoData.creado_el || ahora.toISOString()
+          creado_el: turnoData.creado_el || ahora.toISOString(),
+          equipoTurno: nuevoEquipoObj,
+          jdt: jdtVal,
+          osc: oscVal,
+          ot: otVal
         };
       }
 
