@@ -2049,30 +2049,56 @@ ${extraHtml}
           }`}>
             <span>BITACORA DIARIA</span>
             
-            {/* BADGES REACTIVOS: TIPO DE TURNO (DIURNO / NOCTURNO) Y ESTADO */}
-            <div className="flex items-center gap-2">
+            {/* BADGES REACTIVOS: TIPO DE TURNO (AUTOMÁTICO POR HORA), TEMA VISUAL Y ESTADO */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Badge Informativo Automático de Turno Operativo segun la hora actual */}
+              {(() => {
+                const horaActualNum = new Date().getHours();
+                const esDiurno = horaActualNum >= 8 && horaActualNum < 20;
+                return (
+                  <span
+                    title="Turno operativo detectado automáticamente según la hora en vivo"
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black shadow-md border ${
+                      esDiurno
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                        : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
+                    }`}
+                  >
+                    {esDiurno ? (
+                      <>
+                        <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>TURNO DIURNO (08:00 - 19:59)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
+                        <span>TURNO NOCTURNO (20:00 - 07:59)</span>
+                      </>
+                    )}
+                  </span>
+                );
+              })()}
+
+              {/* Botón Independiente para Cambiar el Tema Visual (Modo Claro / Modo Oscuro) */}
               <button
                 type="button"
-                onClick={() => {
-                  const nuevo = tipoTurnoState === 'DIURNO' ? 'NOCTURNO' : 'DIURNO';
-                  handleCambiarTipoTurno(nuevo);
-                }}
-                title="Click para alternar entre Turno Diurno y Turno Nocturno"
+                onClick={() => setModoNocturno && setModoNocturno(!modoNocturno)}
+                title={modoNocturno ? "Cambiar apariencia visual a Modo Diurno (Claro)" : "Cambiar apariencia visual a Modo Nocturno (Oscuro)"}
                 className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black shadow-md border transition-all cursor-pointer ${
-                  tipoTurnoState === 'DIURNO'
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                    : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30'
+                  modoNocturno
+                    ? 'bg-slate-800/90 text-amber-300 border-slate-700 hover:bg-slate-700'
+                    : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-100'
                 }`}
               >
-                {tipoTurnoState === 'DIURNO' ? (
+                {modoNocturno ? (
                   <>
                     <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>TURNO DIURNO (08:00 - 19:59)</span>
+                    <span>Visual: Modo Diurno</span>
                   </>
                 ) : (
                   <>
-                    <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
-                    <span>TURNO NOCTURNO (20:00 - 07:59)</span>
+                    <Moon className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <span>Visual: Modo Nocturno</span>
                   </>
                 )}
               </button>
