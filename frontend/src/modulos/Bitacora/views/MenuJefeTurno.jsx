@@ -165,11 +165,13 @@ export default function MenuJefeTurno({
           const estaBorrador = isBorrador(estadoEfectivo);
           const estaAprobada = isAprobada(estadoEfectivo);
           
-          const botonHabilitado = estaEnviado || estaAprobada;
+          // El botón solo se habilita cuando la bitácora fue enviada a revisión. 
+          // Una vez aprobada o mientras sea borrador, el botón permanece bloqueado.
+          const botonHabilitado = estaEnviado;
 
           return (
             <div className="space-y-4">
-              {/* Botón 1: Revisar y Cerrar Bitácora (JDT) - Bloqueado hasta que el Operador envíe a revisión */}
+              {/* Botón 1: Revisar y Cerrar Bitácora (JDT) */}
               <button
                 disabled={!botonHabilitado}
                 onClick={() => {
@@ -180,7 +182,9 @@ export default function MenuJefeTurno({
                 }}
                 title={botonHabilitado 
                   ? "Ingresar a la hoja de bitácora para revisar, autorizar y firmar" 
-                  : "Bloqueado: El Operador de Sala aún no envía la Bitácora a revisión"}
+                  : estaAprobada
+                    ? "Bloqueado: Turno ya aprobado. Esperando que el Operador envíe otra Bitácora"
+                    : "Bloqueado: El Operador de Sala aún no envía la Bitácora a revisión"}
                 className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 ${
                   botonHabilitado
                     ? 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 transform hover:scale-[1.01]'
@@ -201,8 +205,8 @@ export default function MenuJefeTurno({
                     </span>
                   )}
                   {estaAprobada && (
-                    <span className="text-[11px] font-medium text-blue-200 block">
-                      ✓ Turno Aprobado — Clic para Ver Registro
+                    <span className="text-[11px] font-semibold text-slate-400 block mt-0.5">
+                      🔒 Bloqueado: Turno Aprobado — Esperando nuevo envío del Operador
                     </span>
                   )}
                 </div>
