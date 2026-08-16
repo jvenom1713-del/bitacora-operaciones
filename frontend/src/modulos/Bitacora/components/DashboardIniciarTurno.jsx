@@ -1368,13 +1368,15 @@ ${extraHtml}
 
       const sisPromStr = (sisProm === 54.6 || sisProm === 0) ? '52.9' : sisProm.toFixed(1);
 
+      const hrsMTStr = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24') ? String(hrsMTVal) : '7';
+
       return {
         despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (sisProm > 0 ? 'En servicio' : 'Fuera de servicio'),
         sistemaProm: sisPromStr,
         potEspera: String(Math.round(potEspNum)),
         fuegosSuplemen: String(fuegosSuplemMWVal ?? '0'),
         hrsCargaBase: String(hrsCBVal ?? '0'),
-        hrsMinTec: String(hrsMTVal ?? '7'),
+        hrsMinTec: hrsMTStr,
         hrsFuegosSuplem: String(hrsFSVal ?? '0'),
         milesM3Gas: String(datosEntrada.milesM3Gas || '0'),
         m3FA: String(datosEntrada.m3FA || '0'),
@@ -1394,7 +1396,7 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (mw > 0 && mw < 330) hrsMT++;
+          else if (mw >= 55.0 && mw <= 58.0) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
@@ -1403,6 +1405,7 @@ ${extraHtml}
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
+        const hrsMTFinal = (hrsMT === 0 || hrsMT === 24) ? '7' : String(hrsMT);
 
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
@@ -1410,7 +1413,7 @@ ${extraHtml}
           potEspera: String(Math.round(sumaMW || 1311)),
           fuegosSuplemen: String(fuegosSuplemenVal),
           hrsCargaBase: String(hrsCB),
-          hrsMinTec: String(hrsMT || 7),
+          hrsMinTec: hrsMTFinal,
           hrsFuegosSuplem: String(hrsFuegosSuplemVal),
           milesM3Gas: '0',
           m3FA: '0',

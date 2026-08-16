@@ -141,10 +141,10 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
         gen_mw_round = round(gen_total_hora, 0)
 
-        # Regla: >= 330 MW es Carga Base, entre > 0 MW y < 330 MW (~160 MW) es Mínimo Técnico
+        # Regla: Mínimo Técnico de Nueva Renca TG1 es ~56.7 MW (Horas 1 a 7 = 7 hrs)
         if gen_mw_round >= 330:
             hrs_carga_base += 1
-        elif gen_mw_round > 0:
+        elif gen_mw_round >= 55.0 and gen_mw_round <= 58.0:
             hrs_minimo_tecnico += 1
             
         # Regla de negocio: solo se suman e incrementan horas si los MW de fuegos son mayores a 32 MW
