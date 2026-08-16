@@ -1200,10 +1200,10 @@ ${extraHtml}
       const saved = localStorage.getItem('bitacora_parametros');
       const parsed = saved ? JSON.parse(saved) : null;
       if (parsed) {
-        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '4213') parsed.potEspera = '1311';
+        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '4213' || parsed.potEspera === '1310') parsed.potEspera = '1311';
         if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '39.0';
         if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '56.7' || parsed.sistemaProm === '54.6') parsed.sistemaProm = '52.9';
-        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '15') parsed.hrsMinTec = '7';
+        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '15' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '2';
         return parsed;
       }
       return {
@@ -1212,7 +1212,7 @@ ${extraHtml}
         potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
-        hrsMinTec: '7',
+        hrsMinTec: '2',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
@@ -1227,7 +1227,7 @@ ${extraHtml}
         potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
-        hrsMinTec: '7',
+        hrsMinTec: '2',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
@@ -1252,7 +1252,7 @@ ${extraHtml}
         const hrsMT = parseFloat(actualizados.hrsMinTec || 0);
         const hrsTot = (hrsCB + hrsMT) > 0 ? (hrsCB + hrsMT) : 24;
 
-        if (promMW > 0 && (actualizados.potEspera === '0' || actualizados.potEspera === '' || clave === 'sistemaProm')) {
+        if (promMW > 0 && (actualizados.potEspera === '0' || actualizados.potEspera === '' || actualizados.potEspera === '1310' || clave === 'sistemaProm')) {
           actualizados.potEspera = String(Math.round(promMW * hrsTot));
         }
       } else if (clave === 'potEspera') {
@@ -1335,11 +1335,11 @@ ${extraHtml}
       const actualizados = {
         ...prev,
         despachoCNR: data.despachoCNR || prev.despachoCNR || 'En servicio',
-        sistemaProm: data.sistemaProm || '52.9',
-        potEspera: data.potEspera || '1311',
+        sistemaProm: (data.sistemaProm && data.sistemaProm !== '54.6') ? data.sistemaProm : '52.9',
+        potEspera: (data.potEspera && data.potEspera !== '1310' && data.potEspera !== '0') ? data.potEspera : '1311',
         fuegosSuplemen: data.fuegosSuplemen ?? prev.fuegosSuplemen ?? '0',
         hrsCargaBase: data.hrsCargaBase ?? prev.hrsCargaBase ?? '0',
-        hrsMinTec: data.hrsMinTec ?? prev.hrsMinTec ?? '7',
+        hrsMinTec: (data.hrsMinTec && data.hrsMinTec !== '7' && data.hrsMinTec !== '0') ? data.hrsMinTec : '2',
         hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev.hrsFuegosSuplem ?? '0',
         milesM3Gas: data.milesM3Gas ?? prev.milesM3Gas ?? '0',
         m3FA: data.m3FA ?? prev.m3FA ?? '0',
@@ -1367,19 +1367,19 @@ ${extraHtml}
     if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
       const sisProm = Number(sisPromVal) || 52.9;
       let potEspNum = Number(potEspVal);
-      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0) {
+      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0 || potEspNum === 1310) {
         potEspNum = 1311;
       }
 
       const sisPromStr = (sisProm === 54.6 || sisProm === 0) ? '52.9' : sisProm.toFixed(1);
 
-      const hrsMTStr = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24') ? String(hrsMTVal) : '7';
+      const hrsMTStr = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24' && hrsMTVal !== '7') ? String(hrsMTVal) : '2';
 
       return {
         despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (sisProm > 0 ? 'En servicio' : 'Fuera de servicio'),
         sistemaProm: sisPromStr,
         potEspera: String(Math.round(potEspNum)),
-        fuegosSuplemen: String(fuegosSuplemMWVal ?? '0'),
+        fuegosSuplemen: String(datosEntrada.fuegosSuplemen || datosEntrada.mw_fuegos_suplementarios || '0'),
         hrsCargaBase: String(hrsCBVal ?? '0'),
         hrsMinTec: hrsMTStr,
         hrsFuegosSuplem: String(hrsFSVal ?? '0'),
@@ -1410,7 +1410,7 @@ ${extraHtml}
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
-        const hrsMTFinal = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24') ? String(hrsMTVal) : String(hrsMT || 2);
+        const hrsMTFinal = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24' && hrsMTVal !== '7') ? String(hrsMTVal) : String(hrsMT || 2);
         const hrsCBFinal = (hrsCBVal && hrsCBVal !== '0') ? String(hrsCBVal) : String(hrsCB || 0);
 
         return {
@@ -1436,7 +1436,7 @@ ${extraHtml}
       potEspera: '1311',
       fuegosSuplemen: '0',
       hrsCargaBase: '0',
-      hrsMinTec: '7',
+      hrsMinTec: '2',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
