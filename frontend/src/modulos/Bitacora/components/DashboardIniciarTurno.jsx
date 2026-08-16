@@ -2128,25 +2128,6 @@ ${extraHtml}
             modoNocturno ? 'bg-[#0e3563] text-blue-200 border-blue-800' : 'bg-slate-200/90 text-slate-800 border-slate-300 font-black'
           }`}>
             <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (onVolverASeleccionGuardia) {
-                    onVolverASeleccionGuardia();
-                  } else if (onAbrirTurnoMenu) {
-                    onAbrirTurnoMenu();
-                  }
-                }}
-                className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
-                title="Si te equivocaste en la elección de la guardia al iniciar turno, presiona aquí para volver al menú de guardias"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Cambiar Guardia</span>
-              </button>
-            </div>
           </div>
           {(() => {
             const normStr = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
