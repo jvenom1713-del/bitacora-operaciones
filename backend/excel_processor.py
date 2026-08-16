@@ -141,12 +141,11 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
         gen_mw_round = round(gen_total_hora, 0)
 
-        # Regla Oficial del Programa Excel CEN:
-        # Carga Base (>= 170 MW): H1 (170), H19 (300), H20 (177), H24 (178) -> 4 hrs
-        # Mínimo Técnico (~160 MW): H21 (166), H22 (160), H23 (160) -> 3 hrs
-        if gen_mw_round >= 170:
+        # Regla Oficial del Operador:
+        # Mínimo Técnico estricto a 160 MW: H22 (160.2) y H23 (160.2) -> 2 hrs
+        if gen_mw_round >= 165:
             hrs_carga_base += 1
-        elif gen_mw_round >= 155 and gen_mw_round <= 168:
+        elif 159 <= gen_mw_round <= 162:
             hrs_minimo_tecnico += 1
             
         # Regla de negocio: solo se suman e incrementan horas si los MW de fuegos son mayores a 32 MW
