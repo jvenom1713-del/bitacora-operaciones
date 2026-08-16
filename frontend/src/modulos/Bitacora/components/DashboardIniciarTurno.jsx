@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import VistaPermisosCaliente from './VistaPermisosCaliente';
 import CambioPersonalModal from './CambioPersonalModal';
+import ErrorBoundary from '../../../shared/components/ErrorBoundary';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
 import { MATRIZ_GUARDIAS, MOTIVOS_CONTINGENCIA, detectarContingenciasGuardia } from '../../../shared/constants/guardias';
@@ -4181,24 +4182,36 @@ ${extraHtml}
       )}
 
       {mostrarModalCambioPersonal && (
-        <CambioPersonalModal
-          isOpen={mostrarModalCambioPersonal}
-          onClose={() => setMostrarModalCambioPersonal(false)}
-          usuarioActual={usuarioActual}
-          modoNocturno={modoNocturno}
-          setModoNocturno={setModoNocturno}
-          equipoTurno={turnoActivo?.equipoTurno || turnoActivo?.personal || turnoActivo?.integrantes || equipoTurno}
-          folio={folioStr}
-          onConfirmarReemplazo={(nuevoEquipo) => {
-            if (nuevoEquipo?.tipo_turno) {
-              handleCambiarTipoTurno(nuevoEquipo.tipo_turno);
-            }
-            if (onCambiarPersonal) {
-              onCambiarPersonal(nuevoEquipo);
-            }
-            setMostrarModalCambioPersonal(false);
-          }}
-        />
+        <ErrorBoundary
+          title="Error al cargar Cambio de Personal"
+          onReset={() => setMostrarModalCambioPersonal(false)}
+        >
+          <CambioPersonalModal
+            isOpen={mostrarModalCambioPersonal}
+            onClose={() => setMostrarModalCambioPersonal(false)}
+            onSave={(datos) => {
+              if (datos?.tipo_turno) handleCambiarTipoTurno(datos.tipo_turno);
+              if (onCambiarPersonal) onCambiarPersonal(datos);
+              setMostrarModalCambioPersonal(false);
+            }}
+            onConfirmarReemplazo={(nuevoEquipo) => {
+              if (nuevoEquipo?.tipo_turno) {
+                handleCambiarTipoTurno(nuevoEquipo.tipo_turno);
+              }
+              if (onCambiarPersonal) {
+                onCambiarPersonal(nuevoEquipo);
+              }
+              setMostrarModalCambioPersonal(false);
+            }}
+            usuarioActual={usuarioActual ?? {}}
+            modoNocturno={modoNocturno ?? false}
+            setModoNocturno={setModoNocturno}
+            equipoTurno={turnoActivo?.equipoTurno ?? turnoActivo?.personal ?? turnoActivo?.integrantes ?? equipoTurno ?? {}}
+            turno={turnoActivo ?? {}}
+            personal={turnoActivo?.personal ?? []}
+            folio={folioStr ?? '01'}
+          />
+        </ErrorBoundary>
       )}
 
     </div>

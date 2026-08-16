@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckSquare, Square, Sun, Moon, X } from 'lucide-react';
 
 export default function CambioPersonalModal({ 
-  isOpen = true, 
-  onClose, 
-  usuarioActual, 
-  modoNocturno,
-  setModoNocturno,
-  equipoTurno,
-  onConfirmarReemplazo,
+  isOpen = false, 
+  onClose = () => {}, 
+  onSave = () => {},
+  onConfirmarReemplazo = () => {},
+  usuarioActual = {}, 
+  modoNocturno = false,
+  setModoNocturno = () => {},
+  equipoTurno = {},
+  turno = {},
+  personal = [],
+  guardiaActual = {},
   folio = '01'
 }) {
   if (!isOpen) return null;
@@ -17,18 +21,21 @@ export default function CambioPersonalModal({
   const [reemplazarCheck, setReemplazarCheck] = useState(false);
   const [cargoSeleccionado, setCargoSeleccionado] = useState('Jefe de Turno');
   
+  const safeEquipo = equipoTurno ?? turno ?? {};
+  const safePersonal = Array.isArray(personal) ? personal : [];
+
   // Estado local para Tipo de Turno (Diurno / Nocturno)
   const [tipoTurno, setTipoTurno] = useState(() => {
-    const t = equipoTurno?.tipo_turno || equipoTurno?.turno || localStorage.getItem('tipo_turno_activo') || 'DIURNO';
+    const t = safeEquipo?.tipo_turno ?? safeEquipo?.turno ?? localStorage.getItem('tipo_turno_activo') ?? 'DIURNO';
     return String(t).toUpperCase() === 'NOCTURNO' ? 'Nocturno' : 'Diurno';
   });
 
   useEffect(() => {
     if (isOpen) {
-      const t = equipoTurno?.tipo_turno || equipoTurno?.turno || localStorage.getItem('tipo_turno_activo') || 'DIURNO';
+      const t = safeEquipo?.tipo_turno ?? safeEquipo?.turno ?? localStorage.getItem('tipo_turno_activo') ?? 'DIURNO';
       setTipoTurno(String(t).toUpperCase() === 'NOCTURNO' ? 'Nocturno' : 'Diurno');
     }
-  }, [isOpen, equipoTurno]);
+  }, [isOpen, safeEquipo]);
 
   // Reemplazos seleccionados por cargo
   const [reemplazoJDT, setReemplazoJDT] = useState(null);
@@ -69,8 +76,6 @@ export default function CambioPersonalModal({
     { nombre: 'Máximo Cortés', email: 'mcortes@generadora.cl', cargoHabitual: 'Operador Sala Control' },
     { nombre: 'Enzo Cornejo', email: 'ecornejo@generadora.cl', cargoHabitual: 'Operador Terreno' }
   ];
-
-  const safeEquipo = equipoTurno || {};
 
   // Lista dinámica de integrantes del equipo de turno actual
   const integrantesActuales = [
@@ -176,18 +181,23 @@ export default function CambioPersonalModal({
       window.dispatchEvent(new Event('turno_actualizado'));
     } catch (_) {}
 
-    if (onConfirmarReemplazo) {
-      onConfirmarReemplazo({
-        ...safeEquipo,
-        tipo_turno: tipoNorm,
-        turno: tipoNorm,
-        jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || ''),
-        osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || ''),
-        ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || ''),
-        motivoJDT: reemplazoJDT ? tipoMotivo : safeEquipo?.motivoJDT,
-        motivoOSC: reemplazoOSC ? tipoMotivo : safeEquipo?.motivoOSC,
-        motivoOT: reemplazoOT ? tipoMotivo : safeEquipo?.motivoOT,
-      });
+    const payload = {
+      ...safeEquipo,
+      tipo_turno: tipoNorm,
+      turno: tipoNorm,
+      jdt: (reemplazarCheck && reemplazoJDT?.nombre) ? reemplazoJDT.nombre : (safeEquipo?.jdt || ''),
+      osc: (reemplazarCheck && reemplazoOSC?.nombre) ? reemplazoOSC.nombre : (safeEquipo?.osc || ''),
+      ot: (reemplazarCheck && reemplazoOT?.nombre) ? reemplazoOT.nombre : (safeEquipo?.ot || ''),
+      motivoJDT: reemplazoJDT ? tipoMotivo : safeEquipo?.motivoJDT,
+      motivoOSC: reemplazoOSC ? tipoMotivo : safeEquipo?.motivoOSC,
+      motivoOT: reemplazoOT ? tipoMotivo : safeEquipo?.motivoOT,
+    };
+
+    if (typeof onSave === 'function') {
+      try { onSave(payload); } catch (e) { console.error("Error en onSave:", e); }
+    }
+    if (typeof onConfirmarReemplazo === 'function') {
+      try { onConfirmarReemplazo(payload); } catch (e) { console.error("Error en onConfirmarReemplazo:", e); }
     }
     // Limpieza de formulario
     setReemplazoJDT(null);
@@ -195,7 +205,7 @@ export default function CambioPersonalModal({
     setReemplazoOT(null);
     setReemplazarCheck(false);
     setGuardiaContingenciaSel('');
-    if (onClose) onClose();
+    if (typeof onClose === 'function') onClose();
   };
 
   return (

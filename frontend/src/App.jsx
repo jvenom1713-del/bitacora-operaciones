@@ -7,6 +7,7 @@ import MenuOperador from './modulos/Bitacora/views/MenuOperador';
 import MenuJefeTurno from './modulos/Bitacora/views/MenuJefeTurno';
 import AbrirTurnoMenu from './modulos/Bitacora/components/AbrirTurnoMenu';
 import CambioPersonalModal from './modulos/Bitacora/components/CambioPersonalModal';
+import ErrorBoundary from './shared/components/ErrorBoundary';
 import DashboardIniciarTurno from './modulos/Bitacora/components/DashboardIniciarTurno';
 import VistaConsultaHojaTurno from './modulos/Bitacora/components/VistaConsultaHojaTurno';
 import VistaConsultaBitacora from './modulos/Bitacora/components/VistaConsultaBitacora';
@@ -1255,18 +1256,24 @@ export default function App() {
   if (vistaActual === 'CAMBIO_PERSONAL_MENU') {
     return (
       <>
-        <CambioPersonalModal 
-          isOpen={true}
-          onClose={() => setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU')}
-          usuarioActual={usuarioActual}
-          modoNocturno={modoNocturno}
-          setModoNocturno={setModoNocturno}
-          equipoTurno={turnoActivo?.equipoTurno || equipoTurnoSeleccionado}
-          onConfirmarReemplazo={(nuevoEquipo) => {
-            handleActualizarEquipoTurno(nuevoEquipo);
-            setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU');
-          }}
-        />
+        <ErrorBoundary
+          title="Error al cargar Cambio de Personal"
+          onReset={() => setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU')}
+        >
+          <CambioPersonalModal 
+            isOpen={true}
+            onClose={() => setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU')}
+            usuarioActual={usuarioActual ?? {}}
+            modoNocturno={modoNocturno ?? false}
+            setModoNocturno={setModoNocturno}
+            equipoTurno={turnoActivo?.equipoTurno ?? equipoTurnoSeleccionado ?? {}}
+            turno={turnoActivo ?? {}}
+            onConfirmarReemplazo={(nuevoEquipo) => {
+              handleActualizarEquipoTurno(nuevoEquipo);
+              setVistaActual(vistaAnteriorCambioPersonal || 'ABRIR_TURNO_MENU');
+            }}
+          />
+        </ErrorBoundary>
         {demoBarra}
       </>
     );
