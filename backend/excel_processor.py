@@ -152,8 +152,8 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
             hrs_fuegos_suplementarios += 1
             mw_fuegos_suplementarios_total += gen_fa_hora
 
-    if sistema_prom == 0 or sistema_prom == 52.9 or sistema_prom == 370.0 or sistema_prom == 330.0:
-        sistema_prom = 56.7
+    if sistema_prom == 0:
+        sistema_prom = round(mw_totales_dia / 24.0, 1) if mw_totales_dia > 0 else 52.9
 
     potencia_esperada_mw = round(mw_totales_dia, 0)
 
