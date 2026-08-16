@@ -2739,7 +2739,7 @@ ${extraHtml}
 
 
             {/* BOTÓN FLOTANTE DE HORA FIX EN PANTALLA (SOLO EN BITÁCORA DIARIA Y CUANDO NO HAYA MODAL ABIERTO) */}
-            {!mostrarModalCambioPersonal && tabActivo === 'BITACORA' && (
+            {!mostrarModalCambioPersonal && tabActiva === 'BITACORA_DIARIA' && (
               <div className="fixed top-[135px] left-4 sm:left-6 md:left-8 xl:left-[calc(50%-540px)] z-30 print:hidden">
                 <button
                   title="Click para insertar la Hora Actual [HH:MM] en la posición activa del texto"
