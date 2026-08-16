@@ -237,13 +237,13 @@ export default function App() {
       if (parsed) {
         if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '4213') parsed.potEspera = '1311';
         if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '39.0';
-        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '56.7') parsed.sistemaProm = '54.6';
+        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '56.7' || parsed.sistemaProm === '54.6') parsed.sistemaProm = '52.9';
         if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '15') parsed.hrsMinTec = '7';
         return parsed;
       }
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '54.6',
+        sistemaProm: '52.9',
         potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',
@@ -258,7 +258,7 @@ export default function App() {
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '54.6',
+        sistemaProm: '52.9',
         potEspera: '1311',
         fuegosSuplemen: '0',
         hrsCargaBase: '0',

@@ -1043,14 +1043,14 @@ def obtener_resumen_generacion_diaria(refresh: Optional[bool] = False, force: Op
                     "source": "coordinador_s3",
                     "fuente": resumen_cen.get("fuente", "coordinador.cl"),
                     "despachoCNR": "En servicio",
-                    "sistemaProm": str(resumen_cen.get("sistema_prom_mw", "56.7")),
-                    "potEspera": str(resumen_cen.get("potencia_esperada_mw", "4004")),
+                    "sistemaProm": str(resumen_cen.get("sistema_prom_mw", "52.9")),
+                    "potEspera": str(resumen_cen.get("potencia_esperada_mw", "1311")),
                     "fuegosSuplemen": str(resumen_cen.get("mw_fuegos_suplementarios", "0")),
                     "hrsCargaBase": str(resumen_cen.get("hrs_carga_base", "0")),
-                    "hrsMinTec": str(resumen_cen.get("hrs_minimo_tecnico", "0")),
+                    "hrsMinTec": str(resumen_cen.get("hrs_minimo_tecnico", "7")),
                     "hrsFuegosSuplem": str(resumen_cen.get("hrs_fuegos_suplementarios", "0")),
                     "milesM3Gas": "0", "m3FA": "0", "m3Diesel": "0", "kgGasGLP": "0",
-                    "costoMarginal": str(resumen_cen.get("costo_marginal_usd_mw", "52.9"))
+                    "costoMarginal": str(resumen_cen.get("costo_marginal_usd_mw", "39.0"))
                 }
 
         if row:
