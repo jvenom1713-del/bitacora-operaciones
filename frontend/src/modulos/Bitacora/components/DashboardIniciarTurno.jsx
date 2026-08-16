@@ -3498,25 +3498,6 @@ ${extraHtml}
                     }`}
                   />
                 </div>
-
-              </div>
-
-              {/* COMPONENTE MODULAR DE GENERACIÓN DIARIA 24 HRS */}
-              <div className="mt-4 w-full">
-                <GeneracionDiaria
-                  fecha={new Date().toISOString().split('T')[0]}
-                  registros={registrosHorarios}
-                  onActualizarRegistros={(nuevosRegs) => {
-                    setRegistrosHorarios(nuevosRegs);
-                    const totalMwh = nuevosRegs.reduce((acc, r) => acc + (parseFloat(r.generacion_mwh || r.potencia_mw || 0)), 0);
-                    if (totalMwh > 0) {
-                      actualizarParametrosGeneracion('potEspera', String(Math.round(totalMwh)));
-                    }
-                  }}
-                  parametros={parametros}
-                  onActualizarParametros={actualizarParametrosGeneracion}
-                  modoNocturno={modoNocturno}
-                />
               </div>
             </div>
 
