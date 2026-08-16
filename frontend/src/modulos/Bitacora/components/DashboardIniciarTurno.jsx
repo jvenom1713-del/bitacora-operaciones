@@ -1393,18 +1393,18 @@ ${extraHtml}
     setParametros(prev => {
       const actualizados = {
         ...prev,
-        despachoCNR: data.despachoCNR || prev.despachoCNR || 'En servicio',
-        sistemaProm: (data.sistemaProm && data.sistemaProm !== '54.6') ? data.sistemaProm : '52.9',
-        potEspera: (data.potEspera && data.potEspera !== '1310' && data.potEspera !== '0') ? data.potEspera : '1311',
-        fuegosSuplemen: data.fuegosSuplemen ?? prev.fuegosSuplemen ?? '0',
-        hrsCargaBase: data.hrsCargaBase ?? prev.hrsCargaBase ?? '0',
-        hrsMinTec: (data.hrsMinTec && data.hrsMinTec !== '7' && data.hrsMinTec !== '0') ? data.hrsMinTec : '2',
-        hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev.hrsFuegosSuplem ?? '0',
-        milesM3Gas: data.milesM3Gas ?? prev.milesM3Gas ?? '0',
-        m3FA: data.m3FA ?? prev.m3FA ?? '0',
-        m3Diesel: data.m3Diesel ?? prev.m3Diesel ?? '0',
-        kgGasGLP: data.kgGasGLP ?? prev.kgGasGLP ?? '0',
-        costoMarginal: data.costoMarginal || '39.0'
+        despachoCNR: data.despachoCNR || prev?.despachoCNR || 'En servicio',
+        sistemaProm: data.sistemaProm || prev?.sistemaProm || '55.8',
+        potEspera: data.potEspera || prev?.potEspera || '4046',
+        fuegosSuplemen: data.fuegosSuplemen ?? prev?.fuegosSuplemen ?? '0',
+        hrsCargaBase: data.hrsCargaBase ?? prev?.hrsCargaBase ?? '0',
+        hrsMinTec: data.hrsMinTec ?? prev?.hrsMinTec ?? '0',
+        hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev?.hrsFuegosSuplem ?? '0',
+        milesM3Gas: data.milesM3Gas ?? prev?.milesM3Gas ?? '0',
+        m3FA: data.m3FA ?? prev?.m3FA ?? '0',
+        m3Diesel: data.m3Diesel ?? prev?.m3Diesel ?? '0',
+        kgGasGLP: data.kgGasGLP ?? prev?.kgGasGLP ?? '0',
+        costoMarginal: data.costoMarginal || prev?.costoMarginal || '50.6'
       };
       try {
         localStorage.setItem('bitacora_parametros', JSON.stringify(actualizados));
@@ -1544,7 +1544,7 @@ ${extraHtml}
   }, []);
 
   const handleRefrescarCenManual = async () => {
-    console.log("Botón azul presionado: Solicitando datos CEN...");
+    console.log("Botón presionado: Solicitando datos CEN...");
     window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN'));
     setCargandoExcel(true);
     setEstadoCarga(null);
@@ -1554,18 +1554,6 @@ ${extraHtml}
       const fechaLocal = getFechaLocalChile();
       const nemotecnico = 'NUEVARENCA_TG1+TV1_GN_A';
 
-      // 1. Obtener programa diario de 24 horas del Coordinador para el nemotécnico exacto
-      const horasGeneracion = await fetchGeneracionCoordinador(fechaLocal, nemotecnico);
-
-      if (Array.isArray(horasGeneracion) && horasGeneracion.length === 24) {
-        setRegistrosHorarios(horasGeneracion);
-        try {
-          localStorage.setItem('bitacora_registros_horarios', JSON.stringify(horasGeneracion));
-          window.dispatchEvent(new Event('registros_actualizados'));
-        } catch (_) {}
-      }
-
-      // 2. Consulta adicional al resumen del servidor
       let rawData = null;
       try {
         const resCen = await fetch(getApiUrl(`/api/resumen-generacion-diaria?refresh=true&force=true&fecha=${fechaLocal}&unidad=${encodeURIComponent(nemotecnico)}`));
@@ -1579,7 +1567,7 @@ ${extraHtml}
         console.warn('Aviso al refrescar resumen CEN:', errCen);
       }
 
-      const datosCalculados = calcularMatrizDinamica(rawData || {}, horasGeneracion);
+      const datosCalculados = calcularMatrizDinamica(rawData || {});
       aplicarDatos(datosCalculados);
 
       if (onCambiarPersonal) {
@@ -1595,7 +1583,7 @@ ${extraHtml}
       setEstadoCarga('ok');
       setMensajeCarga('Datos CEN Sincronizados');
     } catch (err) {
-      console.error('Fallo real al consultar CEN:', err);
+      console.error('Fallo al consultar CEN:', err);
       const fallbackCalculado = calcularMatrizDinamica({});
       aplicarDatos(fallbackCalculado);
       setEstadoCarga('ok');
