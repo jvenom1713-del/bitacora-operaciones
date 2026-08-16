@@ -1420,6 +1420,7 @@ export default function App() {
           modoNocturno={modoNocturno}
           setModoNocturno={setModoNocturno}
           onVolver={volverMenuGenerico}
+          onVolverASeleccionGuardia={() => setVistaActual('ABRIR_TURNO_MENU')}
           tabInicial={tabInicialDashboard}
           textoBitacora={textoBitacora}
           setTextoBitacora={setTextoBitacora}

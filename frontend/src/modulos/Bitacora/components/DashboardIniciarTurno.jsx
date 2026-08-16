@@ -2076,17 +2076,36 @@ ${extraHtml}
             modoNocturno ? 'bg-[#0e3563] text-blue-200 border-blue-800' : 'bg-slate-200/90 text-slate-800 border-slate-300 font-black'
           }`}>
             <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setMostrarModalCambioPersonal(true);
-              }}
-              className="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
-            >
-              <span>Cambio de personal de turno</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (onVolverASeleccionGuardia) {
+                    onVolverASeleccionGuardia();
+                  } else if (onAbrirTurnoMenu) {
+                    onAbrirTurnoMenu();
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
+                title="Si te equivocaste en la elección de la guardia al iniciar turno, presiona aquí para volver al menú de guardias"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Cambiar Guardia</span>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setMostrarModalCambioPersonal(true);
+                }}
+                className="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
+              >
+                <span>Cambio de personal de turno</span>
+              </button>
+            </div>
           </div>
           {(() => {
             const oficialGuardia = MATRIZ_GUARDIAS[safeEquipoTurno?.rotacion || 'TIGRES'] || MATRIZ_GUARDIAS.TIGRES;
@@ -2100,31 +2119,9 @@ ${extraHtml}
               }`}>
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
                   <span className={`block text-[11px] font-extrabold uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-900'}`}>GUARDIA / TURNO</span>
-                  <select
-                    value={safeEquipoTurno?.rotacion || 'TIGRES'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const dataGuardia = MATRIZ_GUARDIAS[val] || MATRIZ_GUARDIAS.TIGRES;
-                      if (onCambiarPersonal) {
-                        onCambiarPersonal({
-                          ...safeEquipoTurno,
-                          rotacion: val,
-                          jdt: dataGuardia.jdt,
-                          osc: dataGuardia.osc,
-                          ot: dataGuardia.ot
-                        });
-                      }
-                    }}
-                    className={`equipo-turno-select font-black text-xs border rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer ${
-                      modoNocturno ? 'border-blue-700/60 bg-[#06152a] text-amber-400' : 'border-slate-300 bg-white text-amber-700 font-extrabold'
-                    }`}
-                  >
-                    <option value="JAGUAR" className="equipo-turno-opcion bg-white text-black font-bold">JAGUAR</option>
-                    <option value="HALCONES" className="equipo-turno-opcion bg-white text-black font-bold">HALCONES</option>
-                    <option value="TIGRES" className="equipo-turno-opcion bg-white text-black font-bold">TIGRES</option>
-                    <option value="LEONES" className="equipo-turno-opcion bg-white text-black font-bold">LEONES</option>
-                    <option value="AGUILAS" className="equipo-turno-opcion bg-white text-black font-bold">AGUILAS</option>
-                  </select>
+                  <span className="font-black text-xs sm:text-sm text-amber-500 font-mono tracking-wider bg-amber-950/40 border border-amber-500/40 px-2 py-0.5 rounded shadow-sm mt-0.5">
+                    {safeEquipoTurno?.rotacion || 'TIGRES'}
+                  </span>
                 </div>
 
                 <div className="py-1 px-1 flex flex-col items-center justify-center equipo-turno-celda">
@@ -2775,30 +2772,9 @@ ${extraHtml}
                   <div className="grid grid-cols-4 text-center font-bold text-xs py-2 divide-x divide-slate-300 bg-white">
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">TURNO</span>
-                      <select
-                        value={safeEquipoTurno?.rotacion || 'TIGRES'}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const dataGuardia = MATRIZ_GUARDIAS[val] || MATRIZ_GUARDIAS.TIGRES;
-                          if (onCambiarPersonal) {
-                            onCambiarPersonal({
-                              ...safeEquipoTurno,
-                              rotacion: val,
-                              jdt: dataGuardia.jdt,
-                              osc: dataGuardia.osc,
-                              ot: dataGuardia.ot
-                            });
-                          }
-                        }}
-                        className="print:hidden equipo-turno-select font-black text-xs text-amber-700 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center focus:outline-none cursor-pointer shadow-sm"
-                      >
-                        <option value="JAGUAR" className="equipo-turno-opcion bg-white text-black font-bold">JAGUAR</option>
-                        <option value="HALCONES" className="equipo-turno-opcion bg-white text-black font-bold">HALCONES</option>
-                        <option value="TIGRES" className="equipo-turno-opcion bg-white text-black font-bold">TIGRES</option>
-                        <option value="LEONES" className="equipo-turno-opcion bg-white text-black font-bold">LEONES</option>
-                        <option value="AGUILAS" className="equipo-turno-opcion bg-white text-black font-bold">AGUILAS</option>
-                      </select>
-                      <span className="hidden print:inline text-amber-700 font-black text-xs">Día - {safeEquipoTurno?.rotacion || 'TIGRES'}</span>
+                      <span className="font-black text-xs text-amber-700 bg-amber-50 border border-amber-300 rounded px-2 py-0.5 text-center shadow-sm font-mono mt-0.5">
+                        {safeEquipoTurno?.rotacion || 'TIGRES'}
+                      </span>
                     </div>
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
