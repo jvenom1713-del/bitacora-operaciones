@@ -770,37 +770,55 @@ export default function App() {
         .split('T')[0];
       const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      let rotName = 'TIGRES';
-      let jdtVal = 'Ariel Torres';
-      let oscVal = 'Jorge Albornoz';
-      let otVal = 'Matias Cisternas';
+      // Preservar reemplazos y motivos guardados en localStorage
+      const equipoGuardadoStr = localStorage.getItem('equipo_turno_actual');
+      let equipoGuardado = null;
+      try { equipoGuardado = equipoGuardadoStr ? JSON.parse(equipoGuardadoStr) : null; } catch (_) {}
+
+      let rotName = equipoGuardado?.rotacion || 'TIGRES';
+      let jdtVal = equipoGuardado?.jdt || 'Ariel Torres';
+      let oscVal = equipoGuardado?.osc || 'Jorge Albornoz';
+      let otVal = equipoGuardado?.ot || 'Matias Cisternas';
 
       if (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada !== null) {
-        rotName = rotacionSeleccionada.rotacion || rotacionSeleccionada.rotacionKey || 'TIGRES';
+        rotName = rotacionSeleccionada.rotacion || rotacionSeleccionada.rotacionKey || equipoGuardado?.rotacion || 'TIGRES';
         const oficial = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
 
         const getNombre = (val) => (typeof val === 'object' ? val?.nombre : val);
-        jdtVal = getNombre(rotacionSeleccionada.jdt || rotacionSeleccionada.jefe) || oficial.jdt;
-        oscVal = getNombre(rotacionSeleccionada.osc || rotacionSeleccionada.operadorSala) || oficial.osc;
-        otVal = getNombre(rotacionSeleccionada.ot || rotacionSeleccionada.operadorTurno) || oficial.ot;
+        jdtVal = equipoGuardado?.jdt || getNombre(rotacionSeleccionada.jdt || rotacionSeleccionada.jefe) || oficial.jdt;
+        oscVal = equipoGuardado?.osc || getNombre(rotacionSeleccionada.osc || rotacionSeleccionada.operadorSala) || oficial.osc;
+        otVal = equipoGuardado?.ot || getNombre(rotacionSeleccionada.ot || rotacionSeleccionada.operadorTurno) || oficial.ot;
       } else if (typeof rotacionSeleccionada === 'string') {
         rotName = rotacionSeleccionada;
         const oficial = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
-        jdtVal = oficial.jdt;
-        oscVal = oficial.osc;
-        otVal = oficial.ot;
+        jdtVal = equipoGuardado?.jdt || oficial.jdt;
+        oscVal = equipoGuardado?.osc || oficial.osc;
+        otVal = equipoGuardado?.ot || oficial.ot;
       }
 
       const nuevoEquipoObj = {
+        ...equipoGuardado,
         rotacion: rotName,
         jdt: jdtVal,
         osc: oscVal,
-        ot: otVal
+        ot: otVal,
+        jefe_turno: jdtVal,
+        operador: oscVal,
+        personal_turno: otVal,
+        motivoJDT: equipoGuardado?.motivoJDT || '',
+        motivoOSC: equipoGuardado?.motivoOSC || '',
+        motivoOT: equipoGuardado?.motivoOT || '',
+        motivoContingencia: equipoGuardado?.motivoContingencia || '',
+        detalleContingencia: equipoGuardado?.detalleContingencia || '',
+        hayContingencia: Boolean(equipoGuardado?.hayContingencia || equipoGuardado?.motivoJDT || equipoGuardado?.motivoOSC || equipoGuardado?.motivoOT)
       };
 
       setEquipoTurnoSeleccionado(nuevoEquipoObj);
       try {
         localStorage.setItem('equipo_turno_actual', JSON.stringify(nuevoEquipoObj));
+        localStorage.setItem('turno_activo_guardado', JSON.stringify(nuevoEquipoObj));
+        window.dispatchEvent(new Event('equipo_actualizado'));
+        window.dispatchEvent(new Event('turno_actualizado'));
       } catch (_) {}
 
       const tipoTurnoExtraido = (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada.tipo_turno)
@@ -838,6 +856,7 @@ export default function App() {
       } else {
         turnoData = {
           ...turnoData,
+          ...nuevoEquipoObj,
           rotacion: rotName,
           tipo_turno: turnoData.tipo_turno || tipoTurnoExtraido,
           fecha: turnoData.fecha || fechaLocal,
