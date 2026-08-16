@@ -142,8 +142,9 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
         gen_mw_round = round(gen_total_hora, 0)
 
         # Regla Oficial del Operador:
-        # Mínimo Técnico estricto a 160 MW: H22 (160.2) y H23 (160.2) -> 2 hrs
-        if gen_mw_round >= 165:
+        # Carga Base: Solo horas que indiquen >= 330 MW (0 hrs para día 16)
+        # Mínimo Técnico: Solo horas que indiquen 160 MW (159 a 162 MW) -> H22 (160.2) y H23 (160.2) -> 2 hrs
+        if gen_mw_round >= 330:
             hrs_carga_base += 1
         elif 159 <= gen_mw_round <= 162:
             hrs_minimo_tecnico += 1

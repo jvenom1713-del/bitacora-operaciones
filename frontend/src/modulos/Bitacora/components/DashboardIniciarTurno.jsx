@@ -1395,9 +1395,8 @@ ${extraHtml}
         let hrsMT = 0;
 
         mwLista.forEach(mw => {
-          if (mw >= 165) hrsCB++;
+          if (mw >= 330) hrsCB++;
           else if (mw >= 159 && mw <= 162) hrsMT++;
-          else if (mw > 0) hrsCB++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '54.6')
@@ -1407,7 +1406,7 @@ ${extraHtml}
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
         const hrsMTFinal = (hrsMTVal && hrsMTVal !== '0' && hrsMTVal !== '24') ? String(hrsMTVal) : String(hrsMT || 2);
-        const hrsCBFinal = (hrsCBVal && hrsCBVal !== '0') ? String(hrsCBVal) : String(hrsCB || 5);
+        const hrsCBFinal = (hrsCBVal && hrsCBVal !== '0') ? String(hrsCBVal) : String(hrsCB || 0);
 
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
