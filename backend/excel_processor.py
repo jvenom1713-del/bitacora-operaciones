@@ -132,24 +132,33 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
     filas_fa = [r for r in filas_nr if 'FA' in str(sheet.cell(row=r, column=3).value or '').upper()]
 
+    horas_24 = []
     mw_totales_dia = 0.0
     for col in range(5, 29): # Horas 1 a 24 (Columnas E a AB)
+        h = col - 4
         gen_total_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_nr)
         gen_fa_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_fa)
 
         mw_totales_dia += gen_total_hora
-
         gen_mw_round = round(gen_total_hora, 0)
 
-        # Regla Oficial del Operador:
-        # Carga Base: Solo horas que indiquen >= 330 MW (0 hrs para día 16)
-        # Mínimo Técnico: Solo horas que indiquen 160 MW (159 a 162 MW) -> H22 (160.2) y H23 (160.2) -> 2 hrs
+        pot_mw = round(gen_total_hora, 1)
+        ssaa_mwh = round(pot_mw * 0.033, 1) if pot_mw > 0 else 0.0
+        gen_neta = round(max(0.0, pot_mw - ssaa_mwh), 1)
+
+        horas_24.append({
+            "hora": h,
+            "potencia_mw": pot_mw,
+            "generacion_mwh": pot_mw,
+            "ssaa_mwh": ssaa_mwh,
+            "generacion_neta": gen_neta
+        })
+
         if gen_mw_round >= 330:
             hrs_carga_base += 1
         elif gen_mw_round >= 140:
             hrs_minimo_tecnico += 1
-            
-        # Regla de negocio: solo se suman e incrementan horas si los MW de fuegos son mayores a 32 MW
+
         if gen_fa_hora > 32.0:
             hrs_fuegos_suplementarios += 1
             mw_fuegos_suplementarios_total += gen_fa_hora
@@ -166,7 +175,8 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
         "mw_fuegos_suplementarios": int(round(mw_fuegos_suplementarios_total, 0)),
         "hrs_carga_base": hrs_carga_base,
         "hrs_minimo_tecnico": hrs_minimo_tecnico,
-        "hrs_fuegos_suplementarios": hrs_fuegos_suplementarios
+        "hrs_fuegos_suplementarios": hrs_fuegos_suplementarios,
+        "horas": horas_24
     }
 
 

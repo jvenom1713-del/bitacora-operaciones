@@ -1545,7 +1545,6 @@ ${extraHtml}
 
   const handleRefrescarCenManual = async () => {
     console.log("Botón presionado: Solicitando datos CEN...");
-    window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN'));
     setCargandoExcel(true);
     setEstadoCarga(null);
     setMensajeCarga('Consultando CEN...');
@@ -1554,6 +1553,18 @@ ${extraHtml}
       const fechaLocal = getFechaLocalChile();
       const nemotecnico = 'NUEVARENCA_TG1+TV1_GN_A';
 
+      // 1. Obtener programa horario de 24 horas del Coordinador para el nemotécnico exacto
+      const horasGeneracion = await fetchGeneracionCoordinador(fechaLocal, nemotecnico);
+
+      if (Array.isArray(horasGeneracion) && horasGeneracion.length === 24) {
+        setRegistrosHorarios(horasGeneracion);
+        try {
+          localStorage.setItem('bitacora_registros_horarios', JSON.stringify(horasGeneracion));
+          window.dispatchEvent(new Event('registros_actualizados'));
+        } catch (_) {}
+      }
+
+      // 2. Consulta adicional al resumen del servidor
       let rawData = null;
       try {
         const resCen = await fetch(getApiUrl(`/api/resumen-generacion-diaria?refresh=true&force=true&fecha=${fechaLocal}&unidad=${encodeURIComponent(nemotecnico)}`));
@@ -1580,6 +1591,7 @@ ${extraHtml}
         });
       }
 
+      window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN'));
       setEstadoCarga('ok');
       setMensajeCarga('Datos CEN Sincronizados');
     } catch (err) {

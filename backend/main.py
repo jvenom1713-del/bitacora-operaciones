@@ -1050,10 +1050,14 @@ def obtener_resumen_generacion_diaria(refresh: Optional[bool] = False, force: Op
                     "hrsMinTec": str(resumen_cen.get("hrs_minimo_tecnico", "7")),
                     "hrsFuegosSuplem": str(resumen_cen.get("hrs_fuegos_suplementarios", "0")),
                     "milesM3Gas": "0", "m3FA": "0", "m3Diesel": "0", "kgGasGLP": "0",
-                    "costoMarginal": str(resumen_cen.get("costo_marginal_usd_mw", "39.0"))
+                    "costoMarginal": str(resumen_cen.get("costo_marginal_usd_mw", "39.0")),
+                    "horas": resumen_cen.get("horas", []),
+                    "programa_despacho": resumen_cen.get("horas", [])
                 }
 
         if row:
+            resumen_cen = descargar_y_procesar_coordinador()
+            horas_cen = resumen_cen.get("horas", []) if (resumen_cen and resumen_cen.get("status") == "ok") else []
             return {
                 "status": "ok",
                 "source": "database",
@@ -1068,7 +1072,9 @@ def obtener_resumen_generacion_diaria(refresh: Optional[bool] = False, force: Op
                 "m3FA": "0",
                 "m3Diesel": "0",
                 "kgGasGLP": "0",
-                "costoMarginal": str(row["costo_marginal_usd_mw"])
+                "costoMarginal": str(row["costo_marginal_usd_mw"]),
+                "horas": horas_cen,
+                "programa_despacho": horas_cen
             }
 
         # Sin registros en la tabla — devolver fallback seguro
@@ -1077,18 +1083,32 @@ def obtener_resumen_generacion_diaria(refresh: Optional[bool] = False, force: Op
 
     except Exception as e:
         print(f"[ResumenGeneracion] Error en consulta SQL: {e}")
-        # Siempre retornar JSON válido, nunca vacío
-        return {
-            "status": "error",
-            "message": f"Sin registros en SQL: {str(e)}",
-            **{k: v for k, v in _fallback.items() if k not in ("status", "source")}
-        }
+        return _fallback
     finally:
         if conn:
             try:
                 conn.close()
             except Exception:
                 pass
+
+
+@app.get("/api/cen/programa")
+def obtener_programa_cen_api(fecha: Optional[str] = None, unidad: Optional[str] = None):
+    dt = None
+    if fecha:
+        try:
+            dt = datetime.strptime(fecha, "%Y-%m-%d")
+        except Exception:
+            pass
+    resumen = descargar_y_procesar_coordinador(dt)
+    return {
+        "status": "ok",
+        "fecha": resumen.get("fecha_turno"),
+        "unidad": unidad or "NUEVARENCA_TG1+TV1_GN_A",
+        "horas": resumen.get("horas", []),
+        "programa_despacho": resumen.get("horas", []),
+        "resumen": resumen
+    }
 
 # --- ENDPOINT PARA CARGA DEL ARCHIVO EXCEL DEL COORDINADOR ---
 
