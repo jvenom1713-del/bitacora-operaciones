@@ -165,18 +165,29 @@ export default function MenuJefeTurno({
           const estaBorrador = isBorrador(estadoEfectivo);
           const estaAprobada = isAprobada(estadoEfectivo);
           
+          const botonHabilitado = estaEnviado || estaAprobada;
+
           return (
             <div className="space-y-4">
-              {/* Botón 1: Revisar y Cerrar Bitácora (Siempre Activo) */}
+              {/* Botón 1: Revisar y Cerrar Bitácora (JDT) - Bloqueado hasta que el Operador envíe a revisión */}
               <button
+                disabled={!botonHabilitado}
                 onClick={() => {
-                  onVerBitacoraEnCurso();
-                  navigate('/hoja-turno');
+                  if (botonHabilitado) {
+                    onVerBitacoraEnCurso();
+                    navigate('/hoja-turno');
+                  }
                 }}
-                title="Ingresar a la hoja de bitácora para revisar, autorizar y firmar"
-                className="w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 transform hover:scale-[1.01]"
+                title={botonHabilitado 
+                  ? "Ingresar a la hoja de bitácora para revisar, autorizar y firmar" 
+                  : "Bloqueado: El Operador de Sala aún no envía la Bitácora a revisión"}
+                className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 ${
+                  botonHabilitado
+                    ? 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 transform hover:scale-[1.01]'
+                    : 'text-slate-400 bg-slate-800/80 border-slate-700/60 cursor-not-allowed opacity-60'
+                }`}
               >
-                <FileText className="w-6 h-6 text-emerald-300" />
+                <FileText className={`w-6 h-6 ${botonHabilitado ? 'text-emerald-300' : 'text-slate-500'}`} />
                 <div className="text-left">
                   <span className="block font-bold text-base">Revisar y Cerrar Bitácora (JDT)</span>
                   {estaEnviado && (
@@ -185,8 +196,8 @@ export default function MenuJefeTurno({
                     </span>
                   )}
                   {estaBorrador && (
-                    <span className="text-[11px] font-medium text-emerald-200/90 block">
-                      • Turno Activo en Edición — Clic para Revisar Novedades
+                    <span className="text-[11px] font-semibold text-amber-400/90 block mt-0.5">
+                      🔒 Bloqueado: Operador de Sala aún no envía a revisión
                     </span>
                   )}
                   {estaAprobada && (
