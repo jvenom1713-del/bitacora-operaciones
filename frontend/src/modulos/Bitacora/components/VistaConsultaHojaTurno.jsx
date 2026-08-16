@@ -1594,15 +1594,28 @@ ${senalesForzadasTexto}
             </div>
           </div>
 
-          {/* PASO 1: ESTADO BORRADOR */}
-          {isBorrador(estadoTurnoCierre) && (
-            <div className="grid grid-cols-1 gap-4">
-              {!esJefeTurnoEfectivo ? (
-                /* Para Operador de Sala: Botón Enviar a Revisión */
+          {/* ACCIONES DE CIERRE Y APROBACIÓN */}
+          {!isAprobada(estadoTurnoCierre) && (
+            <div>
+              {esJefeTurnoEfectivo ? (
+                /* Botón Único para Jefe de Turno: Aprobar y Cerrar Bitácora */
+                <button
+                  onClick={handleAbrirModalPassword}
+                  disabled={enviandoCierre}
+                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ShieldCheck className="w-6 h-6 text-white" />
+                  <div className="text-left">
+                    <span className="block font-black text-sm uppercase">APROBAR Y FIRMAR BITÁCORA JDT</span>
+                    <span className="text-[11px] font-normal opacity-90">Ingresar clave JDT para autorizar firma y cierre oficial del turno.</span>
+                  </div>
+                </button>
+              ) : isBorrador(estadoTurnoCierre) ? (
+                /* Para Operador de Sala en Borrador: Botón Enviar a Revisión */
                 <button
                   onClick={handleSolicitarCierreOperador}
                   disabled={enviandoCierre}
-                  className="p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full p-5 rounded-xl border border-blue-400/50 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send className="w-5 h-5 text-cyan-300" />
                   <div className="text-left">
@@ -1611,42 +1624,7 @@ ${senalesForzadasTexto}
                   </div>
                 </button>
               ) : (
-                /* Para Jefe de Turno: Indicación de espera de envío */
-                <div className="p-5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 shadow-xl flex items-center gap-4">
-                  <div className="p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 shrink-0">
-                    <Lock className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <div>
-                    <span className="block font-black text-sm uppercase text-amber-300">
-                      🔒 Bitácora en Edición por Operador de Sala
-                    </span>
-                    <span className="text-xs text-amber-200/90 font-medium">
-                      El Operador de Sala aún no envía la bitácora a revisión. El botón de aprobación de JDT se activará en cuanto sea enviada.
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* PASO 2: ESTADO ENVIADO */}
-          {isEnviado(estadoTurnoCierre) && (
-            <div>
-              {esJefeTurnoEfectivo ? (
-                /* Botón Único: Aprobar Bitácora (JDT) */
-                <button
-                  onClick={handleAbrirModalPassword}
-                  disabled={enviandoCierre}
-                  className="w-full p-5 rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl flex items-center justify-center gap-3 font-black cursor-pointer transform hover:scale-[1.01] active:scale-95 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ShieldCheck className="w-5 h-5 text-white" />
-                  <div className="text-left">
-                    <span className="block font-black text-sm uppercase">APROBAR Y FIRMAR BITÁCORA JDT</span>
-                    <span className="text-[11px] font-normal opacity-90">Ingresar clave JDT para autorizar firma y cierre oficial del turno.</span>
-                  </div>
-                </button>
-              ) : (
-                /* Alerta e Indicación Bloqueada para Operador de Sala en REVISION */
+                /* Para Operador de Sala en Revisión: Alerta e Indicación Bloqueada */
                 <div className="space-y-3">
                   <button
                     disabled
