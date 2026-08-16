@@ -988,25 +988,29 @@ ${extraHtml}
       setEstadoTurno('aprobada');
       try {
         localStorage.setItem('estado_turno_activo', 'aprobada');
+        localStorage.setItem('origen_menu', 'MENU_JEFE');
+        localStorage.setItem('rol_activo', 'Jefe de Turno');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
-      setNotificacionCierre({ texto: res.data?.mensaje || 'Bitácora aprobada y firmada digitalmente correctamente. Redirigiendo al Menú...', tipo: 'success' });
+      setNotificacionCierre({ texto: res.data?.mensaje || 'Bitácora aprobada y firmada digitalmente correctamente. Redirigiendo al Menú de Jefe de Turno...', tipo: 'success' });
       cargarConsolidado(turnoIdUsar);
       setTimeout(() => {
         if (onVolver) onVolver();
         navigate('/menu-jefe');
-      }, 1000);
+      }, 500);
     } catch (err) {
       setEstadoTurno('aprobada');
       try {
         localStorage.setItem('estado_turno_activo', 'aprobada');
+        localStorage.setItem('origen_menu', 'MENU_JEFE');
+        localStorage.setItem('rol_activo', 'Jefe de Turno');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
-      setNotificacionCierre({ texto: 'Bitácora aprobada y firmada digitalmente correctamente. Redirigiendo al Menú...', tipo: 'success' });
+      setNotificacionCierre({ texto: 'Bitácora aprobada y firmada digitalmente correctamente. Redirigiendo al Menú de Jefe de Turno...', tipo: 'success' });
       setTimeout(() => {
         if (onVolver) onVolver();
         navigate('/menu-jefe');
-      }, 1000);
+      }, 500);
     } finally {
       setEnviandoCierre(false);
     }

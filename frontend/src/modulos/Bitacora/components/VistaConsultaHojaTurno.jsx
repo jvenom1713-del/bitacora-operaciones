@@ -844,33 +844,35 @@ ${senalesForzadasTexto}
       setEstadoTurnoCierre('aprobada');
       try {
         localStorage.setItem('estado_turno_activo', 'aprobada');
+        localStorage.setItem('origen_menu', 'MENU_JEFE');
+        localStorage.setItem('rol_activo', 'Jefe de Turno');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
       if (onAprobarBitacora) onAprobarBitacora(turnoActivo?.id, { skipApi: true });
       setMensajeCierre({ 
-        texto: res.data?.mensaje || 'Bitácora aprobada y firmada digitalmente con éxito. Redirigiendo al Menú...', 
+        texto: res.data?.mensaje || 'Bitácora aprobada y firmada digitalmente con éxito. Redirigiendo al Menú de Jefe de Turno...', 
         tipo: 'success' 
       });
       setTimeout(() => {
         if (onVolverMenu) onVolverMenu();
-        const esJefe = usuarioActual?.rol_codigo === 'JEFE_TURNO' || usuarioActual?.email?.includes('jefe');
-        navigate(esJefe ? '/menu-jefe' : '/menu-operador');
-      }, 1000);
+        navigate('/menu-jefe');
+      }, 500);
     } catch (err) {
       setEstadoTurnoCierre('aprobada');
       try {
         localStorage.setItem('estado_turno_activo', 'aprobada');
+        localStorage.setItem('origen_menu', 'MENU_JEFE');
+        localStorage.setItem('rol_activo', 'Jefe de Turno');
         window.dispatchEvent(new Event('turno_actualizado'));
       } catch (e) {}
       setMensajeCierre({ 
-        texto: 'Bitácora aprobada y firmada digitalmente con éxito. Redirigiendo al Menú...', 
+        texto: 'Bitácora aprobada y firmada digitalmente con éxito. Redirigiendo al Menú de Jefe de Turno...', 
         tipo: 'success' 
       });
       setTimeout(() => {
         if (onVolverMenu) onVolverMenu();
-        const esJefe = usuarioActual?.rol_codigo === 'JEFE_TURNO' || usuarioActual?.email?.includes('jefe');
-        navigate(esJefe ? '/menu-jefe' : '/menu-operador');
-      }, 1000);
+        navigate('/menu-jefe');
+      }, 500);
     } finally {
       setEnviandoCierre(false);
     }
