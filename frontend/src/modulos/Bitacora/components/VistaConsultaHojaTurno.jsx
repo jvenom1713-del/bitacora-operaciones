@@ -84,16 +84,26 @@ export default function VistaConsultaHojaTurno({
     'admin@generadora.cl'
   ];
 
+  const storedRol = localStorage.getItem('rol_activo');
+  const storedUser = localStorage.getItem('usuario_actual');
+  let storedUserObj = null;
+  try { storedUserObj = storedUser ? JSON.parse(storedUser) : null; } catch (_) {}
+
   const esJefeTurnoEfectivo = Boolean(
     esJefeTurno ||
     rolActivo === 'Jefe de Turno' ||
+    storedRol === 'Jefe de Turno' ||
     usuarioActual?.rol_nombre?.toLowerCase()?.includes('jefe') || 
     usuarioActual?.rol_codigo?.toLowerCase()?.includes('jefe') ||
     usuarioActual?.email?.toLowerCase()?.includes('jefe') ||
     usuarioActual?.rol_nombre === 'Jefe de Turno' ||
     usuarioActual?.rol_codigo === 'JEFE_TURNO' ||
     usuarioActual?.rol_codigo === 'ADMIN' ||
-    JEFES_EMAILS.includes(emailTrim)
+    storedUserObj?.rol_codigo === 'JEFE_TURNO' ||
+    storedUserObj?.rol_codigo === 'ADMIN' ||
+    storedUserObj?.email?.toLowerCase()?.includes('jefe') ||
+    JEFES_EMAILS.includes(emailTrim) ||
+    JEFES_EMAILS.includes(storedUserObj?.email?.toLowerCase())
   );
 
   const [eventosTurno, setEventosTurno] = useState(() => filtrarEventosPorDiaOperativo(eventos || []));
