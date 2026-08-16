@@ -1226,13 +1226,73 @@ ${extraHtml}
   const parametros = parametrosGeneracion || parametrosLocales;
   const setParametros = setParametrosGeneracion || setParametrosLocales;
 
+  const actualizarParametrosGeneracion = (clave, nuevoValor) => {
+    setParametros(prev => {
+      const actualizados = { ...prev, [clave]: nuevoValor };
+
+      // Recálculo automático de la Potencia Esperada (MWh acumulado) si cambia sistemaProm u horas
+      if (clave === 'sistemaProm' || clave === 'hrsCargaBase' || clave === 'hrsMinTec') {
+        const promMW = parseFloat(actualizados.sistemaProm || 0);
+        const hrsCB = parseFloat(actualizados.hrsCargaBase || 0);
+        const hrsMT = parseFloat(actualizados.hrsMinTec || 0);
+        const hrsTot = (hrsCB + hrsMT) > 0 ? (hrsCB + hrsMT) : 24;
+
+        if (promMW > 0 && (actualizados.potEspera === '0' || actualizados.potEspera === '' || clave === 'sistemaProm')) {
+          actualizados.potEspera = String(Math.round(promMW * hrsTot));
+        }
+      } else if (clave === 'potEspera') {
+        const potEspMW = parseFloat(nuevoValor || 0);
+        const hrsCB = parseFloat(actualizados.hrsCargaBase || 0);
+        const hrsMT = parseFloat(actualizados.hrsMinTec || 0);
+        const hrsTot = (hrsCB + hrsMT) > 0 ? (hrsCB + hrsMT) : 24;
+
+        if (potEspMW > 0) {
+          actualizados.sistemaProm = (potEspMW / hrsTot).toFixed(1);
+        }
+      }
+
+      try {
+        localStorage.setItem('bitacora_parametros', JSON.stringify(actualizados));
+        window.dispatchEvent(new Event('parametros_actualizados'));
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (_) {}
+
+      if (onCambiarPersonal) {
+        onCambiarPersonal({ ...safeEquipoTurno, ...actualizados });
+      }
+
+      return actualizados;
+    });
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem('bitacora_parametros', JSON.stringify(parametros));
+      window.dispatchEvent(new Event('parametros_actualizados'));
     } catch (e) {
       console.error('Error guardando parametros en localStorage:', e);
     }
   }, [parametros]);
+
+  useEffect(() => {
+    const syncParametrosLocal = () => {
+      try {
+        const saved = localStorage.getItem('bitacora_parametros');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof setParametros === 'function') {
+            setParametros(parsed);
+          }
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('parametros_actualizados', syncParametrosLocal);
+    window.addEventListener('storage', syncParametrosLocal);
+    return () => {
+      window.removeEventListener('parametros_actualizados', syncParametrosLocal);
+      window.removeEventListener('storage', syncParametrosLocal);
+    };
+  }, []);
 
   // Estados de carga
   const [cargandoDatos, setCargandoDatos] = useState(false);
@@ -3318,12 +3378,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.sistemaProm ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, sistemaProm: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, generacionPromedio: val, sistemaProm: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('sistemaProm', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-white' : 'text-slate-950'
                     }`}
@@ -3337,12 +3392,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.potEspera ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, potEspera: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, potEspera: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('potEspera', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-emerald-400' : 'text-emerald-800'
                     }`}
@@ -3356,12 +3406,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.fuegosSuplemen ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, fuegosSuplemen: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, fuegosSuplemen: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('fuegosSuplemen', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-white' : 'text-slate-950'
                     }`}
@@ -3375,12 +3420,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.hrsCargaBase ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, hrsCargaBase: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, hrsCargaBase: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('hrsCargaBase', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-white' : 'text-slate-950'
                     }`}
@@ -3394,12 +3434,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.hrsMinTec ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, hrsMinTec: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, hrsMinTec: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('hrsMinTec', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-white' : 'text-slate-950'
                     }`}
@@ -3413,12 +3448,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.hrsFuegosSuplem ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, hrsFuegosSuplem: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, hrsFuegosSuplem: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('hrsFuegosSuplem', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-white' : 'text-slate-950'
                     }`}
@@ -3432,12 +3462,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={parametros.costoMarginal ?? '0'}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const nParams = { ...parametros, costoMarginal: val };
-                      setParametros(nParams);
-                      if (onCambiarPersonal) onCambiarPersonal({ ...equipoTurno, costoMarginal: val });
-                    }}
+                    onChange={(e) => actualizarParametrosGeneracion('costoMarginal', e.target.value)}
                     className={`w-full text-center font-black text-xl sm:text-2xl bg-transparent focus:outline-none transition-all ${
                       modoNocturno ? 'text-amber-500' : 'text-amber-800'
                     }`}
@@ -3531,7 +3556,13 @@ ${extraHtml}
                   <input
                     type="text"
                     value={estadoPlanta.genMWH}
-                    onChange={(e) => setEstadoPlanta({ ...estadoPlanta, genMWH: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEstadoPlanta({ ...estadoPlanta, genMWH: val });
+                      if (val && !isNaN(parseFloat(val))) {
+                        actualizarParametrosGeneracion('potEspera', val);
+                      }
+                    }}
                     className={`h-10 w-full font-black border rounded-lg px-2 text-base sm:text-lg text-center focus:outline-none shadow-sm ${
                       modoNocturno ? 'bg-[#081527] text-emerald-400 border-blue-700/80 focus:border-emerald-500' : 'bg-white text-emerald-800 border-slate-400 focus:border-emerald-700'
                     }`}

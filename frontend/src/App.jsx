@@ -322,6 +322,24 @@ export default function App() {
     };
 
     cargarParametrosGeneracion();
+
+    const escuchedorParametros = () => {
+      try {
+        const saved = localStorage.getItem('bitacora_parametros');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed) setParametrosGeneracion(parsed);
+        }
+      } catch (_) {}
+    };
+
+    window.addEventListener('parametros_actualizados', escuchedorParametros);
+    window.addEventListener('storage', escuchedorParametros);
+
+    return () => {
+      window.removeEventListener('parametros_actualizados', escuchedorParametros);
+      window.removeEventListener('storage', escuchedorParametros);
+    };
   }, []);
 
   // ── ESTADO COMPARTIDO: Instrucciones Operacionales ──────────────────────
