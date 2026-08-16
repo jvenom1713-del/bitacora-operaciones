@@ -2078,12 +2078,10 @@ ${extraHtml}
             <span className="font-black text-[11px] sm:text-xs">EQUIPO DE TURNO</span>
             <button
               type="button"
-              onClick={() => {
-                if (onAbrirModalCambioPersonal) {
-                  onAbrirModalCambioPersonal();
-                } else {
-                  setMostrarModalCambioPersonal(true);
-                }
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setMostrarModalCambioPersonal(true);
               }}
               className="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-3 py-1 rounded shadow transition-all duration-200 cursor-pointer flex items-center gap-1"
             >
