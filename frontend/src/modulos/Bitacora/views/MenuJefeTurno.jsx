@@ -165,26 +165,16 @@ export default function MenuJefeTurno({
           const estaBorrador = isBorrador(estadoEfectivo);
           const estaAprobada = isAprobada(estadoEfectivo);
           
-          // El botón solo se ACTIVA si el Operador ha enviado la bitácora ('enviado')
-          const esDeshabilitado = !estaEnviado;
-
           return (
             <div className="space-y-4">
-              {/* Botón 1: Revisar y Cerrar Bitácora */}
+              {/* Botón 1: Revisar y Cerrar Bitácora (Siempre Activo) */}
               <button
                 onClick={() => {
-                  if (!esDeshabilitado) {
-                    onVerBitacoraEnCurso();
-                    navigate('/hoja-turno');
-                  }
+                  onVerBitacoraEnCurso();
+                  navigate('/hoja-turno');
                 }}
-                disabled={esDeshabilitado}
-                title={esDeshabilitado ? "El botón permanece bloqueado hasta que el Operador envíe la bitácora" : "Ingresar a la hoja de bitácora para revisar, autorizar y firmar"}
-                className={`w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50 ${
-                  esDeshabilitado
-                    ? 'bg-gray-500 text-gray-200 border-gray-600 opacity-50 cursor-not-allowed'
-                    : 'text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 animate-pulse'
-                }`}
+                title="Ingresar a la hoja de bitácora para revisar, autorizar y firmar"
+                className="w-full py-4 px-5 rounded-xl font-bold text-sm sm:text-base transition-all border flex items-center justify-center gap-3 text-white bg-gradient-to-r from-amber-600 via-emerald-600 to-teal-600 hover:from-amber-500 hover:to-teal-500 cursor-pointer active:scale-[0.99] shadow-xl shadow-emerald-900/40 border-amber-400 transform hover:scale-[1.01]"
               >
                 <FileText className="w-6 h-6 text-emerald-300" />
                 <div className="text-left">
@@ -195,13 +185,13 @@ export default function MenuJefeTurno({
                     </span>
                   )}
                   {estaBorrador && (
-                    <span className="text-[11px] font-medium text-slate-300 block">
-                      🔒 Bloqueado: Operador en edición (Esperando envío de bitácora)
+                    <span className="text-[11px] font-medium text-emerald-200/90 block">
+                      • Turno Activo en Edición — Clic para Revisar Novedades
                     </span>
                   )}
                   {estaAprobada && (
-                    <span className="text-[11px] font-medium text-slate-300 block">
-                      🔒 Bloqueado: Turno Cerrado y Aprobado (Esperando nueva bitácora)
+                    <span className="text-[11px] font-medium text-blue-200 block">
+                      ✓ Turno Aprobado — Clic para Ver Registro
                     </span>
                   )}
                 </div>

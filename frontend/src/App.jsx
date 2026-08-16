@@ -832,7 +832,7 @@ export default function App() {
       setTabInicialDashboard('EQUIPOS');
       setVistaActual('BITACORA_DASHBOARD');
     } catch (e) {
-      console.error(e);
+      console.error("Error abriendo turno, aplicando fallback local:", e);
       const ahora = new Date();
       const fechaLocal = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
         .toISOString()
@@ -851,6 +851,14 @@ export default function App() {
       };
       setTurnoActual(fallbackTurno);
       setTurnoActivo(fallbackTurno);
+      try {
+        localStorage.setItem('estado_turno_activo', 'ABIERTO');
+        localStorage.setItem('tipo_turno_activo', tipoTurnoExtraido);
+        window.dispatchEvent(new Event('turno_actualizado'));
+      } catch (err) {}
+      setEventos([]);
+      setTabInicialDashboard('EQUIPOS');
+      setVistaActual('BITACORA_DASHBOARD');
     }
   };
 

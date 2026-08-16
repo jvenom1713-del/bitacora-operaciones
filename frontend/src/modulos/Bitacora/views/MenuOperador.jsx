@@ -205,16 +205,19 @@ export default function MenuOperador({
             } else if (estaEnviadoTurno && !esJefeOAdmin) {
               return (
                 <button
-                  disabled
-                  title="La bitácora ya fue enviada a revisión y se encuentra bloqueada hasta que el Jefe de Turno la apruebe"
-                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg flex flex-col items-center justify-center gap-1 bg-slate-800/90 text-amber-300 border border-amber-500/50 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => {
+                    onNavegarBitacora('SALA_CONTROL');
+                    navigate('/dashboard');
+                  }}
+                  title="La bitácora se encuentra enviada a revisión. Clic para ingresar a revisar novedades."
+                  className="w-full font-bold text-sm py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.01] flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-amber-600/30 cursor-pointer"
                 >
                   <div className="flex items-center gap-2 font-black text-sm uppercase">
-                    <Lock className="w-5 h-5 text-amber-400 animate-pulse" />
-                    <span>🔒 Bitácora Enviada — Bloqueada en Revisión</span>
+                    <FileText className="w-5 h-5 text-amber-200" />
+                    <span>Ingreso Bitácora Operacional</span>
                   </div>
-                  <span className="text-[11px] text-amber-200/80 font-medium">
-                    El botón permanecerá bloqueado hasta que el Jefe de Turno apruebe la bitácora.
+                  <span className="text-[11px] text-amber-100 font-medium">
+                    Enviada a revisión del Jefe — Clic para ingresar
                   </span>
                 </button>
               );
