@@ -114,6 +114,32 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
           <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
             1. RESUMEN DE GENERACIÓN DIARIA:
           </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-bottom: 10px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 9.5px; font-weight: bold;">
+              <tr>
+                <td style="padding: 4px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; color: #0369a1;">
+                  <span style="font-size: 8px; color: #0284c7; display: block; text-transform: uppercase;">SISTEMA PROM</span>
+                  55.8 USD/MWh
+                </td>
+                <td style="padding: 4px; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 4px; color: #15803d;">
+                  <span style="font-size: 8px; color: #16a34a; display: block; text-transform: uppercase;">POT. ESPERA</span>
+                  4046 MW
+                </td>
+                <td style="padding: 4px; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; color: #b45309;">
+                  <span style="font-size: 8px; color: #d97706; display: block; text-transform: uppercase;">HRS CARGA BASE</span>
+                  1 hrs
+                </td>
+                <td style="padding: 4px; background: #f3e8ff; border: 1px solid #e9d5ff; border-radius: 4px; color: #7e22ce;">
+                  <span style="font-size: 8px; color: #9333ea; display: block; text-transform: uppercase;">MIN. TÉCNICO</span>
+                  22 hrs
+                </td>
+                <td style="padding: 4px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; color: #0369a1;">
+                  <span style="font-size: 8px; color: #0284c7; display: block; text-transform: uppercase;">COSTO MARGINAL</span>
+                  50.6 USD/MWh
+                </td>
+              </tr>
+            </table>
+          </div>
           <div style="font-size: 11px; color: #1e293b; line-height: 1.5; white-space: pre-line; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
             ${resumen}
           </div>
@@ -122,25 +148,30 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
           <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
             2. FRAGILIDADES OPERACIONALES:
           </div>
-          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            • BOP: Sin fragilidades críticas reportadas.<br/>
-            • Turbina Vapor: Operación normal en ciclo combinado.
+          <div style="font-size: 10.5px; color: #1e293b; line-height: 1.6; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
+            • <strong>BOP:</strong> FCV094 arreglo provisorio.<br/>
+            • VTR B indisponible por trabajos en estructura.<br/>
+            • VTR G Limitado a baja velocidad, por baja aislación.<br/>
+            • <strong>Turbina Vapor:</strong> Virador Falla en sistema de enganche en desaceleración.<br/>
+            • Fuga de Vapor zona TAP lado Izquierdo, se encuentra encapsulada.<br/>
+            • <strong>Excitación:</strong> Falla Puente N°1.
           </div>
 
           <!-- 3. INSTRUCCIONES OPERACIONALES: -->
           <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
             3. INSTRUCCIONES OPERACIONALES:
           </div>
-          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            Mantener monitoreo continuo de presiones y coordinación directa con CEN.
+          <div style="font-size: 10.5px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
+            Sin instrucciones operacionales registradas.
           </div>
 
           <!-- 4. SEÑALES FORZADAS: -->
           <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
             4. SEÑALES FORZADAS:
           </div>
-          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            Sin señales forzadas registradas.
+          <div style="font-size: 10.5px; color: #1e293b; line-height: 1.6; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
+            • <strong>MKVI CTG:</strong> L83MBC<br/>
+            • <strong>BOP:</strong> LV010
           </div>
 
           <!-- 5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS: -->
