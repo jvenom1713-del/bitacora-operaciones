@@ -787,6 +787,42 @@ export default function App() {
     }
   };
 
+  const obtenerSiguienteFolio = async () => {
+    let maxFolioInt = 0;
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('bitacoras').select('folio, id');
+        if (Array.isArray(data) && data.length > 0) {
+          data.forEach(item => {
+            const fVal = parseInt(item.folio || item.id || '0', 10);
+            if (!isNaN(fVal) && fVal > maxFolioInt) maxFolioInt = fVal;
+          });
+        }
+      } catch (_) {}
+    }
+
+    try {
+      const historicoStr = localStorage.getItem('bitacora_historico');
+      if (historicoStr) {
+        const parsed = JSON.parse(historicoStr);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(item => {
+            const fVal = parseInt(item.folio || item.id || '0', 10);
+            if (!isNaN(fVal) && fVal > maxFolioInt) maxFolioInt = fVal;
+          });
+        }
+      }
+
+      const ultimoGuardado = parseInt(localStorage.getItem('ultimo_folio_registrado') || '0', 10);
+      if (ultimoGuardado > maxFolioInt) maxFolioInt = ultimoGuardado;
+    } catch (_) {}
+
+    const siguienteFolioInt = maxFolioInt + 1;
+    const siguienteFolioStr = String(siguienteFolioInt).padStart(2, '0');
+    try { localStorage.setItem('ultimo_folio_registrado', String(siguienteFolioInt)); } catch (_) {}
+    return siguienteFolioStr;
+  };
+
   const handleAbrirTurno = async (rotacionSeleccionada) => {
     try {
       const ahora = new Date();
@@ -794,6 +830,8 @@ export default function App() {
         .toISOString()
         .split('T')[0];
       const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const nuevoFolioCalculado = await obtenerSiguienteFolio();
 
       // Preservar reemplazos y motivos solo si corresponden a la misma rotación
       const equipoGuardadoStr = localStorage.getItem('equipo_turno_actual');
@@ -830,6 +868,7 @@ export default function App() {
       }
 
       const nuevoEquipoObj = {
+        folio: nuevoFolioCalculado,
         rotacion: rotName,
         jdt: jdtVal,
         osc: oscVal,
@@ -870,9 +909,11 @@ export default function App() {
       });
       const respuesta = res.ok ? await res.json() : null;
       let turnoData = respuesta?.data || respuesta?.turno;
+      const folioFinal = respuesta?.data?.folio || respuesta?.turno?.folio || respuesta?.folio || nuevoFolioCalculado;
 
       if (!turnoData) {
         turnoData = {
+          folio: folioFinal,
           estado: 'ABIERTO',
           rotacion: rotName,
           tipo_turno: tipoTurnoExtraido,
@@ -888,6 +929,7 @@ export default function App() {
       } else {
         turnoData = {
           ...turnoData,
+          folio: folioFinal,
           ...nuevoEquipoObj,
           rotacion: rotName,
           tipo_turno: turnoData.tipo_turno || tipoTurnoExtraido,
