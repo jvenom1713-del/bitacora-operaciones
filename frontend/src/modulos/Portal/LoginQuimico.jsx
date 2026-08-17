@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import fotoPowerPlant from '/power_plant_bg.png';
 import { FlaskConical, Lock, Mail, ShieldCheck, AlertCircle, ArrowLeft, Sun, Moon, Zap } from 'lucide-react';
 
 export default function LoginQuimico({ onLoginExitoso, onVolver, modoNocturno, setModoNocturno }) {

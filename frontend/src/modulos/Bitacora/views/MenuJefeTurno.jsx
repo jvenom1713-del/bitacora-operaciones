@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import fotoPowerPlant from '/power_plant_bg.png';
 import { Sun, Moon, LogOut, FileText, Search, FlaskConical } from 'lucide-react';
 import { getApiUrl, safeFetchJson, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 
