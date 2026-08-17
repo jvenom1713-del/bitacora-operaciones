@@ -14,13 +14,19 @@ const resolverNombreJefeOficial = (item, usuarioActual) => {
     n.trim() &&
     !['Jefe de Turno', 'aprobada', 'enviado', 'CERRADO', 'ABIERTO', 'Sin JDT', 'Operador', '-'].includes(n.trim());
 
-  if (esEspecifico(item?.cerrado_por_nombre)) return item.cerrado_por_nombre.trim();
+  if (esEspecifico(item?.equipo_turno?.jdt)) return item.equipo_turno.jdt.trim();
   if (esEspecifico(item?.jefe_turno)) return item.jefe_turno.trim();
+  if (esEspecifico(item?.cerrado_por_nombre)) return item.cerrado_por_nombre.trim();
   if (esEspecifico(item?.jdt_nombre)) return item.jdt_nombre.trim();
   if (esEspecifico(item?.jefe_nombre)) return item.jefe_nombre.trim();
-  if (esEspecifico(item?.equipo_turno?.jdt)) return item.equipo_turno.jdt.trim();
 
-  return obtenerNombreJefeActual(usuarioActual, item?.equipo_turno || item);
+  return (
+    item?.equipo_turno?.jdt ||
+    item?.jefe_turno ||
+    item?.cerrado_por_nombre ||
+    obtenerNombreJefeActual(usuarioActual, item?.equipo_turno || item) ||
+    "Jefe de Turno no asignado"
+  );
 };
 
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usuarioActual }) {
@@ -511,10 +517,10 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                       </div>
                     </div>
 
-                    {/* Resumen Operativo */}
-                    <div className="text-xs text-slate-300 line-clamp-3 bg-slate-950/40 p-3 rounded-xl border border-slate-800/80 italic font-mono">
-                      "{item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.'}"
-                    </div>
+                    {/* Vista Previa Limpia del Documento PDF */}
+                    <p className="text-slate-400 text-xs italic bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+                      El documento PDF incluirá el resumen de generación, fragilidades, instrucciones y permisos registrados durante el turno.
+                    </p>
                   </div>
 
                   {/* Acciones de la Tarjeta */}
