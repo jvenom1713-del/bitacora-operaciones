@@ -467,7 +467,18 @@ export default function VistaConsultaHojaTurno({
     });
 
     container.innerHTML = `
-      <div style="border: 2px solid #0f172a; border-radius: 6px; overflow: hidden; font-size: 10px; color: #1e293b; background: #ffffff;">
+      <div style="border: 2px solid #0f172a; border-radius: 6px; overflow: hidden; font-size: 10px; color: #1e293b; background: #ffffff; position: relative;">
+        <!-- SELLO DE AGUA DIAGONAL CON FECHA Y HORA DE CIERRE -->
+        <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-32deg); font-family: sans-serif; text-align: center; pointer-events: none; z-index: 99; width: 85%;">
+          <div style="border: 4px dashed rgba(220, 38, 38, 0.28); color: rgba(220, 38, 38, 0.28); padding: 14px 20px; border-radius: 12px; display: inline-block; background: rgba(254, 226, 226, 0.12);">
+            <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;">
+              ✔ APROBADO Y CERRADO
+            </div>
+            <div style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">
+              FECHA / HORA CIERRE: ${fechaImpresion}
+            </div>
+          </div>
+        </div>
         
         <!-- ENCABEZADO EJECUTIVO (COMPACTO) -->
         <div style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); color: #ffffff; padding: 12px 16px; border-bottom: 3px solid #f59e0b;">

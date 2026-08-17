@@ -107,8 +107,40 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
       </tr>
     `;
 
+    const rawCierre = item.cerrado_el || item.fecha_cierre || item.created_at || item.actualizado_el;
+    let fechaHoraCierreStr = '';
+    if (rawCierre) {
+      try {
+        const dCierre = new Date(rawCierre);
+        if (!isNaN(dCierre.getTime())) {
+          const dia = String(dCierre.getDate()).padStart(2, '0');
+          const mes = String(dCierre.getMonth() + 1).padStart(2, '0');
+          const anio = dCierre.getFullYear();
+          const hrs = String(dCierre.getHours()).padStart(2, '0');
+          const mins = String(dCierre.getMinutes()).padStart(2, '0');
+          const secs = String(dCierre.getSeconds()).padStart(2, '0');
+          fechaHoraCierreStr = `${dia}/${mes}/${anio} ${hrs}:${mins}:${secs} hrs`;
+        }
+      } catch (_) {}
+    }
+    if (!fechaHoraCierreStr) {
+      fechaHoraCierreStr = `${fecha} 21:00:00 hrs`;
+    }
+
     container.innerHTML = `
-      <div style="border: 2px solid #1e293b; border-radius: 8px; overflow: hidden; background: #ffffff; padding: 0;">
+      <div style="border: 2px solid #1e293b; border-radius: 8px; overflow: hidden; background: #ffffff; padding: 0; position: relative;">
+        <!-- SELLO DE AGUA DIAGONAL CON FECHA Y HORA DE CIERRE -->
+        <div style="position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%) rotate(-32deg); font-family: sans-serif; text-align: center; pointer-events: none; z-index: 99; width: 85%;">
+          <div style="border: 4px dashed rgba(220, 38, 38, 0.28); color: rgba(220, 38, 38, 0.28); padding: 14px 20px; border-radius: 12px; display: inline-block; background: rgba(254, 226, 226, 0.12);">
+            <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;">
+              ✔ APROBADO Y CERRADO
+            </div>
+            <div style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">
+              CIERRE: ${fechaHoraCierreStr}
+            </div>
+          </div>
+        </div>
+
         <!-- BANNER DE ENCABEZADO -->
         <div style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); color: #ffffff; padding: 14px 18px; border-bottom: 3px solid #ea580c;">
           <table style="width: 100%; border-collapse: collapse;">
@@ -121,7 +153,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                   CENTRAL NUEVA RENCA
                 </div>
                 <div style="font-size: 10px; color: #93c5fd;">
-                  Fecha: ${fecha} | Turno: ${turno}
+                  Fecha: ${fecha} | Turno: ${turno} | Cierre: ${fechaHoraCierreStr}
                 </div>
               </td>
               <td style="text-align: right; vertical-align: middle;">

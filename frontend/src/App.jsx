@@ -677,7 +677,7 @@ export default function App() {
     setTurnoActivo(prev => {
       const infoContingencia = detectarContingenciasGuardia(datosFinales);
       const motivoAuto = nuevoEquipo.motivoContingencia || (infoContingencia.hayContingencia
-        ? (prev?.motivoContingencia || 'Licencia médica')
+        ? (prev?.motivoContingencia || 'Reemplazo de Personal')
         : 'Dotación Normal / Sin contingencia');
 
       const objActualizado = {
@@ -873,6 +873,13 @@ export default function App() {
         if (equipoGuardado.ot) otVal = equipoGuardado.ot;
       }
 
+      const oficialGuardia = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
+      const normStr = (s) => (s || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+      const esReemplazoRealJDT = normStr(jdtVal) !== normStr(oficialGuardia.jdt);
+      const esReemplazoRealOSC = normStr(oscVal) !== normStr(oficialGuardia.osc);
+      const esReemplazoRealOT = normStr(otVal) !== normStr(oficialGuardia.ot);
+
       const nuevoEquipoObj = {
         folio: nuevoFolioCalculado,
         rotacion: rotName,
@@ -882,12 +889,12 @@ export default function App() {
         jefe_turno: jdtVal,
         operador: oscVal,
         personal_turno: otVal,
-        motivoJDT: esMismaRotacion ? (equipoGuardado?.motivoJDT || '') : '',
-        motivoOSC: esMismaRotacion ? (equipoGuardado?.motivoOSC || '') : '',
-        motivoOT: esMismaRotacion ? (equipoGuardado?.motivoOT || '') : '',
-        motivoContingencia: esMismaRotacion ? (equipoGuardado?.motivoContingencia || '') : '',
-        detalleContingencia: esMismaRotacion ? (equipoGuardado?.detalleContingencia || '') : '',
-        hayContingencia: esMismaRotacion ? Boolean(equipoGuardado?.hayContingencia || equipoGuardado?.motivoJDT || equipoGuardado?.motivoOSC || equipoGuardado?.motivoOT) : false
+        motivoJDT: esReemplazoRealJDT ? (equipoGuardado?.motivoJDT || 'Reemplazo de Personal') : '',
+        motivoOSC: esReemplazoRealOSC ? (equipoGuardado?.motivoOSC || 'Reemplazo de Personal') : '',
+        motivoOT: esReemplazoRealOT ? (equipoGuardado?.motivoOT || 'Reemplazo de Personal') : '',
+        motivoContingencia: (esReemplazoRealJDT || esReemplazoRealOSC || esReemplazoRealOT) ? (equipoGuardado?.motivoContingencia || 'Reemplazo de Personal') : '',
+        detalleContingencia: (esReemplazoRealJDT || esReemplazoRealOSC || esReemplazoRealOT) ? (equipoGuardado?.detalleContingencia || '') : '',
+        hayContingencia: esReemplazoRealJDT || esReemplazoRealOSC || esReemplazoRealOT
       };
 
       setEquipoTurnoSeleccionado(nuevoEquipoObj);
@@ -1833,7 +1840,7 @@ export default function App() {
                 </div>
                 <div>
                   <div className="text-xs text-slate-400">Folio Operativo:</div>
-                  <div className="text-xl font-black text-slate-100 font-mono">{turnoActual?.folio || turnoActivo?.folio || '01'}</div>
+                  <div className="text-xl font-black text-slate-100 font-mono">{String(turnoActual?.folio || turnoActivo?.folio || proximoFolio || '0001').padStart(4, '0')}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
