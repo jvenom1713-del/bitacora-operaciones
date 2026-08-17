@@ -182,31 +182,12 @@ export function formatearFechaHoraLegible(fechaRaw) {
 }
 
 export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
-  // 1. Si el usuario logueado en sesión tiene un nombre específico (ej: Ariel Torres, Javier San Martin, etc.)
-  if (
-    usuarioActual?.nombre &&
-    typeof usuarioActual.nombre === 'string' &&
-    usuarioActual.nombre.trim() &&
-    !['Jefe de Turno', 'Operador', 'Operador Sala de Control', 'ADMIN', 'Usuario'].includes(usuarioActual.nombre.trim())
-  ) {
-    return usuarioActual.nombre.trim();
-  }
-
-  // 2. Si el usuario actual tiene correo corporativo de Jefe de Turno
-  const email = usuarioActual?.email?.toLowerCase() || '';
-  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
-  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
-  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
-  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
-  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
-  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
-
-  // 3. Si el usuario logueado es Operador o no se especificó, tomar el Jefe de Turno (JDT) asignado al equipo/guardia
+  // 1. FUENTE PRIMARIA: El Jefe de Turno (JDT) de la sección "INFORMACIÓN DEL TURNO Y DOTACIÓN" / "EQUIPO DE TURNO"
   if (equipoTurno?.jdt && typeof equipoTurno.jdt === 'string' && equipoTurno.jdt.trim() && equipoTurno.jdt !== 'Jefe de Turno') {
     return equipoTurno.jdt.trim();
   }
 
-  // 4. Intentar obtener el JDT guardado en localStorage
+  // 2. Si hay un equipo de turno activo guardado en localStorage (equipo_turno_actual)
   try {
     const saved = localStorage.getItem('equipo_turno_actual');
     if (saved) {
@@ -217,7 +198,26 @@ export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
     }
   } catch (_) {}
 
-  return 'Jefe de Turno';
+  // 3. Si el usuario actual logueado tiene perfil o nombre específico de Jefe de Turno
+  if (
+    usuarioActual?.nombre &&
+    typeof usuarioActual.nombre === 'string' &&
+    usuarioActual.nombre.trim() &&
+    !['Jefe de Turno', 'Operador', 'Operador Sala de Control', 'ADMIN', 'Usuario'].includes(usuarioActual.nombre.trim())
+  ) {
+    return usuarioActual.nombre.trim();
+  }
+
+  // 4. Si el correo del usuario logueado corresponde a un Jefe de Turno
+  const email = usuarioActual?.email?.toLowerCase() || '';
+  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
+  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
+  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
+  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
+  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
+  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
+
+  return 'Norman Galaz';
 }
 
 

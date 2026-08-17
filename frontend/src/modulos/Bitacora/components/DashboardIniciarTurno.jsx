@@ -596,7 +596,7 @@ export default function DashboardIniciarTurno({
               </td>
               <td style="width: 25%; padding: 2px 4px;">
                 <span style="color: #64748b; font-weight: 700; display: block; font-size: 8px; text-transform: uppercase;">JEFE DE TURNO (JDT)</span>
-                <strong style="color: #0f172a; font-size: 10.5px;">${equipoTurno.jdt || 'Ariel Torres'}</strong>
+                <strong style="color: #0f172a; font-size: 10.5px;">${obtenerNombreJefeActual(usuarioActual, equipoTurno)}</strong>
               </td>
               <td style="width: 25%; padding: 2px 4px;">
                 <span style="color: #64748b; font-weight: 700; display: block; font-size: 8px; text-transform: uppercase;">OPERADOR SALA (OSC)</span>
@@ -2782,7 +2782,7 @@ ${extraHtml}
 
                     <div className="py-1 px-1.5 flex flex-col items-center justify-center equipo-turno-celda">
                       <span className="block text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-blue-900">JDT</span>
-                      <span className="font-black text-xs text-slate-950 text-center">{safeEquipoTurno?.jdt || 'Ariel Torres'}</span>
+                      <span className="font-black text-xs text-slate-950 text-center">{obtenerNombreJefeActual(usuarioActual, safeEquipoTurno)}</span>
                       {safeEquipoTurno?.motivoJDT && (
                         <span className="text-[9px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1 rounded mt-0.5">⚠️ {safeEquipoTurno.motivoJDT}</span>
                       )}

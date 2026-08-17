@@ -1136,7 +1136,7 @@ ${permisosTxt}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3.5 text-xs font-semibold">
             {[
               { label: 'Rotación Guardia', value: equipoTurnoState?.rotacion || 'TIGRES', sub: null, color: 'text-amber-400' },
-              { label: 'Jefe de Turno (JDT)', value: equipoTurnoState?.jdt || 'Norman Galaz', sub: equipoTurnoState?.motivoJDT, color: 'text-cyan-300' },
+              { label: 'Jefe de Turno (JDT)', value: obtenerNombreJefeActual(usuarioActual, equipoTurnoState), sub: equipoTurnoState?.motivoJDT, color: 'text-cyan-300' },
               { label: 'Operador Sala Control (OSC)', value: equipoTurnoState?.osc || 'Jorge Albornoz', sub: equipoTurnoState?.motivoOSC, color: 'text-emerald-300' },
               { label: 'Operador Turno (OT)', value: equipoTurnoState?.ot || 'Matías Cisternas', sub: equipoTurnoState?.motivoOT, color: 'text-purple-300' },
             ].map((item, i) => (
