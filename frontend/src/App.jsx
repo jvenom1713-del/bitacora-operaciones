@@ -89,6 +89,18 @@ export default function App() {
     } catch (e) {}
   }, [equipoTurnoSeleccionado]);
 
+  // Sincronizar el JDT de la dotación con el usuario logueado en sesión
+  useEffect(() => {
+    if (usuarioActual?.nombre && !['Operador', 'Operador Sala de Control', 'Jefe de Turno'].includes(usuarioActual.nombre)) {
+      setEquipoTurnoSeleccionado(prev => {
+        if (prev?.jdt !== usuarioActual.nombre) {
+          return { ...prev, jdt: usuarioActual.nombre };
+        }
+        return prev;
+      });
+    }
+  }, [usuarioActual]);
+
   useEffect(() => {
     const path = location.pathname.toLowerCase();
     if (path.includes('menu-operador')) {
