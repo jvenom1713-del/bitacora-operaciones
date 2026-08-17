@@ -65,25 +65,24 @@ export default function App() {
   const [modoNocturno, setModoNocturno] = useState(true);
   const [vistaAnteriorCambioPersonal, setVistaAnteriorCambioPersonal] = useState('ABRIR_TURNO_MENU');
   const [equipoTurnoSeleccionado, setEquipoTurnoSeleccionado] = useState(() => {
+    // Solo leer desde localStorage. Si no hay nada guardado, retornar null.
+    // El equipo se establece ÚNICAMENTE cuando el OSC elige y confirma la guardia.
     try {
       const saved = localStorage.getItem('equipo_turno_actual');
-      return saved ? JSON.parse(saved) : {
-        rotacion: 'JAGUAR',
-        jdt: 'Javier San Martin',
-        osc: 'Humberto Barra Tapia',
-        ot: 'Eric Godoy Diaz'
-      };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Validar que tenga datos reales antes de usarlo
+        if (parsed && parsed.rotacion && parsed.jdt) return parsed;
+      }
+      return null;
     } catch {
-      return {
-        rotacion: 'JAGUAR',
-        jdt: 'Javier San Martin',
-        osc: 'Humberto Barra Tapia',
-        ot: 'Eric Godoy Diaz'
-      };
+      return null;
     }
   });
 
   useEffect(() => {
+    // Solo persistir si hay un equipo real seleccionado (no sobreescribir con null)
+    if (!equipoTurnoSeleccionado || !equipoTurnoSeleccionado.jdt) return;
     try {
       localStorage.setItem('equipo_turno_actual', JSON.stringify(equipoTurnoSeleccionado));
     } catch (e) {}
@@ -103,6 +102,26 @@ export default function App() {
       setVistaActual('CONSULTA_BITACORA');
     }
   }, [location.pathname]);
+
+  // Limpiar localStorage contaminado con el default JAGUAR/Javier hardcodeado
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('equipo_turno_actual');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Si el localStorage tiene el default hardcodeado sin un turno real (sin folio),
+        // borrarlo para que el OSC elija la guardia correcta al iniciar
+        const esDefaultContaminado =
+          parsed?.jdt === 'Javier San Martin' &&
+          parsed?.rotacion === 'JAGUAR' &&
+          !parsed?.folio;
+        if (esDefaultContaminado) {
+          localStorage.removeItem('equipo_turno_actual');
+          setEquipoTurnoSeleccionado(null);
+        }
+      }
+    } catch (_) {}
+  }, []); // Solo se ejecuta una vez al montar
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
 
