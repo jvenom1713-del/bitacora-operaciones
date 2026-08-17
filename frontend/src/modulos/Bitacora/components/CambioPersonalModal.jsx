@@ -17,8 +17,8 @@ export default function CambioPersonalModal({
 }) {
   if (!isOpen) return null;
 
-  // Botón y checkbox deshabilitados por defecto hasta que se active o seleccione un reemplazo válido
-  const [reemplazarCheck, setReemplazarCheck] = useState(false);
+  // Botón y checkbox activos por defecto para permitir selección directa
+  const [reemplazarCheck, setReemplazarCheck] = useState(true);
   const [cargoSeleccionado, setCargoSeleccionado] = useState('Jefe de Turno');
   
   const safeEquipo = equipoTurno ?? turno ?? {};
@@ -393,13 +393,10 @@ export default function CambioPersonalModal({
             <div>
               <label className={`block text-xs font-extrabold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-800'}`}>Seleccionar Cargo a Reemplazar</label>
               <select
-                disabled={!reemplazarCheck}
                 value={cargoSeleccionado}
                 onChange={(e) => setCargoSeleccionado(e.target.value)}
                 className={`w-full text-xs font-extrabold py-2.5 px-3 rounded-lg border transition-colors ${
-                  !reemplazarCheck
-                    ? (modoNocturno ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700' : 'opacity-50 cursor-not-allowed bg-slate-200 text-slate-500 border-slate-300')
-                    : (modoNocturno ? 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500' : 'bg-white border-2 border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm')
+                  modoNocturno ? 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500' : 'bg-white border-2 border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm'
                 }`}
               >
                 <option value="Jefe de Turno">Jefe de Turno</option>
@@ -412,9 +409,7 @@ export default function CambioPersonalModal({
             <div>
               <label className={`block text-xs font-extrabold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-800'}`}>Personal de Turno Disponible ({cargoSeleccionado})</label>
               <div className={`rounded-xl border-2 p-2 space-y-1.5 text-xs max-h-44 overflow-y-auto ${
-                !reemplazarCheck
-                  ? (modoNocturno ? 'opacity-50 pointer-events-none bg-slate-800/40 border-slate-700' : 'opacity-50 pointer-events-none bg-slate-200/50 border-slate-300')
-                  : (modoNocturno ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-300')
+                modoNocturno ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-300'
               }`}>
                 {(candidatosFiltrados || []).length === 0 ? (
                   <div className={`p-3 text-center opacity-70 italic text-[11px] font-medium ${modoNocturno ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -446,13 +441,10 @@ export default function CambioPersonalModal({
             <div>
               <label className={`block text-xs font-extrabold mb-1 ${modoNocturno ? 'text-slate-300' : 'text-slate-800'}`}>Guardia Contingencia</label>
               <select
-                disabled={!reemplazarCheck}
                 value={guardiaContingenciaSel}
                 onChange={handleSeleccionarContingencia}
                 className={`w-full text-xs font-extrabold py-2.5 px-3 rounded-lg border transition-colors ${
-                  !reemplazarCheck
-                    ? (modoNocturno ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500 border-slate-700' : 'opacity-50 cursor-not-allowed bg-slate-200 text-slate-500 border-slate-300')
-                    : (modoNocturno ? 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500' : 'bg-white border-2 border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm')
+                  modoNocturno ? 'bg-[#0f2b48] border-blue-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500' : 'bg-white border-2 border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm'
                 }`}
               >
                 <option value="">-- Seleccionar de Contingencia --</option>
