@@ -879,36 +879,16 @@ export default function DashboardIniciarTurno({
     const extraPlain = (textoBitacora?.fragilidadesAdicionales || []).map(f => `${f.titulo}\n${f.texto || ''}`).join('\n\n');
     return `Central Nueva Renca
 
-Día ${diaStr1}
-${textoBitacora?.nuevaRencaDia1 || ''}
-
-Día ${diaStr2}
-${textoBitacora?.nuevaRencaDia2 || ''}
+Día 1: ${textoBitacora?.nuevaRencaDia1 || '20:39 SIN OBSERVACIONES'}
 
 Fragilidades operacionales:
 
 BOP
-${textoBitacora?.bop || ''}
+${textoBitacora?.bop || 'FCV094 arreglo provisorio.'}
 
 Turbina Vapor.
-${textoBitacora?.turbinaVapor || ''}
-${extraPlain ? '\n' + extraPlain : ''}
-
-Central Los Vientos
-
-Día ${diaStr1}
-${textoBitacora?.losVientosDia1 || ''}
-
-Día ${diaStr2}
-${textoBitacora?.losVientosDia2 || ''}
-
-Central Santa Lidia
-
-Día ${diaStr1}
-${textoBitacora?.santaLidiaDia1 || ''}
-
-Día ${diaStr2}
-${textoBitacora?.santaLidiaDia2 || ''}`;
+${textoBitacora?.turbinaVapor || 'Virador Falla en sistema de enganche en desaceleración.'}
+${extraPlain ? '\n' + extraPlain : ''}`;
   };
 
   const obtenerTextoBitacoraCompletaHtml = () => {
@@ -919,10 +899,7 @@ ${textoBitacora?.santaLidiaDia2 || ''}`;
 
     return `<div style="font-family: Arial, Helvetica, sans-serif; color: #000000; line-height: 1.4;">
 <h2 style="color: #000000 !important; font-weight: 900 !important; font-size: 16px; margin: 10px 0 4px 0; text-decoration: underline;">Central Nueva Renca</h2>
-<p style="color: #000000 !important; font-weight: 900 !important; font-size: 14px; margin: 6px 0 2px 0;">Día ${diaStr1}</p>
-<p style="color: #000000; margin: 0 0 10px 0; font-size: 13px;">${textoBitacora?.nuevaRencaDia1 || ''}</p>
-<p style="color: #000000 !important; font-weight: 900 !important; font-size: 14px; margin: 6px 0 2px 0;">Día ${diaStr2}</p>
-<p style="color: #000000; margin: 0 0 14px 0; font-size: 13px;">${textoBitacora?.nuevaRencaDia2 || ''}</p>
+<p style="color: #000000 !important; font-weight: 900 !important; font-size: 14px; margin: 6px 0 2px 0;">Día 1: ${textoBitacora?.nuevaRencaDia1 || '20:39 SIN OBSERVACIONES'}</p>
 
 <h2 style="color: #000000 !important; font-weight: 900 !important; font-size: 16px; margin: 14px 0 4px 0; text-decoration: underline;">Fragilidades operacionales:</h2>
 <h3 style="color: #000000 !important; font-weight: 900 !important; font-size: 14px; margin: 6px 0 2px 0; text-decoration: underline;">BOP</h3>

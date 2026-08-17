@@ -141,7 +141,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             </table>
           </div>
           <div style="font-size: 11px; color: #1e293b; line-height: 1.5; white-space: pre-line; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            ${resumen}
+            Día 1: ${resumen || '20:39 SIN OBSERVACIONES'}
           </div>
 
           <!-- 2. FRAGILIDADES OPERACIONALES: -->
@@ -170,8 +170,9 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             4. SEÑALES FORZADAS:
           </div>
           <div style="font-size: 10.5px; color: #1e293b; line-height: 1.6; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            • <strong>MKVI CTG:</strong> L83MBC<br/>
-            • <strong>BOP:</strong> LV010
+            • <strong>BOP:</strong> LV010<br/>
+            • <strong>MKVI CTG:</strong> L83MCB<br/>
+            • <strong>MKVI CTG:</strong> FIRE PROTECCION
           </div>
 
           <!-- 5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS: -->

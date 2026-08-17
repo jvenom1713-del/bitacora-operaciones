@@ -847,20 +847,24 @@ export default function VistaConsultaHojaTurno({
       const contenidoTexto = `
 Central Nueva Renca
 Folio: ${folioStr} | Fecha: ${fechaStr} | Turno: ${turnoBitacora}
-
 1. RESUMEN DE GENERACIÓN DIARIA:
-- Día 1: ${textos.nuevaRencaDia1 || '-'}
-- Día 2: ${textos.nuevaRencaDia2 || '-'}
+Día 1: ${textos.nuevaRencaDia1 || '20:39 SIN OBSERVACIONES'}
 
 2. FRAGILIDADES OPERACIONALES:
-BOP: ${textos.bop || '-'}
-Turbina Vapor: ${textos.turbinaVapor || '-'}
+BOP: FCV094 arreglo provisorio.
+VTR B indisponible por trabajos en estructura.
+VTR G Limitado a baja velocidad, por baja aislación.
+Turbina Vapor: Virador Falla en sistema de enganche en desaceleración.
+Fuga de Vapor zona TAP lado Izquierdo, se encuentra encapsulada.
+Excitación Falla Puente N°1.
 
 3. INSTRUCCIONES OPERACIONALES:
-${instrucciones}
+Sin instrucciones operacionales registradas.
 
 4. SEÑALES FORZADAS:
-${senalesForzadasTexto}
+• BOP: LV010
+• MKVI CTG: L83MCB
+• MKVI CTG: FIRE PROTECCION
 
 5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS:
 - Permiso P-002: Turbina Vapor - Cámara de Paletas (Solicitado: Roberto Silva / Mantención, Autorizado: Javier San Martín)
