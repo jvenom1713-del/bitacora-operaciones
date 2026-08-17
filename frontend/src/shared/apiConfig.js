@@ -161,3 +161,48 @@ export function formatearSenalesParaTexto(listaSenales) {
   });
   return lineas.length > 0 ? lineas.join('\n') : 'Sin señales forzadas o manuales registradas.';
 }
+
+export function formatearFechaHoraLegible(fechaRaw) {
+  if (!fechaRaw) return 'N/A';
+  try {
+    const str = String(fechaRaw).trim();
+    if (str.includes('/') && str.includes('hrs')) return str;
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return str;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} hrs`;
+  } catch (_) {
+    return String(fechaRaw);
+  }
+}
+
+export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
+  if (usuarioActual?.nombre && usuarioActual?.nombre !== 'Jefe de Turno' && usuarioActual?.nombre !== 'Operador') {
+    return usuarioActual.nombre;
+  }
+  const email = usuarioActual?.email?.toLowerCase() || '';
+  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
+  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
+  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
+  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
+  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
+  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
+
+  if (equipoTurno?.jdt && equipoTurno.jdt !== 'Ariel Torres') return equipoTurno.jdt;
+
+  try {
+    const saved = localStorage.getItem('equipo_turno_actual');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed?.jdt && parsed.jdt !== 'Ariel Torres') return parsed.jdt;
+    }
+  } catch (_) {}
+
+  return equipoTurno?.jdt || 'Norman Galaz';
+}
+

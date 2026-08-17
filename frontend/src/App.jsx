@@ -1481,6 +1481,7 @@ export default function App() {
         <VistaConsultaBitacora
           onVolverMenu={volverMenuGenerico}
           modoNocturno={modoNocturno}
+          usuarioActual={usuarioActual}
         />
         {demoBarra}
       </>

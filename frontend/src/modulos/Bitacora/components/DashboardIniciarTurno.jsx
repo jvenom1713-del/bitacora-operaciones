@@ -5,7 +5,7 @@ import CambioPersonalModal from './CambioPersonalModal';
 import GeneracionDiaria from './GeneracionDiaria';
 import { fetchGeneracionCoordinador, getFechaLocalChile } from '../../../shared/services/coordinadorService';
 import ErrorBoundary from '../../../shared/components/ErrorBoundary';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada, formatearFechaHoraLegible, obtenerNombreJefeActual } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
 import { MATRIZ_GUARDIAS, MOTIVOS_CONTINGENCIA, detectarContingenciasGuardia } from '../../../shared/constants/guardias';
 import { 
@@ -779,13 +779,13 @@ export default function DashboardIniciarTurno({
                     <div style="font-size: 5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
                     <div style="font-size: 11px; font-weight: 900; margin: 0.5px 0; color: #166534;">✔ APROBADO</div>
                     <div style="font-size: 6px; font-weight: 800; color: #0b2545; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
-                    <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${equipoTurno.jdt || 'Ariel Torres'}</div>
+                    <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${obtenerNombreJefeActual(usuarioActual, equipoTurno)}</div>
                     <div style="font-size: 5px; font-weight: 700; margin-top: 1px; color: #14532d;">${fechaImpresionDash}</div>
                   </div>
                 </td>
                 <td style="width: 35%; text-align: center; vertical-align: middle;">
                   <div style="border-bottom: 1px solid #475569; width: 130px; margin: 0 auto 2px auto;"></div>
-                  <div style="font-size: 9.5px; font-weight: 800; color: #0f172a;">${equipoTurno.jdt || 'Ariel Torres'}</div>
+                  <div style="font-size: 9.5px; font-weight: 800; color: #0f172a;">${obtenerNombreJefeActual(usuarioActual, equipoTurno)}</div>
                   <div style="font-size: 7.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Jefe de Turno (JDT) Autorizado</div>
                 </td>
               </tr>
@@ -4044,13 +4044,13 @@ ${extraHtml}
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-400">🕒 Guardado:</span>
                   <span className="font-mono font-bold text-amber-400">
-                    {new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} hrs
+                    {formatearFechaHoraLegible(new Date().toISOString())}
                   </span>
                 </div>
                 <span className="hidden sm:inline text-slate-700">|</span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-400">👤 Cerrado por:</span>
-                  <span className="font-bold text-emerald-400">{equipoTurno?.jdt || 'Jefe de Turno'}</span>
+                  <span className="font-bold text-emerald-400">{obtenerNombreJefeActual(usuarioActual, equipoTurno)}</span>
                 </div>
               </div>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 import { ArrowLeft, FileText, Zap, Layers, ShieldCheck, CheckCircle2, Edit3, Save, X, AlertTriangle, RefreshCw, BookOpen, Grid, Printer, Send, Lock, Unlock, ClipboardList, Clock, PlusCircle, Flame, Home } from 'lucide-react';
-import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo, isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
+import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, formatearSenalesParaTexto, obtenerInicioDiaOperativo, filtrarEventosPorDiaOperativo, isBorrador, isEnviado, isAprobada, formatearFechaHoraLegible, obtenerNombreJefeActual } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
 import { MATRIZ_GUARDIAS } from '../../../shared/constants/guardias';
 
@@ -696,13 +696,13 @@ export default function VistaConsultaHojaTurno({
                     <div style="font-size: 5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
                     <div style="font-size: 11px; font-weight: 900; margin: 0.5px 0; color: #166534;">✔ APROBADO</div>
                     <div style="font-size: 6px; font-weight: 800; color: #0b2545; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
-                    <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${equipoTurno?.jdt || 'Ariel Torres'}</div>
+                    <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${obtenerNombreJefeActual(usuarioActual, equipoTurnoState)}</div>
                     <div style="font-size: 5px; font-weight: 700; margin-top: 1px; color: #14532d;">${fechaImpresion}</div>
                   </div>
                 </td>
                 <td style="width: 35%; text-align: center; vertical-align: middle;">
                   <div style="border-bottom: 1px solid #475569; width: 130px; margin: 0 auto 2px auto;"></div>
-                  <div style="font-size: 9.5px; font-weight: 800; color: #0f172a;">${equipoTurno?.jdt || 'Ariel Torres'}</div>
+                  <div style="font-size: 9.5px; font-weight: 800; color: #0f172a;">${obtenerNombreJefeActual(usuarioActual, equipoTurnoState)}</div>
                   <div style="font-size: 7.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Jefe de Turno (JDT) Autorizado</div>
                 </td>
               </tr>
@@ -921,7 +921,7 @@ ${permisosTxt}
           tipo_turno: turnoBitacora,
           fecha_turno: fechaStr,
           password_jefe: claveConfirmada,
-          cerrado_por_nombre: usuarioActual?.nombre || equipoTurno?.jdt || 'Norman Galaz (Jefe de Turno)'
+          cerrado_por_nombre: obtenerNombreJefeActual(usuarioActual, equipoTurnoState)
         })
       });
 
@@ -2026,13 +2026,13 @@ ${permisosTxt}
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-400">🕒 Guardado:</span>
                   <span className="font-mono font-bold text-amber-400">
-                    {new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} hrs
+                    {formatearFechaHoraLegible(new Date().toISOString())}
                   </span>
                 </div>
                 <span className="hidden sm:inline text-slate-700">|</span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-400">👤 Cerrado por:</span>
-                  <span className="font-bold text-emerald-400">{equipoTurnoState?.jdt || 'Jefe de Turno'}</span>
+                  <span className="font-bold text-emerald-400">{obtenerNombreJefeActual(usuarioActual, equipoTurnoState)}</span>
                 </div>
               </div>
 

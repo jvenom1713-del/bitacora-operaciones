@@ -4,10 +4,10 @@ import {
   Search, Calendar, Filter, FileText, Download, ArrowLeft, 
   Sun, Moon, ShieldCheck, RefreshCw, Eye, X, ChevronRight, FileDown
 } from 'lucide-react';
-import { getApiUrl } from '../../../shared/apiConfig';
+import { getApiUrl, formatearFechaHoraLegible, obtenerNombreJefeActual } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
 
-export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
+export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usuarioActual }) {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [textoBusqueda, setTextoBusqueda] = useState('');
@@ -77,7 +77,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
 
     const folio = item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0');
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
-    const jefe = item.cerrado_por_nombre || 'Jefe de Turno';
+    const jefe = item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item);
     const turno = item.tipo_turno || 'DIURNO';
     const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
 
@@ -107,25 +107,8 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
       </tr>
     `;
 
-    const rawCierre = item.cerrado_el || item.fecha_cierre || item.created_at || item.actualizado_el;
-    let fechaHoraCierreStr = '';
-    if (rawCierre) {
-      try {
-        const dCierre = new Date(rawCierre);
-        if (!isNaN(dCierre.getTime())) {
-          const dia = String(dCierre.getDate()).padStart(2, '0');
-          const mes = String(dCierre.getMonth() + 1).padStart(2, '0');
-          const anio = dCierre.getFullYear();
-          const hrs = String(dCierre.getHours()).padStart(2, '0');
-          const mins = String(dCierre.getMinutes()).padStart(2, '0');
-          const secs = String(dCierre.getSeconds()).padStart(2, '0');
-          fechaHoraCierreStr = `${dia}/${mes}/${anio} ${hrs}:${mins}:${secs} hrs`;
-        }
-      } catch (_) {}
-    }
-    if (!fechaHoraCierreStr) {
-      fechaHoraCierreStr = `${fecha} 21:00:00 hrs`;
-    }
+    const rawCierre = item.hora_cierre || item.cerrado_el || item.fecha_cierre || item.created_at || item.actualizado_el;
+    const fechaHoraCierreStr = formatearFechaHoraLegible(rawCierre);
 
     container.innerHTML = `
       <div style="border: 2px solid #1e293b; border-radius: 8px; overflow: hidden; background: #ffffff; padding: 0; position: relative;">
@@ -498,12 +481,14 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                       <div className="flex items-center justify-between">
                         <span className="text-slate-400">🕒 Guardado / Cierre:</span>
                         <span className="font-mono font-bold text-amber-400">
-                          {item.hora_cierre || item.fecha_cierre || item.created_at || item.fecha || '17/08/2026 12:39 hrs'}
+                          {formatearFechaHoraLegible(item.hora_cierre || item.cerrado_el || item.fecha_cierre || item.created_at || item.fecha)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between border-t border-slate-800/60 pt-1">
                         <span className="text-slate-400">👤 Cerrado por:</span>
-                        <span className="font-bold text-emerald-400">{item.cerrado_por_nombre || item.jdt_nombre || 'Jefe de Turno'}</span>
+                        <span className="font-bold text-emerald-400">
+                          {item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item)}
+                        </span>
                       </div>
                     </div>
 
