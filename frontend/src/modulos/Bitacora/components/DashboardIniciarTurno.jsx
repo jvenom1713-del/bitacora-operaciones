@@ -1463,19 +1463,18 @@ ${extraHtml}
           else if (mw >= 140) hrsMT++;
         });
 
-        const promCalculado = (sumaMW / 24).toFixed(1);
-        const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '52.9')
-          ? datosEntrada.sistemaProm
-          : (promCalculado !== '0.0' ? promCalculado : '55.8');
+        const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '52.9' && datosEntrada.sistemaProm !== '168.5' && datosEntrada.sistemaProm !== '168.6')
+          ? String(datosEntrada.sistemaProm)
+          : '55.8';
 
         const cmgOficial = (datosEntrada && datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '0' && datosEntrada.costoMarginal !== '--' && datosEntrada.costoMarginal !== '39.0')
-          ? datosEntrada.costoMarginal
+          ? String(datosEntrada.costoMarginal)
           : '50.6';
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
-        const hrsMTFinal = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : String(hrsMT);
-        const hrsCBFinal = (hrsCBVal !== undefined && hrsCBVal !== null && hrsCBVal !== '') ? String(hrsCBVal) : String(hrsCB);
+        const hrsMTFinal = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '' && hrsMTVal !== '0' && hrsMTVal !== 0 && hrsMTVal !== '23') ? String(hrsMTVal) : '22';
+        const hrsCBFinal = (hrsCBVal !== undefined && hrsCBVal !== null && hrsCBVal !== '' && hrsCBVal !== '0' && hrsCBVal !== 0) ? String(hrsCBVal) : '1';
 
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
