@@ -696,7 +696,7 @@ export default function DashboardIniciarTurno({
                 </td>
                 <td style="width: 35%; text-align: center; vertical-align: middle;">
                   <div style="border-bottom: 1px solid #475569; width: 140px; margin: 0 auto 3px auto;"></div>
-                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">Jefe de Turno</div>
+                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">${jefeNombreActual}</div>
                   <div style="font-size: 7.5px; color: #64748b; font-weight: 800; text-transform: uppercase;">FIRMA JEFE DE TURNO</div>
                 </td>
               </tr>

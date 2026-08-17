@@ -581,7 +581,7 @@ export default function VistaConsultaHojaTurno({
                     SEÑALES FORZADAS
                   </div>
                   <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
-                    Sin señales forzadas registradas.
+                    ${textos?.senalesForzadas || textos?.senales_forzadas || 'Sin señales forzadas registradas.'}
                   </div>
                 </td>
 
@@ -639,7 +639,7 @@ export default function VistaConsultaHojaTurno({
                 </td>
                 <td style="width: 35%; text-align: center; vertical-align: middle;">
                   <div style="border-bottom: 1px solid #475569; width: 140px; margin: 0 auto 3px auto;"></div>
-                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">Jefe de Turno</div>
+                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">${jefeNombreActual}</div>
                   <div style="font-size: 7.5px; color: #64748b; font-weight: 800; text-transform: uppercase;">FIRMA JEFE DE TURNO</div>
                 </td>
               </tr>

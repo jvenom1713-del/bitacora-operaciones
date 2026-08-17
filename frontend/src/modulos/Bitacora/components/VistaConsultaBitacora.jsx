@@ -103,6 +103,18 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
     const turno = item.tipo_turno || 'DIURNO';
     const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
 
+    // Intentar leer KPIs reales del item; si no existen, usar fallbacks informativos
+    const sisPromVal = item.sistema_prom ? `${item.sistema_prom} USD/MWh` : (item.parametros_generacion?.sistemaProm ? `${item.parametros_generacion.sistemaProm} USD/MWh` : '-- USD/MWh');
+    const potVal     = item.pot_espera   ? `${item.pot_espera} MW`        : (item.parametros_generacion?.potEspera   ? `${item.parametros_generacion.potEspera} MW`   : '-- MW');
+    const hrsVal     = item.hrs_carga_base ? `${item.hrs_carga_base} hrs` : (item.parametros_generacion?.hrsCargaBase ? `${item.parametros_generacion.hrsCargaBase} hrs` : '-- hrs');
+    const minTecVal  = item.min_tecnico   ? `${item.min_tecnico} hrs`    : (item.parametros_generacion?.minTecnico   ? `${item.parametros_generacion.minTecnico} hrs`   : '-- hrs');
+    const cmgVal     = item.costo_marginal ? `${item.costo_marginal} USD/MWh` : (item.parametros_generacion?.costoMarginal ? `${item.parametros_generacion.costoMarginal} USD/MWh` : '-- USD/MWh');
+
+    // Extraer textos de secciones desde campos específicos o del contenido general
+    const fragText = item.fragilidades_texto || item.bop_texto || '';
+    const instrText = item.instrucciones_texto || item.observaciones_jefe || '';
+    const senalesText = item.senales_forzadas_texto || '';
+
     const partesF = fecha.split('-');
     const diaNum = partesF.length === 3 ? parseInt(partesF[2], 10) : new Date().getDate();
 
@@ -167,28 +179,28 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
               1. RESUMEN DE GENERACIÓN DIARIA:
             </div>
 
-            <!-- 5 TARJETAS KPIS HORIZONTALES -->
+            <!-- 5 TARJETAS KPIS HORIZONTALES (valores dinámicos del turno) -->
             <table style="width: 100%; border-collapse: separate; border-spacing: 4px; margin-bottom: 6px; text-align: center;">
               <tr>
                 <td style="width: 20%; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; padding: 4px 2px;">
                   <span style="color: #0284c7; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">SISTEMA PROM</span>
-                  <strong style="color: #0284c7; font-size: 9px; font-weight: 900; font-family: monospace;">55.8 USD/MWh</strong>
+                  <strong style="color: #0284c7; font-size: 9px; font-weight: 900; font-family: monospace;">${sisPromVal}</strong>
                 </td>
                 <td style="width: 20%; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 4px; padding: 4px 2px;">
                   <span style="color: #16a34a; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">POT. ESPERA</span>
-                  <strong style="color: #16a34a; font-size: 9px; font-weight: 900; font-family: monospace;">4046 MW</strong>
+                  <strong style="color: #16a34a; font-size: 9px; font-weight: 900; font-family: monospace;">${potVal}</strong>
                 </td>
                 <td style="width: 20%; background: #fef9c3; border: 1px solid #fef08a; border-radius: 4px; padding: 4px 2px;">
                   <span style="color: #d97706; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">HRS CARGA BASE</span>
-                  <strong style="color: #d97706; font-size: 9px; font-weight: 900; font-family: monospace;">1 hrs</strong>
+                  <strong style="color: #d97706; font-size: 9px; font-weight: 900; font-family: monospace;">${hrsVal}</strong>
                 </td>
                 <td style="width: 20%; background: #f3e8ff; border: 1px solid #e9d5ff; border-radius: 4px; padding: 4px 2px;">
                   <span style="color: #9333ea; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">MIN. TÉCNICO</span>
-                  <strong style="color: #9333ea; font-size: 9px; font-weight: 900; font-family: monospace;">22 hrs</strong>
+                  <strong style="color: #9333ea; font-size: 9px; font-weight: 900; font-family: monospace;">${minTecVal}</strong>
                 </td>
                 <td style="width: 20%; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; padding: 4px 2px;">
                   <span style="color: #0284c7; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">COSTO MARGINAL</span>
-                  <strong style="color: #0284c7; font-size: 9px; font-weight: 900; font-family: monospace;">50.6 USD/MWh</strong>
+                  <strong style="color: #0284c7; font-size: 9px; font-weight: 900; font-family: monospace;">${cmgVal}</strong>
                 </td>
               </tr>
             </table>
@@ -214,7 +226,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                     FRAGILIDADES OPERACIONALES
                   </div>
                   <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
-                    ${item.fragilidades_texto || 'Sin fragilidades operacionales registradas.'}
+                    ${fragText || 'Sin fragilidades operacionales registradas.'}
                   </div>
                 </td>
 
@@ -224,7 +236,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                     INSTRUCCIONES OPERACIONALES
                   </div>
                   <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
-                    ${item.instrucciones_texto || 'Sin instrucciones operacionales registradas.'}
+                    ${instrText || 'Sin instrucciones operacionales registradas.'}
                   </div>
                 </td>
               </tr>
@@ -236,7 +248,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                     SEÑALES FORZADAS
                   </div>
                   <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
-                    ${item.senales_forzadas_texto || 'Sin señales forzadas registradas.'}
+                    ${senalesText || 'Sin señales forzadas registradas.'}
                   </div>
                 </td>
 
@@ -285,7 +297,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                 </td>
                 <td style="width: 35%; text-align: center; vertical-align: middle;">
                   <div style="border-bottom: 1px solid #475569; width: 140px; margin: 0 auto 3px auto;"></div>
-                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">Jefe de Turno</div>
+                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">${jefe}</div>
                   <div style="font-size: 7.5px; color: #64748b; font-weight: 800; text-transform: uppercase;">FIRMA JEFE DE TURNO</div>
                 </td>
               </tr>
