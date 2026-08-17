@@ -458,7 +458,7 @@ export default function DashboardIniciarTurno({
             fecha: new Date().toISOString().slice(0, 10),
             turno: tObj?.tipo_turno || 'DIURNO',
             operador: usuarioActual?.nombre || 'Operador',
-            jefe_turno: 'Jefe de Turno',
+            jefe_turno: obtenerNombreJefeActual(usuarioActual, equipoTurnoState),
             estado: 'enviado',
             contenido: obsTexto || 'Solicitud de cierre enviada al Jefe de Turno.'
           }]);

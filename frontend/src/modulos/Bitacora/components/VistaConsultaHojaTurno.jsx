@@ -690,7 +690,7 @@ export default function VistaConsultaHojaTurno({
             fecha: new Date().toISOString().slice(0, 10),
             turno: turnoActivo?.tipo_turno || 'DIURNO',
             operador: usuarioActual?.nombre || 'Operador',
-            jefe_turno: 'Jefe de Turno',
+            jefe_turno: obtenerNombreJefeActual(usuarioActual, equipoTurnoState),
             estado: 'enviado',
             contenido: 'Solicitud de cierre enviada por el operador.'
           }]);

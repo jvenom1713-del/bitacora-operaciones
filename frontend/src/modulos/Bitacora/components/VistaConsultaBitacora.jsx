@@ -7,6 +7,22 @@ import {
 import { getApiUrl, formatearFechaHoraLegible, obtenerNombreJefeActual } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
 
+const resolverNombreJefeOficial = (item, usuarioActual) => {
+  const esEspecifico = (n) =>
+    n &&
+    typeof n === 'string' &&
+    n.trim() &&
+    !['Jefe de Turno', 'aprobada', 'enviado', 'CERRADO', 'ABIERTO', 'Sin JDT', 'Operador', '-'].includes(n.trim());
+
+  if (esEspecifico(item?.cerrado_por_nombre)) return item.cerrado_por_nombre.trim();
+  if (esEspecifico(item?.jefe_turno)) return item.jefe_turno.trim();
+  if (esEspecifico(item?.jdt_nombre)) return item.jdt_nombre.trim();
+  if (esEspecifico(item?.jefe_nombre)) return item.jefe_nombre.trim();
+  if (esEspecifico(item?.equipo_turno?.jdt)) return item.equipo_turno.jdt.trim();
+
+  return obtenerNombreJefeActual(usuarioActual, item?.equipo_turno || item);
+};
+
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usuarioActual }) {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -31,7 +47,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
           folio: item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0'),
           fecha_turno: item.fecha || item.fecha_turno,
           tipo_turno: item.turno || item.tipo_turno,
-          cerrado_por_nombre: item.jefe_turno || item.cerrado_por_nombre,
+          cerrado_por_nombre: resolverNombreJefeOficial(item, usuarioActual),
           operador_nombre: item.operador || item.operador_nombre,
           estado: item.estado || 'CERRADO',
           resumen_operativo: item.contenido || item.resumen_operativo,
@@ -77,7 +93,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
 
     const folio = item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0');
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
-    const jefe = item.jefe_turno || item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item);
+    const jefe = resolverNombreJefeOficial(item, usuarioActual);
     const turno = item.tipo_turno || 'DIURNO';
     const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
 
@@ -490,7 +506,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                       <div className="flex items-center justify-between border-t border-slate-800/60 pt-1">
                         <span className="text-slate-400">👤 Cerrado por:</span>
                         <span className="font-bold text-emerald-400">
-                          {item.jefe_turno || item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item)}
+                          {resolverNombreJefeOficial(item, usuarioActual)}
                         </span>
                       </div>
                     </div>
