@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, LogOut, Lock, Clock, AlertCircle, X, FileText, FileCheck, ShieldAlert, Flame, FlaskConical } from 'lucide-react';
+import fotoPowerPlant from '/power_plant_bg.png';
+import { Sun, Moon, LogOut, Lock, Clock, AlertCircle, X, FileText, FileCheck, ShieldAlert, Flame, FlaskConical, RefreshCw } from 'lucide-react';
 import { isBorrador, isEnviado, isAprobada } from '../../../shared/apiConfig';
 
 export default function MenuOperador({ 
@@ -17,7 +18,7 @@ export default function MenuOperador({
   const esTurnoCerrado = isAprobada(turnoActivo?.estado);
   const emailUsuario = usuarioActual?.email || 'jalbornoz@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Operador Sala de Control';
-  const folioTurno = String(turnoActivo?.folio || '0001').padStart(4, '0');
+  const folioTurno = String(turnoActivo?.folio || turnoActual?.folio || '0001').padStart(4, '0');
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
   const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
@@ -81,8 +82,24 @@ export default function MenuOperador({
 
   const infoTurno = obtenerInfoTurnoActual();
 
-  if (!turnoActual) {
-    return <div style={{ color: 'white', padding: '20px' }}>Cargando o inicializando turno...</div>;
+  if (!turnoActual && !turnoActivo) {
+    return (
+      <div className={`relative min-h-screen w-full flex items-center justify-center p-4 ${
+        modoNocturno ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-800'
+      }`}>
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
+          style={{ backgroundImage: `url("${fotoPowerPlant}")` }}
+        />
+        <div className={`absolute inset-0 z-0 backdrop-blur-sm ${
+          modoNocturno ? 'bg-slate-950/80' : 'bg-slate-900/40'
+        }`} />
+        <div className="relative z-10 bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl flex items-center gap-3 text-sm text-slate-200">
+          <RefreshCw className="w-5 h-5 text-orange-500 animate-spin" />
+          <span>Cargando datos de la Sala de Control...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

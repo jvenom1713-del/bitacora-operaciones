@@ -1278,16 +1278,18 @@ export default function App() {
   if (vistaActual === 'MENU_JEFE') {
     return (
       <>
-        <MenuJefeTurno 
-          usuarioActual={usuarioActual}
-          turnoActivo={turnoActivo}
-          onVerBitacoraEnCurso={() => setVistaActual('CONSULTA_HOJA_TURNO')}
-          onBuscarBitacoras={() => setVistaActual('CONSULTA_BITACORA')}
-          onNavegarAnalisisQuimicos={() => setVistaActual('ANALISIS_QUIMICOS')}
-          onSalir={() => setVistaActual('PORTADA')}
-          modoNocturno={modoNocturno}
-          setModoNocturno={setModoNocturno}
-        />
+        <ErrorBoundary title="Error al cargar el Menú del Jefe de Turno" onReset={volverMenuGenerico}>
+          <MenuJefeTurno 
+            usuarioActual={usuarioActual}
+            turnoActivo={turnoActivo}
+            onVerBitacoraEnCurso={() => setVistaActual('CONSULTA_HOJA_TURNO')}
+            onBuscarBitacoras={() => setVistaActual('CONSULTA_BITACORA')}
+            onNavegarAnalisisQuimicos={() => setVistaActual('ANALISIS_QUIMICOS')}
+            onSalir={() => setVistaActual('PORTADA')}
+            modoNocturno={modoNocturno}
+            setModoNocturno={setModoNocturno}
+          />
+        </ErrorBoundary>
         {demoBarra}
       </>
     );
@@ -1296,37 +1298,39 @@ export default function App() {
   if (vistaActual === 'MENU_OPERADOR') {
     return (
       <>
-        <MenuOperador 
-          usuarioActual={usuarioActual}
-          turnoActivo={turnoActivo}
-          turnoActual={turnoActual}
-          onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE'); }}
-          onNavegarBitacora={(accion) => {
-            if (accion === 'ANALISIS_QUIMICOS') {
-              setVistaActual('ANALISIS_QUIMICOS');
-            } else if (accion === 'MENU_JEFE') {
-              setVistaActual('MENU_JEFE');
-            } else if (accion === 'ABRIR_TURNO') {
-              setTabInicialDashboard('EQUIPOS');
-              setVistaActual('ABRIR_TURNO_MENU');
-            } else if (accion === 'APROBAR_CIERRE') {
-              setTabInicialDashboard('CIERRE_TURNO');
-              setVistaActual('BITACORA_DASHBOARD');
-            } else if (accion === 'HOJAS_TURNO') {
-              setVistaActual('CONSULTA_HOJA_TURNO');
-            } else if (accion === 'BUSQUEDA') {
-              setVistaActual('CONSULTA_BITACORA');
-            } else if (accion === 'PERMISOS_CALIENTE') {
-              setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE');
-            } else {
-              setTabInicialDashboard('BITACORA_DIARIA');
-              setVistaActual('BITACORA_DASHBOARD');
-            }
-          }}
-          onSalir={() => setVistaActual('PORTADA')}
-          modoNocturno={modoNocturno}
-          setModoNocturno={setModoNocturno}
-        />
+        <ErrorBoundary title="Error al cargar la Sala de Control (Menú Operador)" onReset={volverMenuGenerico}>
+          <MenuOperador 
+            usuarioActual={usuarioActual}
+            turnoActivo={turnoActivo}
+            turnoActual={turnoActual}
+            onAbrirPermisosCaliente={() => { setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE'); }}
+            onNavegarBitacora={(accion) => {
+              if (accion === 'ANALISIS_QUIMICOS') {
+                setVistaActual('ANALISIS_QUIMICOS');
+              } else if (accion === 'MENU_JEFE') {
+                setVistaActual('MENU_JEFE');
+              } else if (accion === 'ABRIR_TURNO') {
+                setTabInicialDashboard('EQUIPOS');
+                setVistaActual('ABRIR_TURNO_MENU');
+              } else if (accion === 'APROBAR_CIERRE') {
+                setTabInicialDashboard('CIERRE_TURNO');
+                setVistaActual('BITACORA_DASHBOARD');
+              } else if (accion === 'HOJAS_TURNO') {
+                setVistaActual('CONSULTA_HOJA_TURNO');
+              } else if (accion === 'BUSQUEDA') {
+                setVistaActual('CONSULTA_BITACORA');
+              } else if (accion === 'PERMISOS_CALIENTE') {
+                setVistaAnteriorPermisos('MENU_OPERADOR'); setVistaActual('PERMISOS_CALIENTE');
+              } else {
+                setTabInicialDashboard('BITACORA_DIARIA');
+                setVistaActual('BITACORA_DASHBOARD');
+              }
+            }}
+            onSalir={() => setVistaActual('PORTADA')}
+            modoNocturno={modoNocturno}
+            setModoNocturno={setModoNocturno}
+          />
+        </ErrorBoundary>
         {mostrarDrawerPermisos && (
           <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex justify-end">
             <div className="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full flex flex-col p-6 shadow-2xl overflow-y-auto">
