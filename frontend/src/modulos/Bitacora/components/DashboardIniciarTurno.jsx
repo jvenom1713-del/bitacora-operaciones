@@ -561,18 +561,6 @@ export default function DashboardIniciarTurno({
 
     container.innerHTML = `
       <div style="border: 2px solid #0f172a; border-radius: 6px; overflow: hidden; font-size: 10px; color: #1e293b; background: #ffffff; position: relative;">
-        <!-- SELLO DE AGUA DIAGONAL CON FECHA Y HORA DE CIERRE -->
-        <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-32deg); font-family: sans-serif; text-align: center; pointer-events: none; z-index: 99; width: 85%;">
-          <div style="border: 4px dashed rgba(220, 38, 38, 0.28); color: rgba(220, 38, 38, 0.28); padding: 14px 20px; border-radius: 12px; display: inline-block; background: rgba(254, 226, 226, 0.12);">
-            <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;">
-              ✔ APROBADO Y CERRADO
-            </div>
-            <div style="font-size: 12px; font-weight: 800; letter-spacing: 1px;">
-              FECHA / HORA CIERRE: ${fechaImpresionDash}
-            </div>
-          </div>
-        </div>
-        
         <!-- ENCABEZADO EJECUTIVO (COMPACTO) -->
         <div style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); color: #ffffff; padding: 12px 16px; border-bottom: 3px solid #f59e0b;">
           <table style="width: 100%; border-collapse: collapse;">
@@ -775,18 +763,27 @@ export default function DashboardIniciarTurno({
             </table>
           </div>
 
-          <!-- 4. FIRMA Y CONFORMIDAD EJECUTIVA -->
+          <!-- 4. FIRMA, SELLO OFICIAL Y CONFORMIDAD EJECUTIVA -->
           <div style="margin-top: 10px; border-top: 1.5px solid #cbd5e1; padding-top: 8px;">
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
-                <td style="width: 60%; vertical-align: top;">
+                <td style="width: 35%; vertical-align: middle;">
                   <div style="font-size: 8px; color: #64748b;">
-                    <strong>Emisión Informe Ejecutivo:</strong> ${fechaImpresion}<br/>
-                    Sistema Integrado de Operaciones y Bitácora Electrónica • Generadora Metropolitana
+                    <strong>Emisión Informe Ejecutivo:</strong> ${fechaImpresionDash}<br/>
+                    Sistema Integrado de Operaciones • Generadora Metropolitana
                   </div>
                 </td>
-                <td style="width: 40%; text-align: center; vertical-align: bottom;">
-                  <div style="border-bottom: 1px solid #475569; width: 140px; margin: 0 auto 2px auto;"></div>
+                <td style="width: 30%; text-align: center; vertical-align: middle;">
+                  <!-- SELLO OFICIAL CIRCULAR REDONDO -->
+                  <div style="border: 3px double #166534; border-radius: 50%; width: 88px; height: 88px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #15803d; background: #f0fdf4; font-family: sans-serif; box-sizing: border-box; padding: 3px;">
+                    <div style="font-size: 5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
+                    <div style="font-size: 12px; font-weight: 900; margin: 1px 0; color: #166534;">✔</div>
+                    <div style="font-size: 7px; font-weight: 900; letter-spacing: 0.3px; text-transform: uppercase; line-height: 1;">APROBADO Y CERRADO</div>
+                    <div style="font-size: 5px; font-weight: 700; margin-top: 2px; color: #14532d;">${fechaImpresionDash}</div>
+                  </div>
+                </td>
+                <td style="width: 35%; text-align: center; vertical-align: middle;">
+                  <div style="border-bottom: 1px solid #475569; width: 130px; margin: 0 auto 2px auto;"></div>
                   <div style="font-size: 9.5px; font-weight: 800; color: #0f172a;">${equipoTurno.jdt || 'Ariel Torres'}</div>
                   <div style="font-size: 7.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Jefe de Turno (JDT) Autorizado</div>
                 </td>
