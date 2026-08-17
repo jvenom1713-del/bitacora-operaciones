@@ -1207,8 +1207,10 @@ export default function App() {
 
     if (esJefeOAdmin) {
       setVistaActual('MENU_JEFE');
+      navigate('/menu-jefe');
     } else {
       setVistaActual('MENU_OPERADOR');
+      navigate('/menu-operador');
     }
   };
 
@@ -1219,10 +1221,12 @@ export default function App() {
       const storedRol = localStorage.getItem('rol_activo');
       if (storedOrigen === 'MENU_JEFE' || storedRol === 'Jefe de Turno' || storedRol === 'Jefe') {
         setVistaActual('MENU_JEFE');
+        navigate('/menu-jefe');
         return;
       }
       if (storedOrigen === 'MENU_OPERADOR' || storedRol === 'Operador') {
         setVistaActual('MENU_OPERADOR');
+        navigate('/menu-operador');
         return;
       }
     } catch (_) {}
@@ -1240,7 +1244,10 @@ export default function App() {
     const esJefeOAdmin = (u && (u.rol_codigo === 'JEFE_TURNO' || u.rol_codigo === 'ADMIN' || u.rol_nombre?.toLowerCase()?.includes('jefe'))) ||
                          JEFES_EMAILS.includes(emailTrim) ||
                          emailTrim.includes('jefe');
-    setVistaActual(esJefeOAdmin ? 'MENU_JEFE' : 'MENU_OPERADOR');
+
+    const target = esJefeOAdmin ? 'MENU_JEFE' : 'MENU_OPERADOR';
+    setVistaActual(target);
+    navigate(esJefeOAdmin ? '/menu-jefe' : '/menu-operador');
   };
 
   // Control de Vistas
