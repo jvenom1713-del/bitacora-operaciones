@@ -111,163 +111,166 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
     const fechaHoraCierreStr = formatearFechaHoraLegible(rawCierre);
 
     container.innerHTML = `
-      <div style="border: 2px solid #1e293b; border-radius: 8px; overflow: hidden; background: #ffffff; padding: 0; position: relative;">
-        <!-- BANNER DE ENCABEZADO -->
-        <div style="background: linear-gradient(135deg, #0b2545 0%, #134074 100%); color: #ffffff; padding: 14px 18px; border-bottom: 3px solid #ea580c;">
+      <div style="border: 2px solid #0b2545; border-radius: 6px; overflow: hidden; font-size: 10px; color: #1e293b; background: #ffffff; position: relative;">
+        <!-- ENCABEZADO EJECUTIVO (IDÉNTICO A LA IMAGEN) -->
+        <div style="background: #0b2545; color: #ffffff; padding: 10px 16px; border-bottom: 3.5px solid #ea580c;">
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
-              <td>
-                <div style="font-size: 9px; font-weight: 800; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px;">
-                  <span style="color: #ffffff;">G</span>METROPOLITANA — REGISTRO DE TURNO
+              <td style="vertical-align: middle;">
+                <div style="font-size: 8.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                  <span style="color: #f59e0b; font-weight: 900;">G</span><span style="color: #ffffff;">METROPOLITANA — REGISTRO DE TURNO</span>
                 </div>
-                <div style="font-size: 16px; font-weight: 900; color: #ffffff; text-transform: uppercase; margin: 2px 0;">
+                <div style="font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff; margin-bottom: 2px;">
                   CENTRAL NUEVA RENCA
                 </div>
-                <div style="font-size: 10px; color: #93c5fd;">
-                  Fecha: ${fecha} | Turno: ${turno} | Cierre: ${fechaHoraCierreStr}
+                <div style="font-size: 8.5px; color: #94a3b8; font-weight: 600;">
+                  Fecha: ${fecha} | Turno: ${turno} | Cierre: ${fechaHoraCierreStr} hrs
                 </div>
               </td>
-              <td style="text-align: right; vertical-align: middle;">
-                <div style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 6px; display: inline-block;">
-                  <div style="font-size: 8px; color: #cbd5e1; font-weight: 700; text-transform: uppercase;">FOLIO</div>
-                  <div style="font-size: 15px; font-weight: 900; color: #f59e0b; font-family: monospace;">${folio}</div>
+              <td style="text-align: right; vertical-align: middle; width: 110px;">
+                <div style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.3); padding: 4px 10px; border-radius: 6px; text-align: center;">
+                  <div style="font-size: 7.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">FOLIO</div>
+                  <div style="font-size: 14px; font-weight: 900; color: #f59e0b; font-family: monospace; line-height: 1.1;">${folio}</div>
                 </div>
               </td>
             </tr>
           </table>
         </div>
 
-        <!-- SECCIONES DESTACADAS -->
-        <div style="padding: 16px 18px;">
-          <!-- 1. RESUMEN DE GENERACIÓN DIARIA: -->
-          <div style="background: #0369a1; color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 6px;">
-            1. RESUMEN DE GENERACIÓN DIARIA:
-          </div>
-          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-bottom: 10px;">
-            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 9.5px; font-weight: bold;">
+        <div style="padding: 10px 14px; font-size: 9.5px; line-height: 1.3;">
+
+          <!-- 1. RESUMEN DE GENERACIÓN DIARIA -->
+          <div style="margin-bottom: 10px;">
+            <div style="background: #0369a1; color: #ffffff; font-size: 9.5px; font-weight: 900; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; margin-bottom: 6px;">
+              1. RESUMEN DE GENERACIÓN DIARIA:
+            </div>
+
+            <!-- 5 TARJETAS KPIS HORIZONTALES -->
+            <table style="width: 100%; border-collapse: separate; border-spacing: 4px; margin-bottom: 6px; text-align: center;">
               <tr>
-                <td style="padding: 4px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; color: #0369a1;">
-                  <span style="font-size: 8px; color: #0284c7; display: block; text-transform: uppercase;">SISTEMA PROM</span>
-                  55.8 USD/MWh
+                <td style="width: 20%; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; padding: 4px 2px;">
+                  <span style="color: #0284c7; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">SISTEMA PROM</span>
+                  <strong style="color: #0284c7; font-size: 9px; font-weight: 900; font-family: monospace;">55.8 USD/MWh</strong>
                 </td>
-                <td style="padding: 4px; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 4px; color: #15803d;">
-                  <span style="font-size: 8px; color: #16a34a; display: block; text-transform: uppercase;">POT. ESPERA</span>
-                  4046 MW
+                <td style="width: 20%; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 4px; padding: 4px 2px;">
+                  <span style="color: #16a34a; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">POT. ESPERA</span>
+                  <strong style="color: #16a34a; font-size: 9px; font-weight: 900; font-family: monospace;">4046 MW</strong>
                 </td>
-                <td style="padding: 4px; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; color: #b45309;">
-                  <span style="font-size: 8px; color: #d97706; display: block; text-transform: uppercase;">HRS CARGA BASE</span>
-                  1 hrs
+                <td style="width: 20%; background: #fef9c3; border: 1px solid #fef08a; border-radius: 4px; padding: 4px 2px;">
+                  <span style="color: #d97706; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">HRS CARGA BASE</span>
+                  <strong style="color: #d97706; font-size: 9px; font-weight: 900; font-family: monospace;">1 hrs</strong>
                 </td>
-                <td style="padding: 4px; background: #f3e8ff; border: 1px solid #e9d5ff; border-radius: 4px; color: #7e22ce;">
-                  <span style="font-size: 8px; color: #9333ea; display: block; text-transform: uppercase;">MIN. TÉCNICO</span>
-                  22 hrs
+                <td style="width: 20%; background: #f3e8ff; border: 1px solid #e9d5ff; border-radius: 4px; padding: 4px 2px;">
+                  <span style="color: #9333ea; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">MIN. TÉCNICO</span>
+                  <strong style="color: #9333ea; font-size: 9px; font-weight: 900; font-family: monospace;">22 hrs</strong>
                 </td>
-                <td style="padding: 4px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; color: #0369a1;">
-                  <span style="font-size: 8px; color: #0284c7; display: block; text-transform: uppercase;">COSTO MARGINAL</span>
-                  50.6 USD/MWh
+                <td style="width: 20%; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; padding: 4px 2px;">
+                  <span style="color: #0284c7; font-size: 7px; font-weight: 900; display: block; text-transform: uppercase;">COSTO MARGINAL</span>
+                  <strong style="color: #0284c7; font-size: 9px; font-weight: 900; font-family: monospace;">50.6 USD/MWh</strong>
                 </td>
               </tr>
             </table>
-          </div>
-          <div style="font-size: 11px; color: #1e293b; line-height: 1.5; white-space: pre-line; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            Día ${diaNum}: ${resumen}
+
+            <!-- CAJA DE NOVEDADES DE BITÁCORA DIARIA -->
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; font-size: 8.5px; color: #1e293b; line-height: 1.4; min-height: 40px; white-space: pre-line;">
+              <strong style="color: #0369a1; display: inline-block; margin-right: 4px;">Día ${diaNum}:</strong>${resumen || 'Sin observaciones registradas.'}
+            </div>
           </div>
 
-          <!-- 2. CELDAS ESTRUCTURADAS DE NOVEDADES OPERACIONALES E INSTRUCCIONES -->
-          <div style="background: #0b2545; color: #ffffff; font-size: 10px; font-weight: 900; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; margin-bottom: 8px;">
-            2. DETALLE DE FRAGILIDADES, INSTRUCCIONES Y SEÑALES DEL TURNO
-          </div>
+          <!-- 2. DETALLE DE FRAGILIDADES, INSTRUCCIONES Y SEÑALES DEL TURNO -->
+          <div style="margin-bottom: 10px;">
+            <div style="background: #0b2545; color: #ffffff; font-size: 9.5px; font-weight: 900; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; margin-bottom: 6px;">
+              2. DETALLE DE FRAGILIDADES, INSTRUCCIONES Y SEÑALES DEL TURNO
+            </div>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9.5px;">
-            <tr>
-              <td style="width: 50%; vertical-align: top; padding-right: 4px;">
-                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; background: #f8fafc;">
-                  <div style="font-weight: 900; color: #d97706; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 5px; font-size: 9.5px; text-transform: uppercase;">
+            <!-- GRID 2X2 DE CELDAS ESTRUCTURADAS -->
+            <table style="width: 100%; border-collapse: separate; border-spacing: 6px; margin-top: -2px;">
+              <tr>
+                <!-- CELDA 1: FRAGILIDADES OPERACIONALES -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #d97706; border-bottom: 1.5px solid #fed7aa; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
                     FRAGILIDADES OPERACIONALES
                   </div>
-                  <div style="font-family: monospace; font-size: 9px; color: #334155; white-space: pre-line; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
                     ${item.fragilidades_texto || 'Sin fragilidades operacionales registradas.'}
                   </div>
-                </div>
-              </td>
-              <td style="width: 50%; vertical-align: top; padding-left: 4px;">
-                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; background: #f8fafc;">
-                  <div style="font-weight: 900; color: #0284c7; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 5px; font-size: 9.5px; text-transform: uppercase;">
+                </td>
+
+                <!-- CELDA 2: INSTRUCCIONES OPERACIONALES -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #0284c7; border-bottom: 1.5px solid #bae6fd; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
                     INSTRUCCIONES OPERACIONALES
                   </div>
-                  <div style="font-family: monospace; font-size: 9px; color: #334155; white-space: pre-line; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
                     ${item.instrucciones_texto || 'Sin instrucciones operacionales registradas.'}
                   </div>
-                </div>
-              </td>
-            </tr>
-          </table>
+                </td>
+              </tr>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px;">
-            <tr>
-              <td style="width: 50%; vertical-align: top; padding-right: 4px;">
-                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; background: #f8fafc;">
-                  <div style="font-weight: 900; color: #dc2626; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 5px; font-size: 9.5px; text-transform: uppercase;">
+              <tr>
+                <!-- CELDA 3: SEÑALES FORZADAS -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #dc2626; border-bottom: 1.5px solid #fecaca; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
                     SEÑALES FORZADAS
                   </div>
-                  <div style="font-family: monospace; font-size: 9px; color: #334155; white-space: pre-line; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
                     ${item.senales_forzadas_texto || 'Sin señales forzadas registradas.'}
                   </div>
-                </div>
-              </td>
-              <td style="width: 50%; vertical-align: top; padding-left: 4px;">
-                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; background: #fff7ed;">
-                  <div style="font-weight: 900; color: #ea580c; border-bottom: 1.5px solid #fed7aa; padding-bottom: 3px; margin-bottom: 5px; font-size: 9.5px; text-transform: uppercase;">
+                </td>
+
+                <!-- CELDA 4: PERMISOS DE TRABAJO EN CALIENTE ABIERTOS -->
+                <td style="width: 50%; vertical-align: top; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #ea580c; border-bottom: 1.5px solid #fed7aa; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
                     PERMISOS DE TRABAJO EN CALIENTE ABIERTOS
                   </div>
-                  <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 8.5px; background: #ffffff; border: 1px solid #fed7aa; border-radius: 4px;">
+                  <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 7.5px; background: #ffffff; border: 1px solid #fed7aa; border-radius: 3px;">
                     <thead>
                       <tr style="background: #ffedd5; color: #9a3412; font-weight: 800;">
-                        <th style="padding: 3px 5px; border: 1px solid #fed7aa;">N° Permiso</th>
-                        <th style="padding: 3px 5px; border: 1px solid #fed7aa;">Ubicación</th>
-                        <th style="padding: 3px 5px; border: 1px solid #fed7aa;">Solicitante</th>
-                        <th style="padding: 3px 5px; border: 1px solid #fed7aa;">Estado</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">N° Permiso</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">Ubicación</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">Solicitante</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">Estado</th>
                       </tr>
                     </thead>
                     <tbody>
                       ${filasPermisos}
                     </tbody>
                   </table>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </div>
+                </td>
+              </tr>
+            </table>
+          </div>
 
-        <!-- FIRMA, TIMBRE OFICIAL REDONDO Y PIE DE PÁGINA -->
-        <div style="padding: 14px 18px; background: #ffffff; border-top: 1.5px solid #cbd5e1;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="width: 35%; vertical-align: middle;">
-                <div style="font-size: 8px; color: #64748b;">
-                  Documento Oficial generado desde el Sistema Integrado de Operaciones.<br/>
-                  Central Nueva Renca • Generadora Metropolitana
-                </div>
-              </td>
-              <td style="width: 30%; text-align: center; vertical-align: middle;">
-                <!-- SELLO OFICIAL CIRCULAR REDONDO DE AGUA -->
-                <div style="border: 3px double #15803d; border-radius: 50%; width: 115px; height: 115px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #166534; background: #ecfdf5; font-family: 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box; padding: 6px; box-shadow: inset 0 0 0 1px #86efac;">
-                  <div style="font-size: 6.5px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: #166534; line-height: 1.1;">GENERADORA METROPOLITANA</div>
-                  <div style="font-size: 12px; font-weight: 900; margin: 1px 0; color: #15803d; letter-spacing: 0.5px;">✔ APROBADO</div>
-                  <div style="font-size: 7px; font-weight: 900; color: #0f172a; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
-                  <div style="font-size: 8.5px; font-weight: 900; color: #0b2545; line-height: 1.1; max-width: 100px; text-align: center; word-break: break-word;">${jefe}</div>
-                  <div style="font-size: 6.5px; font-weight: 800; margin-top: 2px; color: #166534; font-family: monospace;">${fechaHoraCierreStr}</div>
-                </div>
-              </td>
-              <td style="width: 35%; text-align: center; vertical-align: middle;">
-                <div style="border-bottom: 1px solid #64748b; width: 140px; margin: 0 auto 4px auto;"></div>
-                <div style="font-size: 10px; font-weight: 800; color: #0f172a;">${jefe}</div>
-                <div style="font-size: 8px; color: #64748b; font-weight: 700; text-transform: uppercase;">Firma Jefe de Turno</div>
-              </td>
-            </tr>
-          </table>
-        </div>
+          <!-- 4. FIRMA, SELLO OFICIAL Y CONFORMIDAD EJECUTIVA -->
+          <div style="margin-top: 12px; border-top: 1.5px solid #cbd5e1; padding-top: 10px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="width: 35%; vertical-align: middle;">
+                  <div style="font-size: 8px; color: #64748b; line-height: 1.3;">
+                    Documento Oficial generado desde el Sistema Integrado de Operaciones.<br/>
+                    Central Nueva Renca • Generadora Metropolitana
+                  </div>
+                </td>
+                <td style="width: 30%; text-align: center; vertical-align: middle;">
+                  <!-- SELLO OFICIAL CIRCULAR REDONDO DE AGUA (VERDE EXACTO A LA IMAGEN) -->
+                  <div style="border: 3px double #15803d; border-radius: 50%; width: 115px; height: 115px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #14532d; background: #86efac; font-family: 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box; padding: 6px; box-shadow: inset 0 0 0 1.5px #4ade80;">
+                    <div style="font-size: 6.5px; font-weight: 900; letter-spacing: 0.3px; text-transform: uppercase; color: #14532d; line-height: 1.1;">GENERADORA<br/>METROPOLITANA</div>
+                    <div style="font-size: 11.5px; font-weight: 900; margin: 1px 0; color: #15803d; letter-spacing: 0.5px;">✓ APROBADO</div>
+                    <div style="font-size: 6.5px; font-weight: 900; color: #0b2545; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
+                    <div style="font-size: 8px; font-weight: 900; color: #0f172a; line-height: 1.1; max-width: 95px; text-align: center; word-break: break-word;">${jefe}</div>
+                    <div style="font-size: 6px; font-weight: 800; margin-top: 2px; color: #14532d; font-family: monospace;">${fechaHoraCierreStr}</div>
+                  </div>
+                </td>
+                <td style="width: 35%; text-align: center; vertical-align: middle;">
+                  <div style="border-bottom: 1px solid #475569; width: 140px; margin: 0 auto 3px auto;"></div>
+                  <div style="font-size: 9.5px; font-weight: 900; color: #0f172a;">Jefe de Turno</div>
+                  <div style="font-size: 7.5px; color: #64748b; font-weight: 800; text-transform: uppercase;">FIRMA JEFE DE TURNO</div>
+                </td>
+              </tr>
+            </table>
+          </div>
 
+        </div>
       </div>
     `;
 
