@@ -99,17 +99,25 @@ export default function AbrirTurnoMenu({
   const rotacionActualObj = rotacionesLista.find(r => normKey(r.nombre) === normKey(rotacionSeleccionada)) || rotacionesLista[2];
 
   const handleConfirmarReemplazoEquipo = (nuevoEquipo) => {
+    if (!nuevoEquipo) return;
     setRotacionesLista(prev => prev.map(r => {
       if (r.nombre === rotacionSeleccionada) {
         return {
           ...r,
-          jefe: { ...r.jefe, nombre: nuevoEquipo.jdt },
-          operadorSala: { ...r.operadorSala, nombre: nuevoEquipo.osc },
-          operadorTurno: { ...r.operadorTurno, nombre: nuevoEquipo.ot }
+          jefe: { ...r.jefe, nombre: nuevoEquipo.jdt || nuevoEquipo.jefe_turno || r.jefe.nombre },
+          operadorSala: { ...r.operadorSala, nombre: nuevoEquipo.osc || nuevoEquipo.operador || r.operadorSala.nombre },
+          operadorTurno: { ...r.operadorTurno, nombre: nuevoEquipo.ot || nuevoEquipo.personal_turno || r.operadorTurno.nombre }
         };
       }
       return r;
     }));
+
+    try {
+      localStorage.setItem('equipo_turno_actual', JSON.stringify(nuevoEquipo));
+      localStorage.setItem('turno_activo_guardado', JSON.stringify(nuevoEquipo));
+      window.dispatchEvent(new Event('equipo_actualizado'));
+      window.dispatchEvent(new Event('turno_actualizado'));
+    } catch (_) {}
   };
 
   return (

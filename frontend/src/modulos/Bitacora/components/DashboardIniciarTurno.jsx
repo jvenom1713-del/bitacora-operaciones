@@ -1259,10 +1259,10 @@ ${extraHtml}
       const saved = localStorage.getItem('bitacora_parametros');
       const parsed = saved ? JSON.parse(saved) : null;
       if (parsed) {
-        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '1311' || parsed.potEspera === '1310') parsed.potEspera = '4046';
-        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '39.0') parsed.costoMarginal = '50.6';
-        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '52.9') parsed.sistemaProm = '55.8';
-        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '2') parsed.hrsMinTec = '22';
+        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '1311' || parsed.potEspera === '1310' || parsed.potEspera === '4213') parsed.potEspera = '4046';
+        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '39.0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '50.6';
+        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '52.9' || parsed.sistemaProm === '54.6' || parsed.sistemaProm === '370.0') parsed.sistemaProm = '55.8';
+        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '2' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '22';
         if (!parsed.hrsCargaBase || parsed.hrsCargaBase === '0') parsed.hrsCargaBase = '1';
         return parsed;
       }
