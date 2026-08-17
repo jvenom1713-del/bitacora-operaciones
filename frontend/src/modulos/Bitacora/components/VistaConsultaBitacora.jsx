@@ -250,13 +250,13 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                 </div>
               </td>
               <td style="width: 30%; text-align: center; vertical-align: middle;">
-                <!-- SELLO OFICIAL CIRCULAR REDONDO -->
-                <div style="border: 3px double #166534; border-radius: 50%; width: 92px; height: 92px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #15803d; background: #f0fdf4; font-family: sans-serif; box-sizing: border-box; padding: 4px;">
-                  <div style="font-size: 5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
-                  <div style="font-size: 11px; font-weight: 900; margin: 0.5px 0; color: #166534;">✔ APROBADO</div>
-                  <div style="font-size: 6px; font-weight: 800; color: #0b2545; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
-                  <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${jefe}</div>
-                  <div style="font-size: 5px; font-weight: 700; margin-top: 1px; color: #14532d;">${fechaHoraCierreStr}</div>
+                <!-- SELLO OFICIAL CIRCULAR REDONDO DE AGUA -->
+                <div style="border: 3px double #15803d; border-radius: 50%; width: 115px; height: 115px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #166534; background: #ecfdf5; font-family: 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box; padding: 6px; box-shadow: inset 0 0 0 1px #86efac;">
+                  <div style="font-size: 6.5px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: #166534; line-height: 1.1;">GENERADORA METROPOLITANA</div>
+                  <div style="font-size: 12px; font-weight: 900; margin: 1px 0; color: #15803d; letter-spacing: 0.5px;">✔ APROBADO</div>
+                  <div style="font-size: 7px; font-weight: 900; color: #0f172a; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
+                  <div style="font-size: 8.5px; font-weight: 900; color: #0b2545; line-height: 1.1; max-width: 100px; text-align: center; word-break: break-word;">${jefe}</div>
+                  <div style="font-size: 6.5px; font-weight: 800; margin-top: 2px; color: #166534; font-family: monospace;">${fechaHoraCierreStr}</div>
                 </div>
               </td>
               <td style="width: 35%; text-align: center; vertical-align: middle;">
