@@ -78,6 +78,53 @@ const parsearSeccionesBitacora = (rawText) => {
   return { resumen, fragilidades, instrucciones, senales, permisos };
 };
 
+const formatearSenalesHtmlCajitas = (senalesText) => {
+  if (!senalesText || typeof senalesText !== 'string' || senalesText.toLowerCase().includes('sin señales')) {
+    return `
+      <div style="font-family: monospace; font-size: 8px; color: #64748b; font-style: italic; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 3px; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center;">
+        Sin señales forzadas registradas.
+      </div>
+    `;
+  }
+
+  const lineas = senalesText
+    .split('\n')
+    .map(l => l.replace(/^[•\-\*\s]+/, '').trim())
+    .filter(Boolean);
+
+  if (lineas.length === 0) {
+    return `
+      <div style="font-family: monospace; font-size: 8px; color: #64748b; font-style: italic; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 3px; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center;">
+        Sin señales forzadas registradas.
+      </div>
+    `;
+  }
+
+  const cajitasHtml = lineas.map(linea => {
+    const partes = linea.split(':');
+    let titulo = 'SEÑAL';
+    let detalle = linea;
+
+    if (partes.length >= 2) {
+      titulo = partes[0].trim();
+      detalle = partes.slice(1).join(':').trim();
+    }
+
+    return `
+      <div style="display: inline-block; vertical-align: top; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 4px; padding: 4px 6px; margin: 2px; text-align: center; min-width: 70px; max-width: 140px; box-sizing: border-box;">
+        <span style="display: block; font-size: 6.5px; font-weight: 900; color: #dc2626; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #fecaca; padding-bottom: 1px; margin-bottom: 2px;">${titulo}</span>
+        <strong style="display: block; font-size: 7.5px; font-weight: 800; color: #9f1239; font-family: monospace; word-break: break-word; line-height: 1.1;">${detalle}</strong>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div style="background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px; width: 100%; box-sizing: border-box;">
+      ${cajitasHtml}
+    </div>
+  `;
+};
+
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usuarioActual }) {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -327,9 +374,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                   <div style="font-weight: 900; color: #dc2626; border-bottom: 1.5px solid #fecaca; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
                     SEÑALES FORZADAS
                   </div>
-                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
-                    ${senalesText || 'Sin señales forzadas registradas.'}
-                  </div>
+                  ${formatearSenalesHtmlCajitas(senalesText)}
                 </td>
 
                 <!-- CELDA 4: PERMISOS DE TRABAJO EN CALIENTE ABIERTOS -->
