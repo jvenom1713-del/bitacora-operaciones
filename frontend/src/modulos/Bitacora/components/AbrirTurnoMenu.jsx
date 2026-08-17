@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon, ArrowLeft, Clock, AlertTriangle, ShieldCheck, X } from 'lucide-react';
 import CambioPersonalModal from './CambioPersonalModal';
+import BackgroundSlideshow from '../../../shared/components/BackgroundSlideshow';
 
 export default function AbrirTurnoMenu({ 
   usuarioActual, 
@@ -130,14 +131,12 @@ export default function AbrirTurnoMenu({
       modoNocturno ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-800'
     }`}>
 
-      {/* 1. Fondo de Planta Industrial con Superposición y Desenfoque */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500"
-        style={{ backgroundImage: `url('/power_plant_bg.png')` }}
+      {/* 1. Fondo en Movimiento Dinámico con Galería de Fotos */}
+      <BackgroundSlideshow 
+        overlayClass={`backdrop-blur-sm transition-opacity duration-300 ${
+          modoNocturno ? 'bg-slate-950/80' : 'bg-slate-900/40'
+        }`}
       />
-      <div className={`absolute inset-0 backdrop-blur-sm transition-opacity duration-300 ${
-        modoNocturno ? 'bg-slate-950/80' : 'bg-slate-900/40'
-      }`} />
 
       {/* 2. Botón Flotante Superior Derecho para Modo Nocturno / Diurno */}
       <div className="absolute top-6 right-6 z-20">
