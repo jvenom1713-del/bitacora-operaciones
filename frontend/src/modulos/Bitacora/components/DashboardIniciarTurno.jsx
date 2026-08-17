@@ -225,7 +225,8 @@ export default function DashboardIniciarTurno({
   }, [tabInicial]);
   const navigate = useNavigate();
   const [turnoActivo, setTurnoActivo] = useState(turnoActivoProp || null);
-  const folioStr = turnoActivo?.folio || turnoActivoProp?.folio || '01';
+  const folioRaw = turnoActivo?.folio || turnoActivoProp?.folio || '0001';
+  const folioStr = String(folioRaw).padStart(4, '0');
   const [estadoTurno, setEstadoTurno] = useState(() => {
     return localStorage.getItem('estado_turno_activo') || turnoActivoProp?.estado || 'borrador';
   });

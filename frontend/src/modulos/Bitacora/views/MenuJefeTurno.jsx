@@ -16,7 +16,7 @@ export default function MenuJefeTurno({
   const navigate = useNavigate();
   const emailUsuario = usuarioActual?.email || 'jsanmartin@generadora.cl';
   const nombreRol = usuarioActual?.rol_nombre || 'Jefe de Turno';
-  const folioTurno = turnoActivo?.folio || '01';
+  const folioTurno = String(turnoActivo?.folio || '0001').padStart(4, '0');
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
   const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {

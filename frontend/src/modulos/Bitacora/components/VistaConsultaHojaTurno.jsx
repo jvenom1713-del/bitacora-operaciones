@@ -72,7 +72,8 @@ export default function VistaConsultaHojaTurno({
   instruccionesEspeciales: instruccionesEspecialesProp,
   setInstruccionesEspeciales
 }) {
-  const folioStr = turnoActivo?.folio || turnoActual?.folio || '01';
+  const folioRaw = turnoActivo?.folio || turnoActual?.folio || '0001';
+  const folioStr = String(folioRaw).padStart(4, '0');
   const fechaStr = turnoActivo?.fecha || turnoActual?.fecha || new Date().toISOString().slice(0, 10);
 
   const emailTrim = usuarioActual?.email?.toLowerCase() || '';

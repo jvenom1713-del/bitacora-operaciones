@@ -787,15 +787,17 @@ export default function App() {
     }
   };
 
+  const [proximoFolio, setProximoFolio] = useState('0001');
+
   const obtenerSiguienteFolio = async () => {
     let maxFolioInt = 0;
     if (supabase) {
       try {
-        const { data } = await supabase.from('bitacoras').select('folio, id');
+        const { data } = await supabase.from('bitacoras').select('folio');
         if (Array.isArray(data) && data.length > 0) {
           data.forEach(item => {
-            const fVal = parseInt(item.folio || item.id || '0', 10);
-            if (!isNaN(fVal) && fVal > maxFolioInt) maxFolioInt = fVal;
+            const fVal = parseInt(item.folio || '0', 10);
+            if (!isNaN(fVal) && fVal > maxFolioInt && fVal < 9000) maxFolioInt = fVal;
           });
         }
       } catch (_) {}
@@ -807,21 +809,25 @@ export default function App() {
         const parsed = JSON.parse(historicoStr);
         if (Array.isArray(parsed)) {
           parsed.forEach(item => {
-            const fVal = parseInt(item.folio || item.id || '0', 10);
-            if (!isNaN(fVal) && fVal > maxFolioInt) maxFolioInt = fVal;
+            const fVal = parseInt(item.folio || '0', 10);
+            if (!isNaN(fVal) && fVal > maxFolioInt && fVal < 9000) maxFolioInt = fVal;
           });
         }
       }
 
       const ultimoGuardado = parseInt(localStorage.getItem('ultimo_folio_registrado') || '0', 10);
-      if (ultimoGuardado > maxFolioInt) maxFolioInt = ultimoGuardado;
+      if (ultimoGuardado > maxFolioInt && ultimoGuardado < 9000) maxFolioInt = ultimoGuardado;
     } catch (_) {}
 
     const siguienteFolioInt = maxFolioInt + 1;
-    const siguienteFolioStr = String(siguienteFolioInt).padStart(2, '0');
+    const siguienteFolioStr = String(siguienteFolioInt).padStart(4, '0');
     try { localStorage.setItem('ultimo_folio_registrado', String(siguienteFolioInt)); } catch (_) {}
     return siguienteFolioStr;
   };
+
+  useEffect(() => {
+    obtenerSiguienteFolio().then(fol => setProximoFolio(fol));
+  }, []);
 
   const handleAbrirTurno = async (rotacionSeleccionada) => {
     try {
@@ -1455,6 +1461,7 @@ export default function App() {
         <AbrirTurnoMenu 
           usuarioActual={usuarioActual}
           turnoActivo={turnoActivo || turnoActual}
+          proximoFolio={proximoFolio}
           onIniciarTurno={handleAbrirTurno}
           onVolver={() => setVistaActual('MENU_OPERADOR')}
           onNavegarCambioPersonal={(datosEquipo) => {
