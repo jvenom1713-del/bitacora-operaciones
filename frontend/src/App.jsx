@@ -789,34 +789,36 @@ export default function App() {
         .split('T')[0];
       const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Preservar reemplazos y motivos guardados en localStorage
+      // Preservar reemplazos y motivos solo si corresponden a la misma rotación
       const equipoGuardadoStr = localStorage.getItem('equipo_turno_actual');
       let equipoGuardado = null;
       try { equipoGuardado = equipoGuardadoStr ? JSON.parse(equipoGuardadoStr) : null; } catch (_) {}
 
-      let rotName = equipoGuardado?.rotacion || 'TIGRES';
-      let jdtVal = equipoGuardado?.jdt || 'Ariel Torres';
-      let oscVal = equipoGuardado?.osc || 'Jorge Albornoz';
-      let otVal = equipoGuardado?.ot || 'Matias Cisternas';
+      let rotName = 'TIGRES';
+      let jdtVal = '';
+      let oscVal = '';
+      let otVal = '';
 
       if (typeof rotacionSeleccionada === 'object' && rotacionSeleccionada !== null) {
-        rotName = rotacionSeleccionada.rotacion || rotacionSeleccionada.rotacionKey || equipoGuardado?.rotacion || 'TIGRES';
+        rotName = rotacionSeleccionada.rotacion || rotacionSeleccionada.rotacionKey || 'TIGRES';
         const oficial = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
 
         const getNombre = (val) => (typeof val === 'object' ? val?.nombre : val);
-        jdtVal = equipoGuardado?.jdt || getNombre(rotacionSeleccionada.jdt || rotacionSeleccionada.jefe) || oficial.jdt;
-        oscVal = equipoGuardado?.osc || getNombre(rotacionSeleccionada.osc || rotacionSeleccionada.operadorSala) || oficial.osc;
-        otVal = equipoGuardado?.ot || getNombre(rotacionSeleccionada.ot || rotacionSeleccionada.operadorTurno) || oficial.ot;
+        jdtVal = getNombre(rotacionSeleccionada.jdt || rotacionSeleccionada.jefe) || oficial.jdt;
+        oscVal = getNombre(rotacionSeleccionada.osc || rotacionSeleccionada.operadorSala) || oficial.osc;
+        otVal = getNombre(rotacionSeleccionada.ot || rotacionSeleccionada.operadorTurno) || oficial.ot;
       } else if (typeof rotacionSeleccionada === 'string') {
         rotName = rotacionSeleccionada;
         const oficial = MATRIZ_GUARDIAS[rotName.toUpperCase()] || MATRIZ_GUARDIAS.TIGRES;
-        jdtVal = equipoGuardado?.jdt || oficial.jdt;
-        oscVal = equipoGuardado?.osc || oficial.osc;
-        otVal = equipoGuardado?.ot || oficial.ot;
+        jdtVal = oficial.jdt;
+        oscVal = oficial.osc;
+        otVal = oficial.ot;
       }
 
+      // Si la rotación guardada anteriormente era distinta, resetear motivos de reemplazo del turno anterior
+      const esMismaRotacion = equipoGuardado?.rotacion === rotName;
+
       const nuevoEquipoObj = {
-        ...equipoGuardado,
         rotacion: rotName,
         jdt: jdtVal,
         osc: oscVal,
@@ -824,12 +826,12 @@ export default function App() {
         jefe_turno: jdtVal,
         operador: oscVal,
         personal_turno: otVal,
-        motivoJDT: equipoGuardado?.motivoJDT || '',
-        motivoOSC: equipoGuardado?.motivoOSC || '',
-        motivoOT: equipoGuardado?.motivoOT || '',
-        motivoContingencia: equipoGuardado?.motivoContingencia || '',
-        detalleContingencia: equipoGuardado?.detalleContingencia || '',
-        hayContingencia: Boolean(equipoGuardado?.hayContingencia || equipoGuardado?.motivoJDT || equipoGuardado?.motivoOSC || equipoGuardado?.motivoOT)
+        motivoJDT: esMismaRotacion ? (equipoGuardado?.motivoJDT || '') : '',
+        motivoOSC: esMismaRotacion ? (equipoGuardado?.motivoOSC || '') : '',
+        motivoOT: esMismaRotacion ? (equipoGuardado?.motivoOT || '') : '',
+        motivoContingencia: esMismaRotacion ? (equipoGuardado?.motivoContingencia || '') : '',
+        detalleContingencia: esMismaRotacion ? (equipoGuardado?.detalleContingencia || '') : '',
+        hayContingencia: esMismaRotacion ? Boolean(equipoGuardado?.hayContingencia || equipoGuardado?.motivoJDT || equipoGuardado?.motivoOSC || equipoGuardado?.motivoOT) : false
       };
 
       setEquipoTurnoSeleccionado(nuevoEquipoObj);

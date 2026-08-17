@@ -11,7 +11,16 @@ export default function AbrirTurnoMenu({
   modoNocturno, 
   setModoNocturno 
 }) {
-  const [rotacionSeleccionada, setRotacionSeleccionada] = useState('TIGRES');
+  const [rotacionSeleccionada, setRotacionSeleccionada] = useState(() => {
+    try {
+      const saved = localStorage.getItem('equipo_turno_actual');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.rotacion) return String(parsed.rotacion).toUpperCase();
+      }
+    } catch (_) {}
+    return 'TIGRES';
+  });
   const [mostrarModalCambio, setMostrarModalCambio] = useState(false);
   const [mostrarModalBloqueo, setMostrarModalBloqueo] = useState(false);
   const [cargandoNuevo, setCargandoNuevo] = useState(false);
@@ -201,6 +210,7 @@ export default function AbrirTurnoMenu({
                       };
                       try {
                         localStorage.setItem('equipo_turno_actual', JSON.stringify(nuevoEquipo));
+                        window.dispatchEvent(new Event('equipo_actualizado'));
                       } catch (_) {}
                     }}
                     className={`cursor-pointer transition-all duration-200 rounded-xl ${
