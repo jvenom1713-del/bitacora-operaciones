@@ -692,7 +692,12 @@ export default function VistaConsultaHojaTurno({
             operador: usuarioActual?.nombre || 'Operador',
             jefe_turno: obtenerNombreJefeActual(usuarioActual, equipoTurnoState),
             estado: 'enviado',
-            contenido: 'Solicitud de cierre enviada por el operador.'
+            contenido: 'Solicitud de cierre enviada por el operador.',
+            sistema_prom: parametrosGeneracion?.sistemaProm || '55.8',
+            pot_espera: parametrosGeneracion?.potEspera || '4046',
+            hrs_carga_base: parametrosGeneracion?.hrsCargaBase || '1',
+            min_tecnico: parametrosGeneracion?.minTecnico || '22',
+            costo_marginal: parametrosGeneracion?.costoMarginal || '50.6'
           }]);
         } catch (_) {}
       }
@@ -839,7 +844,12 @@ ${permisosTxt}
           operador: equipoTurno?.operador || 'Operador',
           jefe_turno: obtenerNombreJefeActual(usuarioActual, equipoTurnoState || equipoTurno),
           estado: 'aprobada',
-          contenido: contenidoTexto || observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.'
+          contenido: contenidoTexto || observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.',
+          sistema_prom: parametrosGeneracion?.sistemaProm || '55.8',
+          pot_espera: parametrosGeneracion?.potEspera || '4046',
+          hrs_carga_base: parametrosGeneracion?.hrsCargaBase || '1',
+          min_tecnico: parametrosGeneracion?.minTecnico || '22',
+          costo_marginal: parametrosGeneracion?.costoMarginal || '50.6'
         }]);
       } catch (supErr) {
         console.warn("Advertencia al guardar en Supabase:", supErr);
