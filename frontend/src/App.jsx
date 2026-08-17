@@ -135,14 +135,14 @@ export default function App() {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  };  const defaultBop = `FCV094 arreglo provisorio.<br>VTR B indisponible por trabajos en estructura.<br>VTR G Limitado a baja velocidad, por baja aislación.`;
-  const defaultTurbinaVapor = `Virador Falla en sistema de enganche en desaceleración.<br>Fuga de Vapor zona TAP lado Izquierdo, se encuentra encapsulada.<br>Excitación Falla Puente N°1.`;
+  const defaultBop = '';
+  const defaultTurbinaVapor = '';
 
   const bitacoraVacia = {
     nuevaRencaDia1: '',
     nuevaRencaDia2: '',
-    bop: defaultBop,
-    turbinaVapor: defaultTurbinaVapor,
+    bop: '',
+    turbinaVapor: '',
     losVientosDia1: '',
     losVientosDia2: '',
     santaLidiaDia1: '',
@@ -153,8 +153,8 @@ export default function App() {
   const crearResetTurno = (prev) => ({
     nuevaRencaDia1: '',
     nuevaRencaDia2: '',
-    bop: (prev && prev.bop) ? prev.bop : defaultBop,
-    turbinaVapor: (prev && prev.turbinaVapor) ? prev.turbinaVapor : defaultTurbinaVapor,
+    bop: (prev && prev.bop) ? prev.bop : '',
+    turbinaVapor: (prev && prev.turbinaVapor) ? prev.turbinaVapor : '',
     losVientosDia1: '',
     losVientosDia2: '',
     santaLidiaDia1: '',
@@ -797,7 +797,7 @@ export default function App() {
         if (Array.isArray(data) && data.length > 0) {
           data.forEach(item => {
             const fVal = parseInt(item.folio || '0', 10);
-            if (!isNaN(fVal) && fVal > maxFolioInt && fVal < 9000) maxFolioInt = fVal;
+            if (!isNaN(fVal) && fVal > maxFolioInt && fVal < 1000) maxFolioInt = fVal;
           });
         }
       } catch (_) {}
@@ -810,13 +810,13 @@ export default function App() {
         if (Array.isArray(parsed)) {
           parsed.forEach(item => {
             const fVal = parseInt(item.folio || '0', 10);
-            if (!isNaN(fVal) && fVal > maxFolioInt && fVal < 9000) maxFolioInt = fVal;
+            if (!isNaN(fVal) && fVal > maxFolioInt && fVal < 1000) maxFolioInt = fVal;
           });
         }
       }
 
       const ultimoGuardado = parseInt(localStorage.getItem('ultimo_folio_registrado') || '0', 10);
-      if (ultimoGuardado > maxFolioInt && ultimoGuardado < 9000) maxFolioInt = ultimoGuardado;
+      if (ultimoGuardado > maxFolioInt && ultimoGuardado < 1000) maxFolioInt = ultimoGuardado;
     } catch (_) {}
 
     const siguienteFolioInt = maxFolioInt + 1;
@@ -1213,6 +1213,19 @@ export default function App() {
 
   const volverMenuGenerico = () => {
     cargarTurnoActivo();
+    try {
+      const storedOrigen = localStorage.getItem('origen_menu');
+      const storedRol = localStorage.getItem('rol_activo');
+      if (storedOrigen === 'MENU_JEFE' || storedRol === 'Jefe de Turno' || storedRol === 'Jefe') {
+        setVistaActual('MENU_JEFE');
+        return;
+      }
+      if (storedOrigen === 'MENU_OPERADOR' || storedRol === 'Operador') {
+        setVistaActual('MENU_OPERADOR');
+        return;
+      }
+    } catch (_) {}
+
     const u = usuarioActual;
     const emailTrim = u?.email?.toLowerCase() || '';
     const JEFES_EMAILS = [
@@ -2265,4 +2278,5 @@ export default function App() {
       {demoBarra}
     </div>
   );
+}
 }
