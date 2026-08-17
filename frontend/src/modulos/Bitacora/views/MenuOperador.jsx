@@ -16,7 +16,7 @@ export default function MenuOperador({
 }) {
   const navigate = useNavigate();
   const esTurnoCerrado = isAprobada(turnoActivo?.estado);
-  const emailUsuario = usuarioActual?.email || 'jalbornoz@generadora.cl';
+  const nombreUsuario = usuarioActual?.nombre || usuarioActual?.email || 'Operador';
   const nombreRol = usuarioActual?.rol_nombre || 'Operador Sala de Control';
   const folioTurno = String(turnoActivo?.folio || turnoActual?.folio || '0001').padStart(4, '0');
 
@@ -176,7 +176,7 @@ export default function MenuOperador({
           <div className="w-full bg-[#1e293b] text-slate-200 py-3 px-4 rounded-xl text-center shadow-sm border border-slate-700/50">
             <p className="font-bold text-sm text-slate-100 mb-0.5">Planta Nueva Renca</p>
             <p className="text-xs text-slate-300/90 font-medium">
-              {emailUsuario} - {nombreRol}
+              {nombreUsuario} - {nombreRol}
             </p>
           </div>
 
