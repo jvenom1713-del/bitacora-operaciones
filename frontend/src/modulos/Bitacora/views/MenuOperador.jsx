@@ -93,7 +93,7 @@ export default function MenuOperador({
       {/* 1. Fondo de Planta Industrial con Superposición y Desenfoque */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500"
-        style={{ backgroundImage: `url('/power_plant_bg.png')` }}
+        style={{ backgroundImage: `url("${fotoPowerPlant}")` }}
       />
       <div className={`absolute inset-0 backdrop-blur-sm transition-opacity duration-300 ${
         modoNocturno ? 'bg-slate-950/80' : 'bg-slate-900/40'

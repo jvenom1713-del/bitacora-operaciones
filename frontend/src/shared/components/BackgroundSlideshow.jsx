@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-const FOTOS_DEFECTO = [
-  '/power_plant_bg.png',
-  '/centrales_-nueva-renca.jpg',
-  '/cnr_foto1.jpg',
-  '/cnr_foto2.jpg'
-];
+import foto1 from '/power_plant_bg.png';
+import foto2 from '/centrales_-nueva-renca.jpg';
+import foto3 from '/cnr_foto1.jpg';
+import foto4 from '/cnr_foto2.jpg';
+
+const FOTOS_DEFECTO = [foto1, foto2, foto3, foto4];
 
 export default function BackgroundSlideshow({
   fotos = FOTOS_DEFECTO,
@@ -27,7 +27,7 @@ export default function BackgroundSlideshow({
       {/* 1. Fondo base estático de seguridad */}
       <div 
         className="absolute inset-0 bg-cover bg-center z-0"
-        style={{ backgroundImage: `url('/power_plant_bg.png')` }}
+        style={{ backgroundImage: `url("${foto1}")` }}
       />
 
       {/* 2. Capas del carrusel animado */}
