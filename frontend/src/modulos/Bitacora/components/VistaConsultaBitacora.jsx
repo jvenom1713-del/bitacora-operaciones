@@ -39,6 +39,45 @@ const resolverFolioCorrelativo = (item) => {
   return String(item.id || 1).padStart(4, '0');
 };
 
+const parsearSeccionesBitacora = (rawText) => {
+  if (!rawText || typeof rawText !== 'string') {
+    return { resumen: '', fragilidades: '', instrucciones: '', senales: '', permisos: '' };
+  }
+
+  const str = rawText.trim();
+  if (!str.includes('1.') && !str.includes('2.') && !str.includes('3.')) {
+    return { resumen: str, fragilidades: '', instrucciones: '', senales: '', permisos: '' };
+  }
+
+  // 1. Resumen de Generación Diaria
+  let resumenMatch = str.match(/1\.\s*RESUMEN DE GENERACIÓN DIARIA:\s*([\s\S]*?)(?=2\.\s*FRAGILIDADES|$)/i);
+  let resumen = resumenMatch ? resumenMatch[1].trim() : '';
+
+  resumen = resumen
+    .replace(/^Central Nueva Renca[\s\S]*?1\.\s*RESUMEN DE GENERACIÓN DIARIA:\s*/i, '')
+    .replace(/^Folio:[\s\S]*?\n/i, '')
+    .replace(/^Día\s+\d+:\s*/i, '')
+    .trim();
+
+  // 2. Fragilidades Operacionales
+  let fragMatch = str.match(/2\.\s*FRAGILIDADES OPERACIONALES:\s*([\s\S]*?)(?=3\.\s*INSTRUCCIONES|$)/i);
+  let fragilidades = fragMatch ? fragMatch[1].trim() : '';
+
+  // 3. Instrucciones Operacionales
+  let instrMatch = str.match(/3\.\s*INSTRUCCIONES OPERACIONALES:\s*([\s\S]*?)(?=4\.\s*SEÑALES|$)/i);
+  let instrucciones = instrMatch ? instrMatch[1].trim() : '';
+
+  // 4. Señales Forzadas
+  let senalesMatch = str.match(/4\.\s*SEÑALES FORZADAS:\s*([\s\S]*?)(?=5\.\s*PERMISOS|$)/i);
+  let senales = senalesMatch ? senalesMatch[1].trim() : '';
+
+  // 5. Permisos de Trabajo en Caliente
+  let permisosMatch = str.match(/5\.\s*PERMISOS DE TRABAJO EN CALIENTE ABIERTOS:\s*([\s\S]*?)$/i);
+  let permisos = permisosMatch ? permisosMatch[1].trim() : '';
+
+  return { resumen, fragilidades, instrucciones, senales, permisos };
+};
+
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usuarioActual }) {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -111,7 +150,19 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
     const jefe = resolverNombreJefeOficial(item, usuarioActual);
     const turno = item.tipo_turno || 'DIURNO';
-    const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
+
+    // Desglosar el contenido completo en sus 5 secciones mediante el parser
+    const rawContenido = item.contenido || item.resumen_operativo || item.contenido_texto || '';
+    const parsed = parsearSeccionesBitacora(rawContenido);
+
+    const resumen = (item.resumen_operativo && !item.resumen_operativo.includes('1. RESUMEN'))
+      ? item.resumen_operativo
+      : (parsed.resumen || 'Sin observaciones registradas.');
+
+    // Extraer textos de secciones desde campos específicos o del contenido desglosado
+    const fragText = item.fragilidades_texto || item.bop_texto || parsed.fragilidades || '';
+    const instrText = item.instrucciones_texto || item.observaciones_jefe || parsed.instrucciones || '';
+    const senalesText = item.senales_forzadas_texto || parsed.senales || '';
 
     // Intentar leer KPIs reales del item; si no existen, usar fallbacks informativos
     const sisPromVal = item.sistema_prom ? `${item.sistema_prom} USD/MWh` : (item.parametros_generacion?.sistemaProm ? `${item.parametros_generacion.sistemaProm} USD/MWh` : '-- USD/MWh');
@@ -119,11 +170,6 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
     const hrsVal     = item.hrs_carga_base ? `${item.hrs_carga_base} hrs` : (item.parametros_generacion?.hrsCargaBase ? `${item.parametros_generacion.hrsCargaBase} hrs` : '-- hrs');
     const minTecVal  = item.min_tecnico   ? `${item.min_tecnico} hrs`    : (item.parametros_generacion?.minTecnico   ? `${item.parametros_generacion.minTecnico} hrs`   : '-- hrs');
     const cmgVal     = item.costo_marginal ? `${item.costo_marginal} USD/MWh` : (item.parametros_generacion?.costoMarginal ? `${item.parametros_generacion.costoMarginal} USD/MWh` : '-- USD/MWh');
-
-    // Extraer textos de secciones desde campos específicos o del contenido general
-    const fragText = item.fragilidades_texto || item.bop_texto || '';
-    const instrText = item.instrucciones_texto || item.observaciones_jefe || '';
-    const senalesText = item.senales_forzadas_texto || '';
 
     const partesF = fecha.split('-');
     const diaNum = partesF.length === 3 ? parseInt(partesF[2], 10) : new Date().getDate();
