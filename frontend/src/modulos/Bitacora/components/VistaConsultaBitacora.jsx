@@ -77,7 +77,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
 
     const folio = item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0');
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
-    const jefe = item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item);
+    const jefe = item.jefe_turno || item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item);
     const turno = item.tipo_turno || 'DIURNO';
     const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
 
@@ -487,7 +487,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                       <div className="flex items-center justify-between border-t border-slate-800/60 pt-1">
                         <span className="text-slate-400">👤 Cerrado por:</span>
                         <span className="font-bold text-emerald-400">
-                          {item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item)}
+                          {item.jefe_turno || item.cerrado_por_nombre || item.jdt_nombre || obtenerNombreJefeActual(usuarioActual, item)}
                         </span>
                       </div>
                     </div>
