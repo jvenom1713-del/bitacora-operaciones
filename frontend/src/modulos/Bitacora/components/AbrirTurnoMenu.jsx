@@ -304,15 +304,36 @@ export default function AbrirTurnoMenu({
                   .split('T')[0];
                 const horaLocal = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                let equipoGuardado = null;
+                try {
+                  const savedStr = localStorage.getItem('equipo_turno_actual');
+                  equipoGuardado = savedStr ? JSON.parse(savedStr) : null;
+                } catch (_) {}
+
+                const esMismaRot = equipoGuardado && String(equipoGuardado.rotacion).toUpperCase() === String(rotacionSeleccionada).toUpperCase();
+
+                const jdtFinal = esMismaRot ? (equipoGuardado.jdt || rotacionActualObj.jefe.nombre) : rotacionActualObj.jefe.nombre;
+                const oscFinal = esMismaRot ? (equipoGuardado.osc || rotacionActualObj.operadorSala.nombre) : rotacionActualObj.operadorSala.nombre;
+                const otFinal = esMismaRot ? (equipoGuardado.ot || rotacionActualObj.operadorTurno.nombre) : rotacionActualObj.operadorTurno.nombre;
+
                 const nuevoTurnoData = {
                   rotacion: rotacionSeleccionada,
                   tipo_turno: tipoTurnoSeleccionado,
-                  jefe: rotacionActualObj.jefe,
-                  operadorSala: rotacionActualObj.operadorSala,
-                  operadorTurno: rotacionActualObj.operadorTurno,
+                  jdt: jdtFinal,
+                  osc: oscFinal,
+                  ot: otFinal,
+                  jefe: { nombre: jdtFinal, email: rotacionActualObj.jefe.email },
+                  operadorSala: { nombre: oscFinal, email: rotacionActualObj.operadorSala.email },
+                  operadorTurno: { nombre: otFinal, email: rotacionActualObj.operadorTurno.email },
                   fecha: fechaLocal,
                   hora_inicio: horaLocal,
-                  creado_el: ahora.toISOString()
+                  creado_el: ahora.toISOString(),
+                  motivoJDT: esMismaRot ? (equipoGuardado?.motivoJDT || '') : '',
+                  motivoOSC: esMismaRot ? (equipoGuardado?.motivoOSC || '') : '',
+                  motivoOT: esMismaRot ? (equipoGuardado?.motivoOT || '') : '',
+                  hayContingencia: esMismaRot ? Boolean(equipoGuardado?.hayContingencia) : false,
+                  motivoContingencia: esMismaRot ? (equipoGuardado?.motivoContingencia || '') : '',
+                  detalleContingencia: esMismaRot ? (equipoGuardado?.detalleContingencia || '') : ''
                 };
 
                 await onIniciarTurno(nuevoTurnoData);

@@ -821,8 +821,13 @@ export default function App() {
         otVal = oficial.ot;
       }
 
-      // Si la rotación guardada anteriormente era distinta, resetear motivos de reemplazo del turno anterior
-      const esMismaRotacion = equipoGuardado?.rotacion === rotName;
+      // Si la rotación guardada anteriormente es la misma, priorizar los reemplazos vigentes guardados
+      const esMismaRotacion = equipoGuardado && String(equipoGuardado.rotacion).toUpperCase() === String(rotName).toUpperCase();
+      if (esMismaRotacion && equipoGuardado) {
+        if (equipoGuardado.jdt) jdtVal = equipoGuardado.jdt;
+        if (equipoGuardado.osc) oscVal = equipoGuardado.osc;
+        if (equipoGuardado.ot) otVal = equipoGuardado.ot;
+      }
 
       const nuevoEquipoObj = {
         rotacion: rotName,
