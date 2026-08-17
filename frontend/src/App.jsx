@@ -1308,6 +1308,7 @@ export default function App() {
           <MenuJefeTurno 
             usuarioActual={usuarioActual}
             turnoActivo={turnoActivo}
+            equipoTurno={equipoTurnoSeleccionado}
             onVerBitacoraEnCurso={() => setVistaActual('CONSULTA_HOJA_TURNO')}
             onBuscarBitacoras={() => setVistaActual('CONSULTA_BITACORA')}
             onNavegarAnalisisQuimicos={() => setVistaActual('ANALISIS_QUIMICOS')}

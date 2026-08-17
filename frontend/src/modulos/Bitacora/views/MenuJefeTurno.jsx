@@ -7,6 +7,7 @@ import { getApiUrl, safeFetchJson, isBorrador, isEnviado, isAprobada } from '../
 export default function MenuJefeTurno({ 
   usuarioActual, 
   turnoActivo, 
+  equipoTurno,
   onVerBitacoraEnCurso, 
   onBuscarBitacoras, 
   onNavegarAnalisisQuimicos,
@@ -15,9 +16,22 @@ export default function MenuJefeTurno({
   setModoNocturno 
 }) {
   const navigate = useNavigate();
-  const emailUsuario = usuarioActual?.email || 'jsanmartin@generadora.cl';
-  const nombreRol = usuarioActual?.rol_nombre || 'Jefe de Turno';
-  const folioTurno = String(turnoActivo?.folio || '0001').padStart(4, '0');
+
+  // Resolver el JDT real del turno activo:
+  // 1° El equipo pasado como prop desde App.jsx (elegido por el OSC)
+  // 2° El equipo guardado en localStorage
+  // 3° El usuario logueado (fallback)
+  const equipoActivo = equipoTurno || (() => {
+    try {
+      const s = localStorage.getItem('equipo_turno_actual');
+      return s ? JSON.parse(s) : null;
+    } catch (_) { return null; }
+  })();
+
+  const nombreJDT = equipoActivo?.jdt || equipoActivo?.jefe_turno || usuarioActual?.nombre || 'Jefe de Turno';
+  const emailJDT  = equipoActivo?.email_jdt || usuarioActual?.email || '';
+  const nombreRol = 'Jefe de Turno';
+  const folioTurno = String(turnoActivo?.folio || equipoActivo?.folio || '0001').padStart(4, '0');
 
   const [fechaHoraActual, setFechaHoraActual] = useState(new Date());
   const [estadoTurnoLocal, setEstadoTurnoLocal] = useState(() => {
@@ -148,8 +162,11 @@ export default function MenuJefeTurno({
           <div className="w-full bg-[#1e293b] text-slate-200 py-3 px-4 rounded-xl text-center shadow-sm border border-slate-700/50">
             <p className="font-bold text-sm text-slate-100 mb-0.5">Planta Nueva Renca</p>
             <p className="text-xs text-amber-400 font-bold">
-              {emailUsuario} — {nombreRol}
+              {nombreJDT} — {nombreRol}
             </p>
+            {emailJDT && (
+              <p className="text-[10px] text-slate-400 mt-0.5">{emailJDT}</p>
+            )}
           </div>
 
           <div className="w-full bg-[#1e293b] text-slate-100 font-bold rounded-xl shadow-sm border border-slate-700/50 flex items-center justify-around py-3 px-4 text-xs">
