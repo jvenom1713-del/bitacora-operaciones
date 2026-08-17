@@ -641,125 +641,92 @@ export default function DashboardIniciarTurno({
             </table>
           </div>
 
-          <!-- 2. RESUMEN DE NOVEDADES OPERATIVAS -->
+          <!-- 1. RESUMEN DE GENERACIÓN DIARIA -->
           <div style="margin-bottom: 8px;">
-            <div style="font-size: 9.5px; font-weight: 900; color: #0b2545; text-transform: uppercase; border-bottom: 1.5px solid #0b2545; padding-bottom: 2px; margin-bottom: 4px;">
-              2. RESUMEN DE NOVEDADES OPERATIVAS (BITÁCORA DIARIA)
+            <div style="background: #0369a1; color: #ffffff; font-size: 9.5px; font-weight: 900; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px;">
+              1. RESUMEN DE GENERACIÓN DIARIA:
             </div>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 4px;">
-              <tr>
-                <td style="width: 50%; vertical-align: top; padding-right: 3px;">
-                  <div style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; background: #fafafa;">
-                    <div style="font-weight: 800; color: #ea580c; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; margin-bottom: 3px; font-size: 9px;">
-                      CENTRAL NUEVA RENCA
-                    </div>
-                    <div style="margin-bottom: 3px;">
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">DÍA 1 (${diaStr1}):</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 45px; overflow: hidden;">
-                        ${textoBitacora.nuevaRencaDia1 || 'Sin novedades registradas.'}
-                      </div>
-                    </div>
-                    <div>
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">DÍA 2 (${diaStr2}):</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 45px; overflow: hidden;">
-                        ${textoBitacora.nuevaRencaDia2 || 'Sin novedades registradas.'}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td style="width: 50%; vertical-align: top; padding-left: 3px;">
-                  <div style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; background: #fafafa;">
-                    <div style="font-weight: 800; color: #d97706; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; margin-bottom: 3px; font-size: 9px;">
-                      FRAGILIDADES OPERACIONALES
-                    </div>
-                    <div style="margin-bottom: 3px;">
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">BOP:</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 45px; overflow: hidden;">
-                        ${textoBitacora.bop || 'Sin fragilidades reportadas.'}
-                      </div>
-                    </div>
-                    <div>
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">TURBINA VAPOR:</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 45px; overflow: hidden;">
-                        ${textoBitacora.turbinaVapor || 'Sin fragilidades reportadas.'}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </table>
-
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="width: 50%; vertical-align: top; padding-right: 3px;">
-                  <div style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; background: #fafafa;">
-                    <div style="font-weight: 800; color: #0284c7; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; margin-bottom: 3px; font-size: 9px;">
-                      CENTRAL LOS VIENTOS
-                    </div>
-                    <div style="margin-bottom: 3px;">
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">DÍA 1 (${diaStr1}):</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 40px; overflow: hidden;">
-                        ${textoBitacora.losVientosDia1 || 'Sin novedades reportadas.'}
-                      </div>
-                    </div>
-                    <div>
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">DÍA 2 (${diaStr2}):</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 40px; overflow: hidden;">
-                        ${textoBitacora.losVientosDia2 || 'Sin novedades reportadas.'}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td style="width: 50%; vertical-align: top; padding-left: 3px;">
-                  <div style="border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px; background: #fafafa;">
-                    <div style="font-weight: 800; color: #16a34a; border-bottom: 1px solid #e2e8f0; padding-bottom: 1px; margin-bottom: 3px; font-size: 9px;">
-                      CENTRAL SANTA LIDIA
-                    </div>
-                    <div style="margin-bottom: 3px;">
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">DÍA 1 (${diaStr1}):</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 40px; overflow: hidden;">
-                        ${textoBitacora.santaLidiaDia1 || 'Sin novedades reportadas.'}
-                      </div>
-                    </div>
-                    <div>
-                      <span style="font-size: 7.5px; font-weight: 700; color: #64748b;">DÍA 2 (${diaStr2}):</span>
-                      <div style="font-family: monospace; font-size: 8.5px; color: #334155; white-space: pre-wrap; background: #ffffff; padding: 3px; border: 1px solid #e2e8f0; border-radius: 3px; margin-top: 1px; max-height: 40px; overflow: hidden;">
-                        ${textoBitacora.santaLidiaDia2 || 'Sin novedades reportadas.'}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </table>
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 9px; color: #1e293b; line-height: 1.4; white-space: pre-line;">
+              <strong style="color: #0369a1; display: block; margin-bottom: 2px;">Día ${diaStr1}: Central Nueva Renca</strong>
+              ${textoBitacora?.nuevaRencaDia1 || 'Sin observaciones registradas.'}
+            </div>
           </div>
 
-          <!-- 3. EQUIPOS EN ANOMALÍA Y SEÑALES FORZADAS -->
+          <!-- 2. DETALLE DE FRAGILIDADES, INSTRUCCIONES Y SEÑALES DEL TURNO -->
           <div style="margin-bottom: 8px;">
-            <div style="font-size: 9.5px; font-weight: 900; color: #0b2545; text-transform: uppercase; border-bottom: 1.5px solid #0b2545; padding-bottom: 2px; margin-bottom: 4px;">
-              3. EQUIPOS EN OBSERVACIÓN & SEÑALES FORZADAS
+            <div style="background: #0b2545; color: #ffffff; font-size: 9.5px; font-weight: 900; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; margin-bottom: 6px;">
+              2. DETALLE DE FRAGILIDADES, INSTRUCCIONES Y SEÑALES DEL TURNO
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 8.5px;">
-              <thead>
-                <tr style="background: #e2e8f0; color: #1e293b; text-align: left;">
-                  <th style="padding: 3px 5px; border: 1px solid #cbd5e1; width: 33.33%;">MKVI CTG</th>
-                  <th style="padding: 3px 5px; border: 1px solid #cbd5e1; width: 33.33%;">MKVI STG</th>
-                  <th style="padding: 3px 5px; border: 1px solid #cbd5e1; width: 33.33%;">BOP</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(senalesForzadasActivas || []).length === 0 ? `
-                  <tr><td colspan="3" style="padding: 5px; text-align: center; color: #64748b; font-style: italic;">Sin señales forzadas registradas.</td></tr>
-                ` : (senalesForzadasActivas || []).map(s => `
-                  <tr>
-                    <td style="padding: 3px 5px; border: 1px solid #cbd5e1;">${s.ctg || '—'}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #cbd5e1;">${s.stg || '—'}</td>
-                    <td style="padding: 3px 5px; border: 1px solid #cbd5e1;">${s.bop1 || '—'}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
+
+            <!-- GRID 2X2 DE CELDAS ESTRUCTURADAS -->
+            <table style="width: 100%; border-collapse: separate; border-spacing: 6px; margin-top: -2px;">
+              <tr>
+                <!-- CELDA 1: FRAGILIDADES OPERACIONALES -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #d97706; border-bottom: 1.5px solid #fed7aa; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
+                    FRAGILIDADES OPERACIONALES
+                  </div>
+                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 4px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
+                    ${[
+                      textoBitacora?.bop ? `BOP: ${textoBitacora.bop}` : '',
+                      textoBitacora?.turbinaVapor ? `Turbina Vapor: ${textoBitacora.turbinaVapor}` : ''
+                    ].filter(Boolean).join('\n') || 'Sin fragilidades operacionales registradas.'}
+                  </div>
+                </td>
+
+                <!-- CELDA 2: INSTRUCCIONES OPERACIONALES -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #0284c7; border-bottom: 1.5px solid #bae6fd; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
+                    INSTRUCCIONES OPERACIONALES
+                  </div>
+                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 4px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
+                    ${observacionesJefe || 'Sin instrucciones operacionales registradas.'}
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <!-- CELDA 3: SEÑALES FORZADAS -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #dc2626; border-bottom: 1.5px solid #fecaca; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
+                    SEÑALES FORZADAS
+                  </div>
+                  <div style="font-family: monospace; font-size: 8px; color: #334155; white-space: pre-line; background: #ffffff; padding: 4px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px;">
+                    ${(senalesForzadasActivas || []).length > 0
+                      ? senalesForzadasActivas.map(s => `• CTG: ${s.ctg || '—'} | STG: ${s.stg || '—'} | BOP: ${s.bop1 || '—'}`).join('\n')
+                      : 'Sin señales forzadas registradas.'}
+                  </div>
+                </td>
+
+                <!-- CELDA 4: PERMISOS DE TRABAJO EN CALIENTE ABIERTOS -->
+                <td style="width: 50%; vertical-align: top; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 4px; padding: 6px;">
+                  <div style="font-weight: 900; color: #ea580c; border-bottom: 1.5px solid #fed7aa; padding-bottom: 2px; margin-bottom: 4px; font-size: 8.5px; text-transform: uppercase;">
+                    PERMISOS DE TRABAJO EN CALIENTE ABIERTOS
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 7.5px; background: #ffffff; border: 1px solid #fed7aa; border-radius: 3px;">
+                    <thead>
+                      <tr style="background: #ffedd5; color: #9a3412; font-weight: 800;">
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">N° Permiso</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">Ubicación</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">Solicitante</th>
+                        <th style="padding: 2px 4px; border: 1px solid #fed7aa;">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${permisosAbiertos.length > 0 ? permisosAbiertos.map(p => `
+                        <tr>
+                          <td style="padding: 2px 4px; border: 1px solid #fed7aa; font-weight: bold; color: #c2410c;">${p.numero || 'P-001'}</td>
+                          <td style="padding: 2px 4px; border: 1px solid #fed7aa; font-weight: bold; color: #1e293b;">${p.ubicacion || 'General'}</td>
+                          <td style="padding: 2px 4px; border: 1px solid #fed7aa;">${p.solicitado_por || p.solicitadoPor || '-'}</td>
+                          <td style="padding: 2px 4px; border: 1px solid #fed7aa; color: #c2410c; font-weight: bold;">ABIERTO</td>
+                        </tr>
+                      `).join('') : `
+                        <tr><td colspan="4" style="padding: 4px; text-align: center; color: #9a3412; font-style: italic;">Sin permisos en caliente abiertos.</td></tr>
+                      `}
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
             </table>
           </div>
 
