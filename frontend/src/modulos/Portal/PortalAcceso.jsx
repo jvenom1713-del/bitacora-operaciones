@@ -15,8 +15,8 @@ export default function PortalAcceso({
 
       {/* 1. Fondo en Movimiento Dinámico con Galería de Fotos */}
       <BackgroundSlideshow 
-        overlayClass={`backdrop-blur-md transition-opacity duration-300 ${
-          modoNocturno ? 'bg-slate-950/85' : 'bg-slate-900/50'
+        overlayClass={`backdrop-blur-[1px] transition-opacity duration-300 ${
+          modoNocturno ? 'bg-slate-950/60' : 'bg-slate-900/35'
         }`}
       />
 

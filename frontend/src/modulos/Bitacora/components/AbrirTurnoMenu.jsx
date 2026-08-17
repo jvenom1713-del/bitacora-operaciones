@@ -133,8 +133,8 @@ export default function AbrirTurnoMenu({
 
       {/* 1. Fondo en Movimiento Dinámico con Galería de Fotos */}
       <BackgroundSlideshow 
-        overlayClass={`backdrop-blur-sm transition-opacity duration-300 ${
-          modoNocturno ? 'bg-slate-950/80' : 'bg-slate-900/40'
+        overlayClass={`backdrop-blur-[1px] transition-opacity duration-300 ${
+          modoNocturno ? 'bg-slate-950/55' : 'bg-slate-900/30'
         }`}
       />
 
