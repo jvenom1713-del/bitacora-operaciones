@@ -37,10 +37,10 @@ export default function LoginPortada({
         rol_nombre: 'Operador Sala de Control'
       };
     } else {
-      userToUse = usuarios.find(u => u.email?.toLowerCase()?.includes('atorres') || u.rol_codigo === 'JEFE_TURNO') || {
+      userToUse = usuarios.find(u => u.email?.toLowerCase()?.includes('sanmartin') || u.email?.toLowerCase()?.includes('jsanmartin')) || usuarios.find(u => u.rol_codigo === 'JEFE_TURNO') || {
         id: 1,
-        nombre: 'Ariel Torres',
-        email: 'atorres@generadora.cl',
+        nombre: 'Javier San Martin',
+        email: 'jsanmartin@generadora.cl',
         rol_codigo: 'JEFE_TURNO',
         rol_nombre: 'Jefe de Turno'
       };

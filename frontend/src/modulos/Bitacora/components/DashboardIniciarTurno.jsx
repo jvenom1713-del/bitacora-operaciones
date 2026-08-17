@@ -964,6 +964,8 @@ ${extraHtml}
       const tipoTurnoAuto = (hCurrent >= 8 && hCurrent < 20) ? 'DIURNO' : 'NOCTURNO';
       const fechaTurnoAuto = new Date().toISOString().split('T')[0];
 
+      const nombreJefeAprobador = obtenerNombreJefeActual(usuarioActual, equipoTurno);
+
       const res = await safeFetchJson(getApiUrl('/api/turnos/aprobar'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -975,7 +977,8 @@ ${extraHtml}
           pdf_base64: pdfBase64,
           contenido_completo: plainContent,
           tipo_turno: tipoTurnoAuto,
-          fecha_turno: fechaTurnoAuto
+          fecha_turno: fechaTurnoAuto,
+          cerrado_por_nombre: nombreJefeAprobador
         })
       });
 
@@ -986,7 +989,7 @@ ${extraHtml}
             fecha: new Date().toISOString().slice(0, 10),
             turno: tipoTurnoAuto,
             operador: 'Operador',
-            jefe_turno: usuarioActual?.nombre || 'Jefe de Turno',
+            jefe_turno: nombreJefeAprobador,
             estado: 'aprobada',
             contenido: observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.'
           }]);

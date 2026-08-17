@@ -68,17 +68,17 @@ export default function App() {
     try {
       const saved = localStorage.getItem('equipo_turno_actual');
       return saved ? JSON.parse(saved) : {
-        rotacion: 'TIGRES',
-        jdt: 'Ariel Torres',
-        osc: 'Jorge Albornoz',
-        ot: 'Matías Cisternas'
+        rotacion: 'JAGUAR',
+        jdt: 'Javier San Martin',
+        osc: 'Humberto Barra Tapia',
+        ot: 'Eric Godoy Diaz'
       };
     } catch {
       return {
-        rotacion: 'TIGRES',
-        jdt: 'Ariel Torres',
-        osc: 'Jorge Albornoz',
-        ot: 'Matías Cisternas'
+        rotacion: 'JAGUAR',
+        jdt: 'Javier San Martin',
+        osc: 'Humberto Barra Tapia',
+        ot: 'Eric Godoy Diaz'
       };
     }
   });

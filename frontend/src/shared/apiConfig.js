@@ -182,27 +182,40 @@ export function formatearFechaHoraLegible(fechaRaw) {
 }
 
 export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
-  if (usuarioActual?.nombre && usuarioActual?.nombre !== 'Jefe de Turno' && usuarioActual?.nombre !== 'Operador') {
-    return usuarioActual.nombre;
+  // 1. Si el objeto equipoTurno trae un Jefe de Turno asignado a la guardia, es la fuente primaria
+  if (equipoTurno?.jdt && typeof equipoTurno.jdt === 'string' && equipoTurno.jdt.trim()) {
+    return equipoTurno.jdt.trim();
   }
-  const email = usuarioActual?.email?.toLowerCase() || '';
-  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
-  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
-  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
-  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
-  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
-  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
 
-  if (equipoTurno?.jdt && equipoTurno.jdt !== 'Ariel Torres') return equipoTurno.jdt;
-
+  // 2. Si hay un equipo de turno guardado en localStorage
   try {
     const saved = localStorage.getItem('equipo_turno_actual');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed?.jdt && parsed.jdt !== 'Ariel Torres') return parsed.jdt;
+      if (parsed?.jdt && typeof parsed.jdt === 'string' && parsed.jdt.trim()) {
+        return parsed.jdt.trim();
+      }
     }
   } catch (_) {}
 
-  return equipoTurno?.jdt || 'Norman Galaz';
+  // 3. Si el usuario actual es explícitamente un Jefe de Turno por email o perfil
+  const email = usuarioActual?.email?.toLowerCase() || '';
+  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
+  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
+  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
+  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
+  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
+  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
+
+  if (usuarioActual?.rol_codigo === 'JEFE_TURNO' && usuarioActual?.nombre && usuarioActual?.nombre !== 'Jefe de Turno') {
+    return usuarioActual.nombre;
+  }
+
+  if (usuarioActual?.nombre && usuarioActual?.nombre !== 'Jefe de Turno' && usuarioActual?.nombre !== 'Operador' && usuarioActual?.nombre !== 'Operador Sala de Control') {
+    return usuarioActual.nombre;
+  }
+
+  return 'Javier San Martin';
 }
+
 
