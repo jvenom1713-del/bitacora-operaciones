@@ -1130,7 +1130,7 @@ ${permisosTxt}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded border border-amber-500/40 hidden md:inline-block">
-                🕒 Día Operativo: desde 20:00 hrs
+                🕒 {turnoBitacora === 'DIURNO' ? 'Turno Diurno: 08:00 a 20:00 hrs' : 'Turno Nocturno: 20:00 a 08:00 hrs'}
               </span>
               <span className="font-mono text-xs text-cyan-400 font-bold bg-slate-900 px-2.5 py-0.5 rounded-lg border border-slate-700">FOLIO: {folioStr}</span>
             </div>
