@@ -844,31 +844,43 @@ export default function VistaConsultaHojaTurno({
       }
 
       const textos = textoBitacora || {};
-      const contenidoTexto = `
-Central Nueva Renca
+      const partesFecha = (fechaStr || '').split('-');
+      const diaNum = partesFecha.length === 3 ? parseInt(partesFecha[2], 10) : new Date().getDate();
+
+      const fragilidadesTxt = [
+        textos.bop && `BOP: ${textos.bop}`,
+        textos.turbinaVapor && `Turbina Vapor: ${textos.turbinaVapor}`,
+        (textos.fragilidadesAdicionales || []).map(f => `${f.titulo}: ${f.texto || ''}`).join('\n')
+      ].filter(Boolean).join('\n') || 'Sin fragilidades operacionales registradas.';
+
+      const instruccionesTxt = (textos.instrucciones || instrucciones || 'Sin instrucciones operacionales registradas.').trim();
+      const senalesTxt = (senalesForzadasTexto && senalesForzadasTexto !== 'Sin señales forzadas registradas.')
+        ? senalesForzadasTexto
+        : 'Sin señales forzadas registradas.';
+
+      const permisosAbiertosList = (permisosTurno || []).filter(p => p.estado === 'ABIERTO');
+      const permisosTxt = permisosAbiertosList.length > 0
+        ? permisosAbiertosList.map(p => `- Permiso ${p.numero || 'P-001'}: ${p.ubicacion || 'General'} (Solicitado: ${p.solicitado_por || p.solicitadoPor || '-'}, Autorizado: ${p.autorizado_por || p.autorizadoPor || '-'})`).join('\n')
+        : 'Sin permisos de trabajo en caliente abiertos en este turno.';
+
+      const obsDia = textos.nuevaRencaDia1 || textos.resumen || 'Sin observaciones registradas.';
+
+      const contenidoTexto = `Central Nueva Renca
 Folio: ${folioStr} | Fecha: ${fechaStr} | Turno: ${turnoBitacora}
 1. RESUMEN DE GENERACIÓN DIARIA:
-Día 1: ${textos.nuevaRencaDia1 || '20:39 SIN OBSERVACIONES'}
+Día ${diaNum}: ${obsDia}
 
 2. FRAGILIDADES OPERACIONALES:
-BOP: FCV094 arreglo provisorio.
-VTR B indisponible por trabajos en estructura.
-VTR G Limitado a baja velocidad, por baja aislación.
-Turbina Vapor: Virador Falla en sistema de enganche en desaceleración.
-Fuga de Vapor zona TAP lado Izquierdo, se encuentra encapsulada.
-Excitación Falla Puente N°1.
+${fragilidadesTxt}
 
 3. INSTRUCCIONES OPERACIONALES:
-Sin instrucciones operacionales registradas.
+${instruccionesTxt}
 
 4. SEÑALES FORZADAS:
-• BOP: LV010
-• MKVI CTG: L83MCB
-• MKVI CTG: FIRE PROTECCION
+${senalesTxt}
 
 5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS:
-- Permiso P-002: Turbina Vapor - Cámara de Paletas (Solicitado: Roberto Silva / Mantención, Autorizado: Javier San Martín)
-- Permiso P-003: Sala Transformadores - Patio 33 kV (Solicitado: Luis Pérez / ELECTRUM, Autorizado: Norman Galaz)
+${permisosTxt}
 `;
 
       // Insertar bitácora en Supabase directamente con estado 'aprobada'

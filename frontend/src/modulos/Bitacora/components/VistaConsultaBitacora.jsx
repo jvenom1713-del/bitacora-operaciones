@@ -81,6 +81,32 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
     const turno = item.tipo_turno || 'DIURNO';
     const resumen = item.resumen_operativo || item.contenido_texto || 'Sin observaciones de cierre.';
 
+    const partesF = fecha.split('-');
+    const diaNum = partesF.length === 3 ? parseInt(partesF[2], 10) : new Date().getDate();
+
+    let permisosLista = [];
+    try {
+      const storedP = localStorage.getItem('permisos_caliente_turno');
+      permisosLista = storedP ? JSON.parse(storedP) : [];
+    } catch (_) {}
+    const permisosAbiertos = permisosLista.filter(p => p.estado === 'ABIERTO');
+
+    const filasPermisos = permisosAbiertos.length > 0 ? permisosAbiertos.map(p => `
+      <tr>
+        <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #c2410c;">${p.numero || 'P-001'}</td>
+        <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #1e293b;">${p.ubicacion || 'General'}</td>
+        <td style="padding: 4px 6px; border: 1px solid #fed7aa;">${p.solicitado_por || p.solicitadoPor || '-'}</td>
+        <td style="padding: 4px 6px; border: 1px solid #fed7aa;">${p.autorizado_por || p.autorizadoPor || '-'}</td>
+        <td style="padding: 4px 6px; border: 1px solid #fed7aa; color: #c2410c; font-weight: bold;">ABIERTO</td>
+      </tr>
+    `).join('') : `
+      <tr>
+        <td colspan="5" style="padding: 8px; border: 1px solid #fed7aa; text-align: center; color: #64748b; font-style: italic;">
+          Sin permisos de trabajo en caliente abiertos en este turno.
+        </td>
+      </tr>
+    `;
+
     container.innerHTML = `
       <div style="border: 2px solid #1e293b; border-radius: 8px; overflow: hidden; background: #ffffff; padding: 0;">
         <!-- BANNER DE ENCABEZADO -->
@@ -141,7 +167,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             </table>
           </div>
           <div style="font-size: 11px; color: #1e293b; line-height: 1.5; white-space: pre-line; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            Día 1: ${resumen || '20:39 SIN OBSERVACIONES'}
+            Día ${diaNum}: ${resumen}
           </div>
 
           <!-- 2. FRAGILIDADES OPERACIONALES: -->
@@ -149,12 +175,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             2. FRAGILIDADES OPERACIONALES:
           </div>
           <div style="font-size: 10.5px; color: #1e293b; line-height: 1.6; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            • <strong>BOP:</strong> FCV094 arreglo provisorio.<br/>
-            • VTR B indisponible por trabajos en estructura.<br/>
-            • VTR G Limitado a baja velocidad, por baja aislación.<br/>
-            • <strong>Turbina Vapor:</strong> Virador Falla en sistema de enganche en desaceleración.<br/>
-            • Fuga de Vapor zona TAP lado Izquierdo, se encuentra encapsulada.<br/>
-            • <strong>Excitación:</strong> Falla Puente N°1.
+            ${item.fragilidades_texto || 'Sin fragilidades operacionales registradas.'}
           </div>
 
           <!-- 3. INSTRUCCIONES OPERACIONALES: -->
@@ -162,7 +183,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             3. INSTRUCCIONES OPERACIONALES:
           </div>
           <div style="font-size: 10.5px; color: #1e293b; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            Sin instrucciones operacionales registradas.
+            ${item.instrucciones_texto || 'Sin instrucciones operacionales registradas.'}
           </div>
 
           <!-- 4. SEÑALES FORZADAS: -->
@@ -170,9 +191,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
             4. SEÑALES FORZADAS:
           </div>
           <div style="font-size: 10.5px; color: #1e293b; line-height: 1.6; background: #f1f5f9; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 14px;">
-            • <strong>BOP:</strong> LV010<br/>
-            • <strong>MKVI CTG:</strong> L83MCB<br/>
-            • <strong>MKVI CTG:</strong> FIRE PROTECCION
+            ${item.senales_forzadas_texto || 'Sin señales forzadas registradas.'}
           </div>
 
           <!-- 5. PERMISOS DE TRABAJO EN CALIENTE ABIERTOS: -->
@@ -191,20 +210,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #c2410c;">P-002</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Turbina Vapor - Cámara de Paletas</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Roberto Silva (Mantención)</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Javier San Martín</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #d97706;">ABIERTO</td>
-                </tr>
-                <tr>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #c2410c;">P-003</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Sala Transformadores - Patio 33 kV</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Luis Pérez (ELECTRUM)</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa;">Norman Galaz</td>
-                  <td style="padding: 4px 6px; border: 1px solid #fed7aa; font-weight: bold; color: #d97706;">ABIERTO</td>
-                </tr>
+                ${filasPermisos}
               </tbody>
             </table>
           </div>
