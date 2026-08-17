@@ -116,18 +116,6 @@ export default function App() {
 
   const [usuarios, setUsuarios] = useState([]);
   const [usuarioActual, setUsuarioActual] = useState(null);
-
-  // Sincronizar el JDT de la dotación con el usuario logueado en sesión
-  useEffect(() => {
-    if (usuarioActual?.nombre && !['Operador', 'Operador Sala de Control', 'Jefe de Turno'].includes(usuarioActual.nombre)) {
-      setEquipoTurnoSeleccionado(prev => {
-        if (prev?.jdt !== usuarioActual.nombre) {
-          return { ...prev, jdt: usuarioActual.nombre };
-        }
-        return prev;
-      });
-    }
-  }, [usuarioActual]);
   const [permisosEfectivos, setPermisosEfectivos] = useState([]);
   const [versionCache, setVersionCache] = useState(1);
   const [catalogoPermisos, setCatalogoPermisos] = useState([]);

@@ -182,31 +182,12 @@ export function formatearFechaHoraLegible(fechaRaw) {
 }
 
 export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
-  // 1. Si hay un usuario logueado en sesión con nombre real (ej: Norman Galaz, Javier San Martin, Pablo Flores, Ariel Torres, Cristian Valdivia, etc.)
-  if (
-    usuarioActual?.nombre &&
-    typeof usuarioActual.nombre === 'string' &&
-    usuarioActual.nombre.trim() &&
-    !['Jefe de Turno', 'Operador', 'Operador Sala de Control', 'ADMIN', 'Usuario'].includes(usuarioActual.nombre.trim())
-  ) {
-    return usuarioActual.nombre.trim();
-  }
-
-  // 2. Si el usuario de sesión se identifica por correo corporativo de Jefe de Turno
-  const email = usuarioActual?.email?.toLowerCase() || '';
-  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
-  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
-  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
-  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
-  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
-  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
-
-  // 3. Si quien opera es Operador o usuario genérico, consultar el Jefe de Turno asignado en la tarjeta de dotación
+  // 1. FUENTE PRIMARIA Y OFICIAL: El Jefe de Turno (JDT) establecido en la dotación al abrir el turno por el Operador de Sala de Control (OSC)
   if (equipoTurno?.jdt && typeof equipoTurno.jdt === 'string' && equipoTurno.jdt.trim() && equipoTurno.jdt !== 'Jefe de Turno') {
     return equipoTurno.jdt.trim();
   }
 
-  // 4. Respaldo en localStorage
+  // 2. Si no viene en el parámetro equipoTurno, consultar la dotación de turno en localStorage
   try {
     const saved = localStorage.getItem('equipo_turno_actual');
     if (saved) {
@@ -217,7 +198,26 @@ export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
     }
   } catch (_) {}
 
-  return 'Jefe de Turno';
+  // 3. Respaldo: Si el usuario en sesión es un Jefe de Turno con nombre específico
+  if (
+    usuarioActual?.nombre &&
+    typeof usuarioActual.nombre === 'string' &&
+    usuarioActual.nombre.trim() &&
+    !['Jefe de Turno', 'Operador', 'Operador Sala de Control', 'ADMIN', 'Usuario'].includes(usuarioActual.nombre.trim())
+  ) {
+    return usuarioActual.nombre.trim();
+  }
+
+  // 4. Respaldo por correo corporativo
+  const email = usuarioActual?.email?.toLowerCase() || '';
+  if (email.includes('galaz') || email.includes('ngalaz')) return 'Norman Galaz';
+  if (email.includes('sanmartin') || email.includes('jsanmartin')) return 'Javier San Martin';
+  if (email.includes('flores') || email.includes('pflores')) return 'Pablo Flores Vasquez';
+  if (email.includes('torres') || email.includes('atorres')) return 'Ariel Torres';
+  if (email.includes('valdivia') || email.includes('cvaldivia')) return 'Cristian Valdivia Maldonado';
+  if (email.includes('troncoso')) return 'Rodrigo Troncoso';
+
+  return 'Norman Galaz';
 }
 
 
