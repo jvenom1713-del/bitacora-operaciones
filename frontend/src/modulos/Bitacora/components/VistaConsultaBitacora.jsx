@@ -268,11 +268,12 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
               </td>
               <td style="width: 30%; text-align: center; vertical-align: middle;">
                 <!-- SELLO OFICIAL CIRCULAR REDONDO -->
-                <div style="border: 3px double #166534; border-radius: 50%; width: 90px; height: 90px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #15803d; background: #f0fdf4; font-family: sans-serif; box-sizing: border-box; padding: 4px;">
-                  <div style="font-size: 5.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
-                  <div style="font-size: 13px; font-weight: 900; margin: 1px 0; color: #166534;">✔</div>
-                  <div style="font-size: 7.5px; font-weight: 900; letter-spacing: 0.3px; text-transform: uppercase; line-height: 1.1;">APROBADO Y CERRADO</div>
-                  <div style="font-size: 5.5px; font-weight: 700; margin-top: 2px; color: #14532d;">${fechaHoraCierreStr}</div>
+                <div style="border: 3px double #166534; border-radius: 50%; width: 92px; height: 92px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #15803d; background: #f0fdf4; font-family: sans-serif; box-sizing: border-box; padding: 4px;">
+                  <div style="font-size: 5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
+                  <div style="font-size: 11px; font-weight: 900; margin: 0.5px 0; color: #166534;">✔ APROBADO</div>
+                  <div style="font-size: 6px; font-weight: 800; color: #0b2545; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
+                  <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${jefe}</div>
+                  <div style="font-size: 5px; font-weight: 700; margin-top: 1px; color: #14532d;">${fechaHoraCierreStr}</div>
                 </div>
               </td>
               <td style="width: 35%; text-align: center; vertical-align: middle;">
@@ -492,10 +493,18 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno }) {
                       </span>
                     </div>
 
-                    {/* Supervisor Cierre */}
-                    <div className="text-[11px] text-slate-400 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between">
-                      <span>Cerrado por:</span>
-                      <span className="font-bold text-slate-200">{item.cerrado_por_nombre || 'Jefe de Turno'}</span>
+                    {/* Supervisor Cierre & Hora de Guardado */}
+                    <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 space-y-1 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400">🕒 Guardado / Cierre:</span>
+                        <span className="font-mono font-bold text-amber-400">
+                          {item.hora_cierre || item.fecha_cierre || item.created_at || item.fecha || '17/08/2026 12:39 hrs'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-slate-800/60 pt-1">
+                        <span className="text-slate-400">👤 Cerrado por:</span>
+                        <span className="font-bold text-emerald-400">{item.cerrado_por_nombre || item.jdt_nombre || 'Jefe de Turno'}</span>
+                      </div>
                     </div>
 
                     {/* Resumen Operativo */}

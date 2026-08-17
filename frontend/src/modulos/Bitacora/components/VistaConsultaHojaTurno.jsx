@@ -692,11 +692,12 @@ export default function VistaConsultaHojaTurno({
                 </td>
                 <td style="width: 30%; text-align: center; vertical-align: middle;">
                   <!-- SELLO OFICIAL CIRCULAR REDONDO -->
-                  <div style="border: 3px double #166534; border-radius: 50%; width: 88px; height: 88px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #15803d; background: #f0fdf4; font-family: sans-serif; box-sizing: border-box; padding: 3px;">
+                  <div style="border: 3px double #166534; border-radius: 50%; width: 92px; height: 92px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #15803d; background: #f0fdf4; font-family: sans-serif; box-sizing: border-box; padding: 4px;">
                     <div style="font-size: 5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase;">GENERADORA METROPOLITANA</div>
-                    <div style="font-size: 12px; font-weight: 900; margin: 1px 0; color: #166534;">✔</div>
-                    <div style="font-size: 7px; font-weight: 900; letter-spacing: 0.3px; text-transform: uppercase; line-height: 1;">APROBADO Y CERRADO</div>
-                    <div style="font-size: 5px; font-weight: 700; margin-top: 2px; color: #14532d;">${fechaImpresion}</div>
+                    <div style="font-size: 11px; font-weight: 900; margin: 0.5px 0; color: #166534;">✔ APROBADO</div>
+                    <div style="font-size: 6px; font-weight: 800; color: #0b2545; text-transform: uppercase; margin-top: 1px;">CERRADO POR:</div>
+                    <div style="font-size: 7px; font-weight: 900; color: #0f172a; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${equipoTurno?.jdt || 'Ariel Torres'}</div>
+                    <div style="font-size: 5px; font-weight: 700; margin-top: 1px; color: #14532d;">${fechaImpresion}</div>
                   </div>
                 </td>
                 <td style="width: 35%; text-align: center; vertical-align: middle;">
@@ -2019,22 +2020,38 @@ ${permisosTxt}
               </div>
             </div>
 
-            {/* Footer del Modal */}
-            <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
-              <button
-                onClick={descargarPdfResumenEjecutivo}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2 cursor-pointer transition-colors"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Descargar Resumen PDF (Formato Ejecutivo)</span>
-              </button>
+            {/* Footer del Modal con Datos de Guardado y Cierre */}
+            <div className="p-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3 text-xs bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-800 text-slate-300 w-full sm:w-auto">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-400">🕒 Guardado:</span>
+                  <span className="font-mono font-bold text-amber-400">
+                    {new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} hrs
+                  </span>
+                </div>
+                <span className="hidden sm:inline text-slate-700">|</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-400">👤 Cerrado por:</span>
+                  <span className="font-bold text-emerald-400">{equipoTurnoState?.jdt || 'Jefe de Turno'}</span>
+                </div>
+              </div>
 
-              <button
-                onClick={() => setMostrarModalResumenOperativo(false)}
-                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
-              >
-                Cerrar
-              </button>
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <button
+                  onClick={descargarPdfResumenEjecutivo}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Descargar Resumen PDF (Formato Ejecutivo)</span>
+                </button>
+
+                <button
+                  onClick={() => setMostrarModalResumenOperativo(false)}
+                  className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
 
           </div>
