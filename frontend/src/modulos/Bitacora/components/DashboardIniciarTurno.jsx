@@ -875,7 +875,7 @@ ${extraHtml}
       const tipoTurnoAuto = (hCurrent >= 8 && hCurrent < 20) ? 'DIURNO' : 'NOCTURNO';
       const fechaTurnoAuto = new Date().toISOString().split('T')[0];
 
-      const nombreJefeAprobador = obtenerNombreJefeActual(usuarioActual, equipoTurno);
+      const nombreJefeAprobador = obtenerNombreJefeActual(usuarioActual, equipoTurnoState || equipoTurno);
 
       const res = await safeFetchJson(getApiUrl('/api/turnos/aprobar'), {
         method: 'POST',

@@ -182,19 +182,26 @@ export function formatearFechaHoraLegible(fechaRaw) {
 }
 
 export function obtenerNombreJefeActual(usuarioActual, equipoTurno) {
-  // 1. FUENTE PRIMARIA Y OFICIAL: El Jefe de Turno (JDT) establecido en la dotación al abrir el turno por el Operador de Sala de Control (OSC)
-  if (equipoTurno?.jdt && typeof equipoTurno.jdt === 'string' && equipoTurno.jdt.trim() && equipoTurno.jdt !== 'Jefe de Turno') {
-    return equipoTurno.jdt.trim();
-  }
+  const esValido = (n) =>
+    n &&
+    typeof n === 'string' &&
+    n.trim() &&
+    !['Jefe de Turno', 'aprobada', 'enviado', 'CERRADO', 'ABIERTO', 'Sin JDT', 'Operador', '-'].includes(n.trim());
 
-  // 2. Si no viene en el parámetro equipoTurno, consultar la dotación de turno en localStorage
+  // 1. FUENTE PRIMARIA Y OFICIAL: El Jefe de Turno (JDT) establecido en la dotación al abrir el turno por el Operador de Sala de Control (OSC)
+  if (esValido(equipoTurno?.jdt)) return equipoTurno.jdt.trim();
+  if (esValido(equipoTurno?.jefe_turno)) return equipoTurno.jefe_turno.trim();
+  if (esValido(equipoTurno?.cerrado_por_nombre)) return equipoTurno.cerrado_por_nombre.trim();
+  if (esValido(equipoTurno?.jdt_nombre)) return equipoTurno.jdt_nombre.trim();
+  if (esValido(equipoTurno?.jefe_nombre)) return equipoTurno.jefe_nombre.trim();
+
+  // 2. Consultar la dotación de turno en localStorage si no venía en equipoTurno
   try {
     const saved = localStorage.getItem('equipo_turno_actual');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed?.jdt && typeof parsed.jdt === 'string' && parsed.jdt.trim() && parsed.jdt !== 'Jefe de Turno') {
-        return parsed.jdt.trim();
-      }
+      if (esValido(parsed?.jdt)) return parsed.jdt.trim();
+      if (esValido(parsed?.jefe_turno)) return parsed.jefe_turno.trim();
     }
   } catch (_) {}
 

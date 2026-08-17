@@ -837,7 +837,7 @@ ${permisosTxt}
           fecha: fechaStr || new Date().toISOString().slice(0, 10),
           turno: turnoBitacora || 'DIURNO',
           operador: equipoTurno?.operador || 'Operador',
-          jefe_turno: usuarioActual?.nombre || equipoTurno?.jdt || 'Norman Galaz (Jefe de Turno)',
+          jefe_turno: obtenerNombreJefeActual(usuarioActual, equipoTurnoState || equipoTurno),
           estado: 'aprobada',
           contenido: contenidoTexto || observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.'
         }]);
