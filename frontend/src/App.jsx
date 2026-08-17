@@ -766,6 +766,7 @@ export default function App() {
 
       const turnoConEquipo = {
         ...turnoData,
+        folio: equipoObj?.folio || turnoData?.folio || proximoFolio,
         equipoTurno: equipoObj,
         jdt: equipoObj.jdt,
         osc: equipoObj.osc,
@@ -790,6 +791,7 @@ export default function App() {
       const equipoObj = equipoGuardadoStr ? JSON.parse(equipoGuardadoStr) : equipoTurnoSeleccionado;
       const turnoDefault = {
         estado: 'ABIERTO',
+        folio: equipoObj?.folio || proximoFolio,
         eventos: [],
         equipoTurno: equipoObj,
         jdt: equipoObj.jdt,

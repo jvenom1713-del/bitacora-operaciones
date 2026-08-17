@@ -686,7 +686,7 @@ export default function VistaConsultaHojaTurno({
       if (supabase) {
         try {
           await supabase.from('bitacoras').insert([{
-            folio: turnoActivo?.folio || '01',
+            folio: folioStr || turnoActivo?.folio || '0001',
             fecha: new Date().toISOString().slice(0, 10),
             turno: turnoActivo?.tipo_turno || 'DIURNO',
             operador: usuarioActual?.nombre || 'Operador',
@@ -833,7 +833,7 @@ ${permisosTxt}
       // Insertar bitácora en Supabase directamente con estado 'aprobada'
       try {
         await supabase.from('bitacoras').insert([{
-          folio: folioStr || '01',
+          folio: folioStr || turnoActivo?.folio || '0001',
           fecha: fechaStr || new Date().toISOString().slice(0, 10),
           turno: turnoBitacora || 'DIURNO',
           operador: equipoTurno?.operador || 'Operador',

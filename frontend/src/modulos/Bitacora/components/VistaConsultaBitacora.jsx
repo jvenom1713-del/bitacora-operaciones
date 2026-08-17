@@ -29,6 +29,16 @@ const resolverNombreJefeOficial = (item, usuarioActual) => {
   );
 };
 
+const resolverFolioCorrelativo = (item) => {
+  if (!item) return '0001';
+  const fStr = String(item.folio || '').trim();
+  const esValidoUnico = fStr && fStr !== '0' && fStr !== '01' && fStr !== '0001' && fStr !== '1';
+  if (esValidoUnico) {
+    return fStr.padStart(4, '0');
+  }
+  return String(item.id || 1).padStart(4, '0');
+};
+
 export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usuarioActual }) {
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
@@ -50,7 +60,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
         const adaptadas = data.map(item => ({
           ...item,
           id: item.id,
-          folio: item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0'),
+          folio: resolverFolioCorrelativo(item),
           fecha_turno: item.fecha || item.fecha_turno,
           tipo_turno: item.turno || item.tipo_turno,
           cerrado_por_nombre: resolverNombreJefeOficial(item, usuarioActual),
@@ -97,7 +107,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
     container.style.width = '700px';
     container.style.boxSizing = 'border-box';
 
-    const folio = item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0');
+    const folio = resolverFolioCorrelativo(item);
     const fecha = item.fecha_turno || new Date().toISOString().slice(0, 10);
     const jefe = resolverNombreJefeOficial(item, usuarioActual);
     const turno = item.tipo_turno || 'DIURNO';
@@ -495,7 +505,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-wider block">
-                          FOLIO: {item.folio ? String(item.folio).padStart(4, '0') : String(item.id || 1).padStart(4, '0')}
+                          FOLIO: {resolverFolioCorrelativo(item)}
                         </span>
                         <h4 className="text-sm font-black text-slate-100 flex items-center gap-2 mt-0.5">
                           <Calendar className="w-4 h-4 text-cyan-400" />

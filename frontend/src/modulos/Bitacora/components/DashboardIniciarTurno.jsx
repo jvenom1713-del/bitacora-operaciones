@@ -454,7 +454,7 @@ export default function DashboardIniciarTurno({
       if (supabase) {
         try {
           await supabase.from('bitacoras').insert([{
-            folio: tObj?.folio || '01',
+            folio: tObj?.folio || String(tObj?.id || 1).padStart(4, '0'),
             fecha: new Date().toISOString().slice(0, 10),
             turno: tObj?.tipo_turno || 'DIURNO',
             operador: usuarioActual?.nombre || 'Operador',
@@ -896,7 +896,7 @@ ${extraHtml}
       if (supabase) {
         try {
           await supabase.from('bitacoras').insert([{
-            folio: tObj?.folio || '01',
+            folio: tObj?.folio || String(tObj?.id || 1).padStart(4, '0'),
             fecha: new Date().toISOString().slice(0, 10),
             turno: tipoTurnoAuto,
             operador: 'Operador',
