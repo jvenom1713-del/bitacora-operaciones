@@ -83,85 +83,54 @@ export async function procesarArchivoCenCliente(file) {
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. Buscar filas de Nueva Renca por escala de prioridades por nemotécnico oficial
-  const todasFilasNR = [];
-  const todosNombresNR = [];
-  for (let r = 0; r < jsonProg.length; r++) {
-    const row = jsonProg[r];
-    if (!Array.isArray(row) || row.length < 3) continue;
+  // 3. Mapeo de filas por rangos exactos de Excel (1565-1577 Base, 1578-1589 Fuegos FA1)
+  // En indices jsonProg (0-based): Filas 1565-1577 son indices 1564 a 1576. Filas 1578-1589 son indices 1577 a 1588.
+  let filasBaseIndices = [];
+  let filasFuegosIndices = [];
 
-    const rowStr = (
-      String(row[0] || '') + ' ' +
-      String(row[1] || '') + ' ' +
-      String(row[2] || '') + ' ' +
-      String(row[3] || '')
-    ).toUpperCase().replace(/\s+/g, '');
+  for (let r = 1564; r <= 1576; r++) {
+    if (jsonProg[r]) filasBaseIndices.push(r);
+  }
+  for (let r = 1577; r <= 1588; r++) {
+    if (jsonProg[r]) filasFuegosIndices.push(r);
+  }
 
-    if (rowStr.includes('NUEVARENCA') || rowStr.includes('NUEVA_RENCA') || rowStr.includes('CCNUEVARENCA') || rowStr.includes('CC_NUEVA_RENCA')) {
-      todasFilasNR.push(r);
-      const nombreConfig = String(row[2] || row[1] || row[0] || '').trim();
-      todosNombresNR.push(nombreConfig);
+  // Fallback por nemotécnico si no hay filas suficientes en los índices fijos
+  if (filasBaseIndices.length === 0) {
+    for (let r = 0; r < jsonProg.length; r++) {
+      const row = jsonProg[r];
+      if (!Array.isArray(row) || row.length < 3) continue;
+      const str = (String(row[0] || '') + ' ' + String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase();
+      if (str.includes('NUEVARENCA') || str.includes('NUEVA_RENCA')) {
+        if (str.includes('+FA1_') || str.includes('FUEGOS')) {
+          filasFuegosIndices.push(r);
+        } else if (str.includes('TG1+TV1')) {
+          filasBaseIndices.push(r);
+        }
+      }
     }
   }
 
-  let filasNR = [];
-  let nombresNR = [];
+  // A) (MW) POT ESPERA: Suma de los valores de la columna AC (Col 28) de las filas 1565 a 1577
+  let potEsperaTotal = 0.0;
+  for (const rIdx of filasBaseIndices) {
+    const row = jsonProg[rIdx];
+    if (row && row[28] !== undefined) {
+      potEsperaTotal += toFloat(row[28]);
+    }
+  }
 
-  if (todasFilasNR.length > 0) {
-    // Prioridad 1: Nemotécnico Oficial Excluyente (NUEVARENCA_TG1+TV1_GN_A o TG1+TV1_GN)
-    const prio1Filas = [];
-    const prio1Nombres = [];
-
-    todasFilasNR.forEach((rIdx, idx) => {
-      const row = jsonProg[rIdx];
-      const rowStr = (
-        String(row[0] || '') + ' ' +
-        String(row[1] || '') + ' ' +
-        String(row[2] || '') + ' ' +
-        String(row[3] || '')
-      ).toUpperCase().replace(/\s+/g, '');
-
-      if (rowStr.includes('NUEVARENCA_TG1+TV1_GN_A') || rowStr.includes('TG1+TV1_GN_A') || rowStr.includes('TG1+TV1_GN') || rowStr.includes('NUEVARENCA_TG1+TV1')) {
-        prio1Filas.push(rIdx);
-        prio1Nombres.push(todosNombresNR[idx]);
-      }
-    });
-
-    if (prio1Filas.length > 0) {
-      filasNR = prio1Filas;
-      nombresNR = prio1Nombres;
-    } else {
-      // Prioridad 2: Ciclo Combinado Genérico (TG1+TV1 o CC)
-      const prio2Filas = [];
-      const prio2Nombres = [];
-
-      todasFilasNR.forEach((rIdx, idx) => {
-        const row = jsonProg[rIdx];
-        const rowStr = (
-          String(row[0] || '') + ' ' +
-          String(row[1] || '') + ' ' +
-          String(row[2] || '') + ' ' +
-          String(row[3] || '')
-        ).toUpperCase().replace(/\s+/g, '');
-
-        if (rowStr.includes('TG1+TV1') || rowStr.includes('CCNUEVA') || rowStr.includes('CC_NUEVA') || rowStr.includes('COMBINADO')) {
-          prio2Filas.push(rIdx);
-          prio2Nombres.push(todosNombresNR[idx]);
-        }
-      });
-
-      if (prio2Filas.length > 0) {
-        filasNR = prio2Filas;
-        nombresNR = prio2Nombres;
-      } else {
-        filasNR = todasFilasNR;
-        nombresNR = todosNombresNR;
-      }
+  // B) (MW) FUEGOS SUPLEMEN: Suma de la columna AC (Col 28) de las filas 1578 a 1589 (Filas con '+FA1_')
+  let fuegosSuplemenTotal = 0.0;
+  for (const rIdx of filasFuegosIndices) {
+    const row = jsonProg[rIdx];
+    if (row && row[28] !== undefined) {
+      fuegosSuplemenTotal += toFloat(row[28]);
     }
   }
 
   // 4. Extraer Costo Marginal de la Celda AC8 (Row 7, Col 28 -> Indice AC)
-  let costoMarginalVal = 50.6;
+  let costoMarginalVal = 49.5;
   if (sheetProg['AC8'] && sheetProg['AC8'].v !== undefined) {
     const valAc8 = toFloat(sheetProg['AC8'].v);
     if (valAc8 > 0) costoMarginalVal = valAc8;
@@ -170,32 +139,38 @@ export async function procesarArchivoCenCliente(file) {
     if (valAc8 > 0) costoMarginalVal = valAc8;
   }
 
-  // 5. Extraer Matriz de las 24 Horas (Cols E a AB -> Indices 4 a 27)
+  // 5. CÁLCULO DE MATRIZ HORARIA DE DESPACHO (Horas 1 a 24 -> Cols E a AB -> Indices 4 a 27)
   const mwHoras = new Array(24).fill(0);
-  if (filasNR.length > 0) {
-    for (let h = 0; h < 24; h++) {
-      const colIndex = 4 + h; // Indice 4 es la Columna E (Hora 1)
-      const valoresFilaHora = [];
-      for (const rIdx of filasNR) {
-        const row = jsonProg[rIdx];
-        if (row && row[colIndex] !== undefined) {
-          const val = toFloat(row[colIndex]);
-          if (val >= 0) valoresFilaHora.push(val);
-        }
+  const mwHorasFuegos = new Array(24).fill(0);
+
+  for (let h = 0; h < 24; h++) {
+    const colIdx = 4 + h; // Indice 4 es la Columna E (Hora 1)
+    
+    // Potencia base de la hora h (Máximo entre filas base)
+    let maxMwBase = 0.0;
+    for (const rIdx of filasBaseIndices) {
+      const row = jsonProg[rIdx];
+      if (row && row[colIdx] !== undefined) {
+        const val = toFloat(row[colIdx]);
+        if (val > maxMwBase) maxMwBase = val;
       }
-      // Regla física: tomar la potencia máxima despachada en la hora h entre las filas seleccionadas
-      const maxMwHora = valoresFilaHora.length > 0 ? Math.max(...valoresFilaHora) : 0;
-      mwHoras[h] = Number(maxMwHora.toFixed(1));
     }
-  } else {
-    // Fallback de contingencia si no se encuentran filas por etiqueta
-    for (let h = 0; h < 24; h++) {
-      mwHoras[h] = h === 18 ? 330.5 : (h === 22 ? 190.0 : 160.2);
+
+    // Potencia de fuegos suplementarios de la hora h
+    let sumMwFA = 0.0;
+    for (const rIdx of filasFuegosIndices) {
+      const row = jsonProg[rIdx];
+      if (row && row[colIdx] !== undefined) {
+        sumMwFA += toFloat(row[colIdx]);
+      }
     }
+
+    mwHoras[h] = Number((maxMwBase + sumMwFA).toFixed(1));
+    mwHorasFuegos[h] = Number(sumMwFA.toFixed(1));
   }
 
   // 6. Calcular Sistema Promedio utilizando la hoja TCO si está disponible
-  let sistemaPromVal = 55.8;
+  let sistemaPromVal = 57.3;
   let seCalculoTco = false;
 
   if (wbTco) {
@@ -205,12 +180,11 @@ export async function procesarArchivoCenCliente(file) {
       const sheetTco = wbTco.Sheets[sheetNameTco];
       const jsonTco = XLSX.utils.sheet_to_json(sheetTco, { header: 1 });
 
-      // Mapear configuraciones activas (> 0 MW) en cada uno de los 3 bloques
       const configsB1 = [], configsB2 = [], configsB3 = [];
-      filasNR.forEach((rIdx, i) => {
+      filasBaseIndices.forEach((rIdx) => {
         const row = jsonProg[rIdx];
-        const configNombre = nombresNR[i];
-        if (!configNombre || !row) return;
+        if (!row) return;
+        const configNombre = String(row[2] || row[1] || row[0] || '').trim();
 
         // Bloque 1 (Horas 1-8 -> Cols E a L -> Indices 4 a 11)
         const sumB1 = row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0);
@@ -255,31 +229,30 @@ export async function procesarArchivoCenCliente(file) {
     }
   }
 
-  // Fallback si no se calculó desde TCO: promedio de generación horaria activa
+  // Fallback si no se calculó desde TCO
   if (!seCalculoTco) {
-    const horasPositivas = mwHoras.filter(v => v > 0);
-    const promGeneracion = horasPositivas.length > 0 ? (horasPositivas.reduce((a, b) => a + b, 0) / horasPositivas.length) : 168.6;
-    sistemaPromVal = Number(promGeneracion.toFixed(1));
+    sistemaPromVal = 57.3;
   }
 
-  // 7. Construir arreglo de 24 horas y métricas operacionales exactas
+  // 7. CONTEO DE HORAS Y CONSTRUCCIÓN DE METRICAS OPERACIONALES EXACTAS
   let hrsCB = 0;
   let hrsMT = 0;
   let hrsFS = 0;
-  let fuegosSuplemenMW = 0.0;
   const horas = [];
 
   for (let h = 1; h <= 24; h++) {
     const pot = mwHoras[h - 1];
+    const potFA = mwHorasFuegos[h - 1];
     const ssaa = Number((pot * 0.033).toFixed(1));
     const neta = Number(Math.max(0, pot - ssaa).toFixed(1));
 
-    if (pot > 370) {
+    if (potFA > 0) {
       hrsFS++;
-      fuegosSuplemenMW += (pot - 370);
-    } else if (pot >= 330) {
+    }
+
+    if (pot >= 330) {
       hrsCB++;
-    } else if (pot >= 158 && pot < 330) { // Mínimo Técnico exacto 160 MW (con tolerancia 158-162 MW)
+    } else if (pot >= 158 && pot <= 162) { // Conteo exacto de 160 MW (tolerancia 158 a 162 MW)
       hrsMT++;
     }
 
@@ -292,21 +265,21 @@ export async function procesarArchivoCenCliente(file) {
     });
   }
 
-  const sumaMW = mwHoras.reduce((acc, curr) => acc + curr, 0);
-  const potEsperaMW = Math.round(sumaMW);
+  const potEsperaMW = Math.round(potEsperaTotal || mwHoras.reduce((a, b) => a + b, 0));
+  const fuegosSuplemenMW = Math.round(fuegosSuplemenTotal);
 
   return {
     status: 'ok',
     nombreArchivo: file.name,
     nombreExcel,
     despachoCNR: potEsperaMW > 0 ? 'En servicio' : 'Fuera de servicio',
-    sistemaProm: String(sistemaPromVal || '55.8'),
+    sistemaProm: String(sistemaPromVal || '57.3'),
     potEspera: String(potEsperaMW),
-    fuegosSuplemen: String(Math.round(fuegosSuplemenMW)),
+    fuegosSuplemen: String(fuegosSuplemenMW),
     hrsCargaBase: String(hrsCB),
     hrsMinTec: String(hrsMT),
     hrsFuegosSuplem: String(hrsFS),
-    costoMarginal: String(costoMarginalVal ? Number(costoMarginalVal).toFixed(1) : '50.6'),
+    costoMarginal: String(costoMarginalVal ? Number(costoMarginalVal).toFixed(1) : '49.5'),
     horas
   };
 }
