@@ -81,46 +81,37 @@ export async function procesarArchivoCenCliente(file) {
   }) || sheetNamesPrg[0];
 
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
-  const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
+  let jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. FILTRADO ESTRICTO POR BLOQUE CONTIGUO A PRUEBA DE FILAS VACÍAS
+  // NUEVO: LA GUILLOTINA (Eliminar tablas inferiores del CEN de la memoria)
+  const indiceCorte = jsonProg.findIndex(row => {
+    const textoFila = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'')).toUpperCase();
+    return textoFila.includes('LÍMITE') || 
+           textoFila.includes('LIMITE') || 
+           textoFila.includes('MÍNIMO TÉCNICO') || 
+           textoFila.includes('MINIMO TECNICO') || 
+           textoFila.includes('RESERVA');
+  });
+
+  // Si encontró una tabla inferior, recorta el documento dejando solo la parte superior (Despacho real)
+  if (indiceCorte > 0) {
+    jsonProg = jsonProg.slice(0, indiceCorte);
+  }
+
+  // 3. FILTRADO ESTRICTO (El documento ya no tiene tablas duplicadas)
   let filasBaseIndices = [];
   let filasFuegosIndices = [];
-  let bloqueEncontrado = false;
-  let bloqueTerminado = false;
 
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
-    
-    // Si la fila está vacía, es muy corta, o es un título separador:
-    if (!Array.isArray(row) || row.length < 4) {
-      if (bloqueEncontrado) {
-        bloqueTerminado = true; // CIERRA EL CANDADO AL DETECTAR FILA VACÍA
-      }
-      continue; // Salta a la siguiente
-    }
+    if (!Array.isArray(row) || row.length < 4) continue;
 
-    // Unir celdas y limpiar espacios para evadir fallos de formato
     const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
 
-    const esBase = textoCeldas.includes('NUEVARENCA_TG1+TV1_');
-    const esFuego = textoCeldas.includes('NUEVARENCA_TG1+TV1+FA1_');
-
-    if (esBase || esFuego) {
-      if (bloqueTerminado) {
-        continue; // Si el candado se cerró antes, ignora esta repetición
-      }
-      bloqueEncontrado = true;
-      if (esFuego) {
-        filasFuegosIndices.push(r);
-      } else if (esBase) {
-        filasBaseIndices.push(r);
-      }
-    } else {
-      // Si la fila tiene datos pero no es Nueva Renca, cierra el candado
-      if (bloqueEncontrado) {
-        bloqueTerminado = true;
-      }
+    if (textoCeldas.includes('NUEVARENCA_TG1+TV1+FA1_')) {
+      filasFuegosIndices.push(r);
+    } else if (textoCeldas.includes('NUEVARENCA_TG1+TV1_')) {
+      filasBaseIndices.push(r);
     }
   }
 
