@@ -1455,16 +1455,17 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (mw >= 140) hrsMT++;
+          else if (mw >= 160) hrsMT++; // Umbral mínimo técnico exacto: >= 160 MW
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '--')
           ? String(datosEntrada.sistemaProm)
           : (sumaMW > 0 ? (sumaMW / mwLista.length).toFixed(1) : '55.8');
 
-        const cmgOficial = (datosEntrada && datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '0' && datosEntrada.costoMarginal !== '--')
-          ? String(datosEntrada.costoMarginal)
+        const cmgValRaw = (datosEntrada && datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '0' && datosEntrada.costoMarginal !== '--')
+          ? datosEntrada.costoMarginal
           : '50.6';
+        const cmgOficial = isNaN(Number(cmgValRaw)) ? String(cmgValRaw) : Number(cmgValRaw).toFixed(1);
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
@@ -1506,6 +1507,14 @@ ${extraHtml}
 
   useEffect(() => {
     const fetchInicial = async () => {
+      const savedHorarios = localStorage.getItem('bitacora_registros_horarios');
+      const savedParametros = localStorage.getItem('bitacora_parametros');
+      if (savedHorarios && savedParametros) {
+        setEstadoCarga('ok');
+        setMensajeCarga('Datos de sesión cargados');
+        return;
+      }
+
       try {
         const fechaLocal = getFechaLocalChile();
         const nemotecnico = 'NUEVARENCA_TG1+TV1_GN_A';
@@ -1522,12 +1531,12 @@ ${extraHtml}
         try {
           const res = await fetch(getApiUrl(`/api/resumen-generacion-diaria?refresh=true&fecha=${fechaLocal}&unidad=${encodeURIComponent(nemotecnico)}`));
           if (res.ok) {
-            const resData = await res.json();
-            if (resData && resData.status !== 'error') {
-              datosCargados = {
-                ...resData,
-                esDeServidor: true
-              };
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const resData = await res.json();
+              if (resData && resData.status !== 'error') {
+                datosCargados = { ...resData, esDeServidor: true };
+              }
             }
           }
         } catch (_) {}
@@ -1935,7 +1944,7 @@ ${extraHtml}
               ? 'bg-blue-600/20 text-blue-400 cursor-wait' 
               : 'hover:bg-blue-600/30 text-blue-600 dark:text-blue-400'
           }`}>
-          <RefreshCw className={`w-7 h-7 sm:w-8 sm:h-8 ${cargandoCen ? 'animate-spin text-blue-400' : ''}`} />
+          <Upload className={`w-7 h-7 sm:w-8 sm:h-8 ${cargandoCen ? 'animate-bounce text-blue-400' : ''}`} />
         </button>
 
         {/* Botón Bitácora Diaria (Nuevo Documento Word) */}

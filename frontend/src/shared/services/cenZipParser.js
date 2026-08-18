@@ -214,7 +214,7 @@ export async function procesarArchivoCenCliente(file) {
 
     if (pot >= 330) {
       hrsCB++;
-    } else if (pot >= 140) { // Umbral mínimo técnico >= 140 MW
+    } else if (pot >= 160) { // Umbral mínimo técnico exacto: >= 160 MW
       hrsMT++;
     }
 
@@ -236,7 +236,7 @@ export async function procesarArchivoCenCliente(file) {
     nombreExcel,
     sistemaProm: String(sistemaPromVal || '55.8'),
     potEspera: potEsperaMW > 0 ? String(potEsperaMW) : '4046',
-    costoMarginal: String(costoMarginalVal || '50.6'),
+    costoMarginal: String(costoMarginalVal ? Number(costoMarginalVal).toFixed(1) : '50.6'),
     hrsCargaBase: String(hrsCB),
     hrsMinTec: String(hrsMT),
     horas
