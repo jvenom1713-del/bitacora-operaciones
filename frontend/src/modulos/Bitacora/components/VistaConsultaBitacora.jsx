@@ -81,7 +81,7 @@ const parsearSeccionesBitacora = (rawText) => {
 const formatearSenalesHtmlCajitas = (senalesText) => {
   if (!senalesText || typeof senalesText !== 'string' || senalesText.toLowerCase().includes('sin señales')) {
     return `
-      <div style="font-family: monospace; font-size: 8px; color: #64748b; font-style: italic; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 3px; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center;">
+      <div style="font-family: monospace; font-size: 8.5px; color: #64748b; font-style: italic; background: #ffffff; padding: 8px; border: 1px solid #e2e8f0; border-radius: 3px; text-align: center;">
         Sin señales forzadas registradas.
       </div>
     `;
@@ -94,33 +94,54 @@ const formatearSenalesHtmlCajitas = (senalesText) => {
 
   if (lineas.length === 0) {
     return `
-      <div style="font-family: monospace; font-size: 8px; color: #64748b; font-style: italic; background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 3px; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center;">
+      <div style="font-family: monospace; font-size: 8.5px; color: #64748b; font-style: italic; background: #ffffff; padding: 8px; border: 1px solid #e2e8f0; border-radius: 3px; text-align: center;">
         Sin señales forzadas registradas.
       </div>
     `;
   }
 
-  const cajitasHtml = lineas.map(linea => {
+  // Agrupar dinámicamente las señales por Sistema / Título
+  const grupos = {};
+  lineas.forEach(linea => {
     const partes = linea.split(':');
-    let titulo = 'SEÑAL';
-    let detalle = linea;
+    let sistema = 'SEÑAL';
+    let senalDetalle = linea;
 
     if (partes.length >= 2) {
-      titulo = partes[0].trim();
-      detalle = partes.slice(1).join(':').trim();
+      sistema = partes[0].trim().toUpperCase();
+      senalDetalle = partes.slice(1).join(':').trim();
     }
 
+    if (!grupos[sistema]) {
+      grupos[sistema] = [];
+    }
+    grupos[sistema].push(senalDetalle);
+  });
+
+  const columnasHtml = Object.keys(grupos).map(sistema => {
+    const listaSenales = grupos[sistema].map(s => `
+      <div style="font-size: 9.5px; font-weight: 800; color: #0f172a; font-family: monospace; line-height: 1.3; margin-top: 2px;">
+        • ${s}
+      </div>
+    `).join('');
+
     return `
-      <div style="display: inline-block; vertical-align: top; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 4px; padding: 4px 6px; margin: 2px; text-align: center; min-width: 70px; max-width: 140px; box-sizing: border-box;">
-        <span style="display: block; font-size: 6.5px; font-weight: 900; color: #dc2626; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #fecaca; padding-bottom: 1px; margin-bottom: 2px;">${titulo}</span>
-        <strong style="display: block; font-size: 7.5px; font-weight: 800; color: #9f1239; font-family: monospace; word-break: break-word; line-height: 1.1;">${detalle}</strong>
+      <div style="display: inline-block; vertical-align: top; margin: 4px 10px; text-align: center; min-width: 90px; max-width: 160px; box-sizing: border-box;">
+        <!-- CASILLA ÚNICA DEL SISTEMA -->
+        <div style="background: #ffe4e6; border: 1px solid #f43f5e; border-radius: 4px; padding: 3px 8px; font-size: 9px; font-weight: 900; color: #be123c; text-transform: uppercase; letter-spacing: 0.5px; font-family: Arial, sans-serif; text-align: center;">
+          ${sistema}
+        </div>
+        <!-- LISTADO DE TODAS LAS SEÑALES DE ESTE SISTEMA DEBAJO (TEXTO LIMPIO SIN CASILLA) -->
+        <div style="margin-top: 4px; text-align: center;">
+          ${listaSenales}
+        </div>
       </div>
     `;
   }).join('');
 
   return `
-    <div style="background: #ffffff; padding: 5px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px; width: 100%; box-sizing: border-box;">
-      ${cajitasHtml}
+    <div style="background: #ffffff; padding: 6px; border: 1px solid #e2e8f0; border-radius: 3px; min-height: 45px; width: 100%; box-sizing: border-box; text-align: left;">
+      ${columnasHtml}
     </div>
   `;
 };
