@@ -3369,17 +3369,6 @@ ${extraHtml}
                   />
                 </div>
               </div>
-
-              {/* Matriz Celda a Celda Horaria (24 Horas) */}
-              <div className="p-3 border-t border-slate-700/50">
-                <GeneracionDiaria
-                  registros={registrosHorarios}
-                  onActualizarRegistros={setRegistrosHorarios}
-                  parametros={parametros}
-                  onActualizarParametros={setParametros}
-                  modoNocturno={modoNocturno}
-                />
-              </div>
             </div>
 
             {/* SECCIÓN 2: ESTADO DE PLANTA */}
