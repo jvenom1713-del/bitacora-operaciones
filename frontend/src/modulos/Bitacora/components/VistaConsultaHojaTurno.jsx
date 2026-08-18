@@ -386,12 +386,12 @@ export default function VistaConsultaHojaTurno({
             const valPot = data.pot_espera;
             const valCmg = data.costo_marginal;
             const actualizados = {
-              sistemaProm: (!valProm || valProm === '0' || valProm === '168.5' || valProm === '168.6' || valProm === '52.9') ? '55.8' : String(valProm),
-              costoMarginal: (!valCmg || valCmg === '0' || valCmg === '39.0') ? '50.6' : String(valCmg),
-              potEspera: (!valPot || valPot === '0' || valPot === '1311' || valPot === '4213') ? '4046' : String(valPot),
+              sistemaProm: (!valProm || valProm === '0') ? '55.8' : String(valProm),
+              costoMarginal: (!valCmg || valCmg === '0') ? '50.6' : String(valCmg),
+              potEspera: (!valPot || valPot === '0') ? '4046' : String(valPot),
               fuegosSuplemen: String(data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrs_carga_base || '1'),
-              hrsMinTec: String((!data.hrs_min_tec || data.hrs_min_tec === '23' || data.hrs_min_tec === 23) ? '22' : data.hrs_min_tec)
+              hrsMinTec: String(data.hrs_min_tec ?? '22')
             };
             setDatosGenLocal(actualizados);
             return;
@@ -408,12 +408,12 @@ export default function VistaConsultaHojaTurno({
             const valPot = data.potEspera || data.pot_espera;
             const valCmg = data.costoMarginal || data.costo_marginal;
             const actualizados = {
-              sistemaProm: (!valProm || valProm === '0' || valProm === '168.5' || valProm === '168.6' || valProm === '52.9') ? '55.8' : String(valProm),
-              costoMarginal: (!valCmg || valCmg === '0' || valCmg === '39.0') ? '50.6' : String(valCmg),
-              potEspera: (!valPot || valPot === '0' || valPot === '1311' || valPot === '4213') ? '4046' : String(valPot),
+              sistemaProm: (!valProm || valProm === '0') ? '55.8' : String(valProm),
+              costoMarginal: (!valCmg || valCmg === '0') ? '50.6' : String(valCmg),
+              potEspera: (!valPot || valPot === '0') ? '4046' : String(valPot),
               fuegosSuplemen: String(data.fuegosSuplemen || data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '1'),
-              hrsMinTec: String((!data.hrsMinTec || data.hrsMinTec === '23' || data.hrsMinTec === 23) ? '22' : data.hrsMinTec)
+              hrsMinTec: String(data.hrsMinTec || data.hrs_min_tec || '22')
             };
             setDatosGenLocal(actualizados);
           }

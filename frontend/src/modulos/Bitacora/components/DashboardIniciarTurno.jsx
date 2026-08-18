@@ -1268,11 +1268,11 @@ ${extraHtml}
       const saved = localStorage.getItem('bitacora_parametros');
       const parsed = saved ? JSON.parse(saved) : null;
       if (parsed) {
-        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '1311' || parsed.potEspera === '1310' || parsed.potEspera === '4213') parsed.potEspera = '4046';
-        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '39.0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '50.6';
-        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '52.9' || parsed.sistemaProm === '54.6' || parsed.sistemaProm === '370.0') parsed.sistemaProm = '55.8';
-        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '2' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '22';
-        if (!parsed.hrsCargaBase || parsed.hrsCargaBase === '0') parsed.hrsCargaBase = '1';
+        if (!parsed.potEspera) parsed.potEspera = '4046';
+        if (!parsed.costoMarginal) parsed.costoMarginal = '50.6';
+        if (!parsed.sistemaProm) parsed.sistemaProm = '55.8';
+        if (parsed.hrsMinTec === undefined || parsed.hrsMinTec === null) parsed.hrsMinTec = '22';
+        if (parsed.hrsCargaBase === undefined || parsed.hrsCargaBase === null) parsed.hrsCargaBase = '1';
         return parsed;
       }
       return {
@@ -1436,11 +1436,11 @@ ${extraHtml}
     if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
       const sisProm = Number(sisPromVal) || 55.8;
       let potEspNum = Number(potEspVal);
-      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0 || potEspNum === 1310) {
+      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0) {
         potEspNum = 4046;
       }
 
-      const sisPromStr = (sisProm === 54.6 || sisProm === 0) ? '55.8' : sisProm.toFixed(1);
+      const sisPromStr = sisProm === 0 ? '55.8' : sisProm.toFixed(1);
       const hrsMTStr = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : '0';
 
       return {
@@ -1455,7 +1455,7 @@ ${extraHtml}
         m3FA: String(datosEntrada.m3FA || '0'),
         m3Diesel: String(datosEntrada.m3Diesel || '0'),
         kgGasGLP: String(datosEntrada.kgGasGLP || '0'),
-        costoMarginal: cmgVal && cmgVal !== '--' ? String(cmgVal) : '39.0'
+        costoMarginal: cmgVal && cmgVal !== '--' ? String(cmgVal) : '50.6'
       };
     }
 
@@ -1472,18 +1472,18 @@ ${extraHtml}
           else if (mw >= 140) hrsMT++;
         });
 
-        const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '52.9' && datosEntrada.sistemaProm !== '168.5' && datosEntrada.sistemaProm !== '168.6')
+        const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '--')
           ? String(datosEntrada.sistemaProm)
-          : '55.8';
+          : (sumaMW > 0 ? (sumaMW / mwLista.length).toFixed(1) : '55.8');
 
-        const cmgOficial = (datosEntrada && datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '0' && datosEntrada.costoMarginal !== '--' && datosEntrada.costoMarginal !== '39.0')
+        const cmgOficial = (datosEntrada && datosEntrada.costoMarginal && datosEntrada.costoMarginal !== '0' && datosEntrada.costoMarginal !== '--')
           ? String(datosEntrada.costoMarginal)
           : '50.6';
 
         const fuegosSuplemenVal = datosEntrada?.fuegosSuplemen ?? datosEntrada?.mw_fuegos_suplementarios ?? '0';
         const hrsFuegosSuplemVal = datosEntrada?.hrsFuegosSuplem ?? datosEntrada?.hrs_fuegos_suplementarios ?? '0';
-        const hrsMTFinal = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '' && hrsMTVal !== '0' && hrsMTVal !== 0 && hrsMTVal !== '23') ? String(hrsMTVal) : '22';
-        const hrsCBFinal = (hrsCBVal !== undefined && hrsCBVal !== null && hrsCBVal !== '' && hrsCBVal !== '0' && hrsCBVal !== 0) ? String(hrsCBVal) : '1';
+        const hrsMTFinal = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : String(hrsMT);
+        const hrsCBFinal = (hrsCBVal !== undefined && hrsCBVal !== null && hrsCBVal !== '') ? String(hrsCBVal) : String(hrsCB);
 
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
@@ -3368,6 +3368,17 @@ ${extraHtml}
                     }`}
                   />
                 </div>
+              </div>
+
+              {/* Matriz Celda a Celda Horaria (24 Horas) */}
+              <div className="p-3 border-t border-slate-700/50">
+                <GeneracionDiaria
+                  registros={registrosHorarios}
+                  onActualizarRegistros={setRegistrosHorarios}
+                  parametros={parametros}
+                  onActualizarParametros={setParametros}
+                  modoNocturno={modoNocturno}
+                />
               </div>
             </div>
 
