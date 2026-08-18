@@ -1158,18 +1158,48 @@ ${extraHtml}
     const targetDate = fechaParam || fechaCenConsulta || getFechaObjetivoCoordinador();
     setCargandoCen(true);
     try {
-      const res = await fetch(getApiUrl(`/api/cen/programa?fecha=${targetDate}&unidad=NUEVARENCA_TG1%2BTV1_GN_A`));
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.resumen) {
-          const r = data.resumen;
-          actualizarParametrosGeneracion('sistemaProm', String(r.sistema_prom_mw || '55.8'));
-          actualizarParametrosGeneracion('costoMarginal', String(r.costo_marginal_usd_mw || '50.6'));
-          actualizarParametrosGeneracion('potEspera', String(r.potencia_esperada_mw || '4046'));
-          actualizarParametrosGeneracion('hrsCargaBase', String(r.hrs_carga_base || '1'));
-          actualizarParametrosGeneracion('hrsMinTec', String(r.hrs_minimo_tecnico || '22'));
+      // 1. Obtener telemetría y matriz horaria completa para la fecha objetivo
+      const datosHorarios = await fetchGeneracionCoordinador(targetDate, 'NUEVARENCA_TG1+TV1_GN_A');
+
+      // 2. Consultar el resumen directo del backend si está disponible
+      let resumenObtenido = null;
+      try {
+        const res = await fetch(getApiUrl(`/api/cen/programa?fecha=${targetDate}&unidad=NUEVARENCA_TG1%2BTV1_GN_A`));
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.resumen && data.resumen.status === 'ok') {
+            resumenObtenido = data.resumen;
+          }
         }
+      } catch (_) {}
+
+      // 3. Aplicar parámetros de generación actualizados
+      if (resumenObtenido && resumenObtenido.sistema_prom_mw) {
+        actualizarParametrosGeneracion('sistemaProm', String(resumenObtenido.sistema_prom_mw || '55.8'));
+        actualizarParametrosGeneracion('costoMarginal', String(resumenObtenido.costo_marginal_usd_mw || '50.6'));
+        actualizarParametrosGeneracion('potEspera', String(resumenObtenido.potencia_esperada_mw || '4046'));
+        actualizarParametrosGeneracion('hrsCargaBase', String(resumenObtenido.hrs_carga_base || '1'));
+        actualizarParametrosGeneracion('hrsMinTec', String(resumenObtenido.hrs_minimo_tecnico || '22'));
+      } else if (Array.isArray(datosHorarios) && datosHorarios.length > 0) {
+        const sumaMW = datosHorarios.reduce((acc, curr) => acc + (curr.potencia_mw || 0), 0);
+        let hrsCB = 0;
+        let hrsMT = 0;
+        datosHorarios.forEach(d => {
+          if (d.potencia_mw >= 330) hrsCB++;
+          else if (d.potencia_mw >= 140) hrsMT++;
+        });
+        const promMW = (sumaMW / 24).toFixed(1);
+        actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '55.8');
+        actualizarParametrosGeneracion('potEspera', String(Math.round(sumaMW) || 4046));
+        actualizarParametrosGeneracion('hrsCargaBase', String(hrsCB || 1));
+        actualizarParametrosGeneracion('hrsMinTec', String(hrsMT || 22));
       }
+
+      // 4. Emitir eventos de actualización global para redibujar 24 horas y casillas
+      window.dispatchEvent(new Event('FORZAR_CARGA_CELDAS_CEN'));
+      window.dispatchEvent(new Event('registros_actualizados'));
+      window.dispatchEvent(new Event('parametros_actualizados'));
+
     } catch (err) {
       console.error("Error al consultar CEN por fecha:", err);
     } finally {
