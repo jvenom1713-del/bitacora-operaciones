@@ -1,9 +1,9 @@
 import React, { useMemo, useEffect } from 'react';
 import { Zap, Activity, Clock, ShieldCheck, Database, RefreshCw, BarChart2 } from 'lucide-react';
-import { fetchGeneracionCoordinador, getFechaLocalChile } from '../../../shared/services/coordinadorService';
+import { fetchGeneracionCoordinador, getFechaObjetivoCoordinador } from '../../../shared/services/coordinadorService';
 
 export default function GeneracionDiaria({
-  fecha = getFechaLocalChile(),
+  fecha = getFechaObjetivoCoordinador(),
   registros = [],
   onActualizarRegistros = () => {},
   parametros = {},
@@ -13,10 +13,10 @@ export default function GeneracionDiaria({
   // Suscripción al evento FORZAR_CARGA_CELDAS_CEN emitido por el botón azul lateral
   useEffect(() => {
     const actualizarCeldas = async () => {
-      console.log("Celdas enteradas: Buscando datos del día...");
+      console.log("Celdas enteradas: Buscando datos del día objetivo...");
       try {
         const nuevosDatos = await fetchGeneracionCoordinador(
-          fecha || getFechaLocalChile(),
+          fecha || getFechaObjetivoCoordinador(),
           'NUEVARENCA_TG1+TV1_GN_A'
         );
         if (Array.isArray(nuevosDatos) && nuevosDatos.length === 24) {

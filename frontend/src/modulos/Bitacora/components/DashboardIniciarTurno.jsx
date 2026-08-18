@@ -3156,30 +3156,10 @@ ${extraHtml}
             <div className={`rounded-xl overflow-hidden border shadow-md w-full min-w-[1100px] ${
               modoNocturno ? 'border-blue-900/70 bg-[#0a1b33]' : 'border-slate-400 bg-white'
             }`}>
-              <div className={`px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-b ${
+              <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
                 modoNocturno ? 'bg-[#0d2a4d] border-blue-800 text-white' : 'bg-blue-950 border-blue-900 text-white'
               }`}>
                 <span className="font-extrabold text-sm sm:text-base uppercase tracking-wider">GENERACIÓN DIARIA</span>
-
-                {/* CONTROL INTERACTIVO PARA INTERROGAR EL CALENDARIO / COORDINADOR POR FECHA */}
-                <div className="flex items-center gap-2 bg-slate-900/90 p-1.5 rounded-lg border border-slate-700/80">
-                  <span className="text-[11px] font-bold text-cyan-300">📅 Fecha CEN:</span>
-                  <input 
-                    type="date"
-                    value={fechaCenConsulta}
-                    onChange={(e) => setFechaCenConsulta(e.target.value)}
-                    className="bg-slate-950 text-white text-xs font-mono px-2 py-1 rounded border border-slate-700 outline-none cursor-pointer"
-                  />
-                  <button
-                    onClick={() => handleConsultarCoordinadorFecha(fechaCenConsulta)}
-                    disabled={cargandoCen}
-                    title="Interrogar al Coordinador Eléctrico Nacional por la fecha seleccionada"
-                    className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${cargandoCen ? 'animate-spin' : ''}`} />
-                    <span>{cargandoCen ? 'Consultando...' : '🔍 Interrogar CEN'}</span>
-                  </button>
-                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 w-full gap-2.5 p-3 text-center font-mono">
                 
