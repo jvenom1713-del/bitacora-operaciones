@@ -83,35 +83,57 @@ export async function procesarArchivoCenCliente(file) {
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. Mapeo de filas por rangos exactos de Excel (1565-1577 Base, 1578-1589 Fuegos FA1)
-  // En indices jsonProg (0-based): Filas 1565-1577 son indices 1564 a 1576. Filas 1578-1589 son indices 1577 a 1588.
+  // 3. USO ESTRICTO DE "LISTA BLANCA" (EXACT MATCH) PARA NEMOTÉCNICOS BASE
+  const nemotecnicosBaseValidos = [
+    'NUEVARENCA_TG1+TV1_GN_A',
+    'NUEVARENCA_TG1+TV1_GNL_A',
+    'NUEVARENCA_TG1+TV1_GN',
+    'NUEVARENCA_TG1+TV1_GNL'
+  ];
+
   let filasBaseIndices = [];
   let filasFuegosIndices = [];
 
-  for (let r = 1564; r <= 1576; r++) {
-    if (jsonProg[r]) filasBaseIndices.push(r);
-  }
-  for (let r = 1577; r <= 1588; r++) {
-    if (jsonProg[r]) filasFuegosIndices.push(r);
+  for (let r = 0; r < jsonProg.length; r++) {
+    const row = jsonProg[r];
+    if (!Array.isArray(row) || row.length < 2) continue;
+
+    const c0 = String(row[0] || '').trim().toUpperCase();
+    const c1 = String(row[1] || '').trim().toUpperCase();
+    const c2 = String(row[2] || '').trim().toUpperCase();
+    const c3 = String(row[3] || '').trim().toUpperCase();
+
+    // Strict match exacto sobre la celda del nemotécnico
+    const esMatchBase = nemotecnicosBaseValidos.some(nemo => 
+      c0 === nemo || c1 === nemo || c2 === nemo || c3 === nemo
+    );
+
+    if (esMatchBase) {
+      filasBaseIndices.push(r);
+    }
+
+    // Identificar filas de Fuegos Suplementarios (+FA1_)
+    const esMatchFuegos = c0.includes('+FA1_') || c1.includes('+FA1_') || c2.includes('+FA1_') || c3.includes('+FA1_');
+    if (esMatchFuegos) {
+      filasFuegosIndices.push(r);
+    }
   }
 
-  // Fallback por nemotécnico si no hay filas suficientes en los índices fijos
+  // Fallback de seguridad si no hay coincidencia exacta
   if (filasBaseIndices.length === 0) {
     for (let r = 0; r < jsonProg.length; r++) {
       const row = jsonProg[r];
-      if (!Array.isArray(row) || row.length < 3) continue;
+      if (!Array.isArray(row) || row.length < 2) continue;
       const str = (String(row[0] || '') + ' ' + String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase();
-      if (str.includes('NUEVARENCA') || str.includes('NUEVA_RENCA')) {
-        if (str.includes('+FA1_') || str.includes('FUEGOS')) {
-          filasFuegosIndices.push(r);
-        } else if (str.includes('TG1+TV1')) {
+      if (str.includes('NUEVARENCA_TG1+TV1_GN') || str.includes('NUEVARENCA_TG1+TV1')) {
+        if (!str.includes('+FA1_') && !str.includes('FUEGOS')) {
           filasBaseIndices.push(r);
         }
       }
     }
   }
 
-  // A) (MW) POT ESPERA: Suma de los valores de la columna AC (Col 28) de las filas 1565 a 1577
+  // A) (MW) POT ESPERA: Suma de la columna AC (Col 28) ÚNICAMENTE de las filas extraídas en filasBaseIndices
   let potEsperaTotal = 0.0;
   for (const rIdx of filasBaseIndices) {
     const row = jsonProg[rIdx];
@@ -120,7 +142,7 @@ export async function procesarArchivoCenCliente(file) {
     }
   }
 
-  // B) (MW) FUEGOS SUPLEMEN: Suma de la columna AC (Col 28) de las filas 1578 a 1589 (Filas con '+FA1_')
+  // B) (MW) FUEGOS SUPLEMEN: Suma de la columna AC (Col 28) de las filas con fuegos '+FA1_'
   let fuegosSuplemenTotal = 0.0;
   for (const rIdx of filasFuegosIndices) {
     const row = jsonProg[rIdx];
