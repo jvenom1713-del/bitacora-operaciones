@@ -344,6 +344,18 @@ export default function App() {
 
   useEffect(() => {
     const cargarParametrosGeneracion = async () => {
+      // 1. Si existen parámetros previamente subidos/guardados en localStorage, priorizarlos
+      try {
+        const saved = localStorage.getItem('bitacora_parametros');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.sistemaProm) {
+            setParametrosGeneracion(parsed);
+            return;
+          }
+        }
+      } catch (_) {}
+
       let datosGeneracion = null;
       if (supabase) {
         try {
@@ -360,12 +372,12 @@ export default function App() {
             const valCmg = data.costo_marginal;
             datosGeneracion = {
               despachoCNR: data.despacho_cnr || 'En servicio',
-              sistemaProm: (!valProm || valProm === '0' || valProm === '0.0' || valProm === 0 || valProm === '52.9') ? '55.8' : String(valProm),
-              potEspera: (!valPot || valPot === '0' || valPot === 0 || valPot === '1311' || valPot === '4213') ? '4046' : String(valPot),
-              costoMarginal: (!valCmg || valCmg === '0' || valCmg === '0.0' || valCmg === 0 || valCmg === '39.0') ? '50.6' : String(valCmg),
+              sistemaProm: String(valProm || '55.8'),
+              potEspera: String(valPot || '4046'),
+              costoMarginal: String(valCmg || '50.6'),
               fuegosSuplemen: String(data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrs_carga_base || '1'),
-              hrsMinTec: String(data.hrs_min_tec || '22'),
+              hrsMinTec: String(data.hrs_min_tec || '15'),
               hrsFuegosSuplem: String(data.hrs_fuegos_suplem || '0')
             };
           }
@@ -376,21 +388,24 @@ export default function App() {
         try {
           const res = await fetch(getApiUrl('/api/resumen-generacion-diaria'));
           if (res.ok) {
-            const data = await res.json();
-            if (data && data.status !== 'error') {
-              const valProm = data.sistemaProm || data.sistema_prom_mw;
-              const valPot = data.potEspera || data.potencia_esperada_mw;
-              const valCmg = data.costoMarginal || data.costo_marginal_usd_mw;
-              datosGeneracion = {
-                despachoCNR: data.despachoCNR || 'En servicio',
-                sistemaProm: (!valProm || valProm === '0' || valProm === '0.0' || valProm === 0 || valProm === '52.9') ? '55.8' : String(valProm),
-                potEspera: (!valPot || valPot === '0' || valPot === 0 || valPot === '1311' || valPot === '4213') ? '4046' : String(valPot),
-                costoMarginal: (!valCmg || valCmg === '0' || valCmg === '0.0' || valCmg === 0 || valCmg === '39.0') ? '50.6' : String(valCmg),
-                fuegosSuplemen: String(data.fuegosSuplemen || '0'),
-                hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '1'),
-                hrsMinTec: String(data.hrsMinTec || data.hrs_minimo_tecnico || '22'),
-                hrsFuegosSuplem: String(data.hrsFuegosSuplem || data.hrs_fuegos_suplementarios || '0')
-              };
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const data = await res.json();
+              if (data && data.status !== 'error') {
+                const valProm = data.sistemaProm || data.sistema_prom_mw;
+                const valPot = data.potEspera || data.potencia_esperada_mw;
+                const valCmg = data.costoMarginal || data.costo_marginal_usd_mw;
+                datosGeneracion = {
+                  despachoCNR: data.despachoCNR || 'En servicio',
+                  sistemaProm: String(valProm || '55.8'),
+                  potEspera: String(valPot || '4046'),
+                  costoMarginal: String(valCmg || '50.6'),
+                  fuegosSuplemen: String(data.fuegosSuplemen || '0'),
+                  hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '1'),
+                  hrsMinTec: String(data.hrsMinTec || data.hrs_minimo_tecnico || '15'),
+                  hrsFuegosSuplem: String(data.hrsFuegosSuplem || data.hrs_fuegos_suplementarios || '0')
+                };
+              }
             }
           }
         } catch (_) {}
