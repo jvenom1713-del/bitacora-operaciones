@@ -1,9 +1,6 @@
 import JSZip from 'jszip';
 import * as XLSX from 'xlsx';
 
-/**
- * Helper para convertir valores de celdas Excel a Float de manera segura
- */
 function toFloat(val) {
   if (val === null || val === undefined) return 0.0;
   if (typeof val === 'number') return val;
@@ -15,274 +12,146 @@ function toFloat(val) {
   }
 }
 
-/**
- * Parser cliente para procesar archivos ZIP o XLSX descargados del Coordinador Eléctrico Nacional (CEN)
- * Lee las hojas 'PROGRAMA' y 'TCO' del libro o del archivo ZIP.
- * @param {File} file - Archivo .zip o .xlsx seleccionado por el usuario
- * @returns {Promise<Object>} Datos de generación extraídos y formateados
- */
 export async function procesarArchivoCenCliente(file) {
   if (!file) throw new Error("No se seleccionó ningún archivo.");
+
+  console.log(`\n🚀 [NUEVO ESCÁNER] Leyendo: ${file.name}`);
 
   let wbPrograma = null;
   let wbTco = null;
   let nombreExcel = file.name;
 
-  // 1. Procesar archivo ZIP si el usuario seleccionó un .zip
   if (file.name.toLowerCase().endsWith('.zip')) {
     const zip = new JSZip();
     const zipContent = await zip.loadAsync(file);
-    
-    // Buscar todos los archivos Excel dentro del ZIP
-    const excelFiles = Object.keys(zipContent.files).filter(name => {
-      const uname = name.toUpperCase();
-      return uname.endsWith('.XLSX') || uname.endsWith('.XLSM');
-    });
+    const excelFiles = Object.keys(zipContent.files).filter(n => n.toUpperCase().endsWith('.XLSX'));
 
-    if (excelFiles.length === 0) {
-      throw new Error("No se encontró ningún archivo Excel (.xlsx) dentro del archivo ZIP.");
-    }
+    if (excelFiles.length === 0) throw new Error("No hay Excel en el ZIP.");
 
-    // Identificar cuál es el de PROGRAMA (ej: PRG20260818.xlsx) y cuál el de TCO (ej: TCO20260818.xlsx)
-    let prgFileName = excelFiles.find(name => {
-      const u = name.toUpperCase();
-      return u.includes('PRG') || u.includes('PROGRAMA') || u.includes('PCP');
-    }) || excelFiles[0];
-
-    let tcoFileName = excelFiles.find(name => {
-      const u = name.toUpperCase();
-      return u.includes('PO') || u.includes('TCO') || u.includes('POLITICA');
-    });
+    let prgFileName = excelFiles.find(n => n.toUpperCase().includes('PRG') || n.toUpperCase().includes('PROGRAMA')) || excelFiles[0];
+    let tcoFileName = excelFiles.find(n => n.toUpperCase().includes('PO') || n.toUpperCase().includes('TCO'));
 
     nombreExcel = prgFileName;
-
-    const prgBuffer = await zipContent.files[prgFileName].async('arraybuffer');
-    wbPrograma = XLSX.read(prgBuffer, { type: 'array' });
+    wbPrograma = XLSX.read(await zipContent.files[prgFileName].async('arraybuffer'), { type: 'array' });
 
     if (tcoFileName) {
-      try {
-        const tcoBuffer = await zipContent.files[tcoFileName].async('arraybuffer');
-        wbTco = XLSX.read(tcoBuffer, { type: 'array' });
-      } catch (_) {}
+      try { wbTco = XLSX.read(await zipContent.files[tcoFileName].async('arraybuffer'), { type: 'array' }); } catch (_) {}
     }
-  } else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xlsm')) {
-    const arrayBuffer = await file.arrayBuffer();
-    wbPrograma = XLSX.read(arrayBuffer, { type: 'array' });
-    wbTco = wbPrograma; // Podría contener la hoja TCO dentro del mismo libro
   } else {
-    throw new Error("Formato de archivo no soportado. Seleccione un archivo .zip o .xlsx");
+    wbPrograma = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    wbTco = wbPrograma;
   }
 
-  // 2. Obtener la hoja PROGRAMA
-  const sheetNamesPrg = wbPrograma.SheetNames;
-  let sheetNamePrg = sheetNamesPrg.find(s => {
-    const u = s.toUpperCase();
-    return u === 'PROGRAMA' || u.includes('PROGRAMA') || u.includes('PRG') || u.includes('PCP');
-  }) || sheetNamesPrg[0];
+  const sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
+  const jsonProg = XLSX.utils.sheet_to_json(wbPrograma.Sheets[sheetNamePrg], { header: 1 });
 
-  const sheetProg = wbPrograma.Sheets[sheetNamePrg];
-  let jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
+  let potEsperaTotal = 0.0;
+  let fuegosSuplemenTotal = 0.0;
+  const perfilBase24h = Array(24).fill(0);
+  const perfilFuegos24h = Array(24).fill(0);
+  
+  let leyendoBloque = false;
 
-  // NUEVO: LA GUILLOTINA (Eliminar tablas inferiores del CEN de la memoria)
-  const indiceCorte = jsonProg.findIndex(row => {
-    const textoFila = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'')).toUpperCase();
-    return textoFila.includes('LÍMITE') || 
-           textoFila.includes('LIMITE') || 
-           textoFila.includes('MÍNIMO TÉCNICO') || 
-           textoFila.includes('MINIMO TECNICO') || 
-           textoFila.includes('RESERVA');
-  });
-
-  // Si encontró una tabla inferior, recorta el documento dejando solo la parte superior (Despacho real)
-  if (indiceCorte > 0) {
-    jsonProg = jsonProg.slice(0, indiceCorte);
-  }
-
-  // 3. FILTRADO ESTRICTO (El documento ya no tiene tablas duplicadas)
-  let filasBaseIndices = [];
-  let filasFuegosIndices = [];
-
+  // 💥 LA GUILLOTINA: Lectura Táctica (Aisla la Fila 1565 a la 1589)
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
     if (!Array.isArray(row) || row.length < 4) continue;
 
-    const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
+    // Columna C (índice 2) es donde está el nombre en tu Excel
+    const nombreCentral = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+    if (nombreCentral === '') continue;
 
-    if (textoCeldas.includes('NUEVARENCA_TG1+TV1+FA1_')) {
-      filasFuegosIndices.push(r);
-    } else if (textoCeldas.includes('NUEVARENCA_TG1+TV1_')) {
-      filasBaseIndices.push(r);
-    }
-  }
+    const esBase = nombreCentral.startsWith('NUEVARENCA_TG1+TV1_');
+    const esFuego = nombreCentral.startsWith('NUEVARENCA_TG1+TV1+FA1_');
 
-  // A) (MW) POT ESPERA: Suma de la columna AC (Col 28) ÚNICAMENTE de las filas extraídas en filasBaseIndices
-  let potEsperaTotal = 0.0;
-  for (const rIdx of filasBaseIndices) {
-    const row = jsonProg[rIdx];
-    if (row && row[28] !== undefined) {
-      potEsperaTotal += toFloat(row[28]);
-    }
-  }
-
-  // B) (MW) FUEGOS SUPLEMEN: Suma de la columna AC (Col 28) de las filas con fuegos '+FA1_'
-  let fuegosSuplemenTotal = 0.0;
-  for (const rIdx of filasFuegosIndices) {
-    const row = jsonProg[rIdx];
-    if (row && row[28] !== undefined) {
-      fuegosSuplemenTotal += toFloat(row[28]);
-    }
-  }
-
-  // 4. Extraer Costo Marginal de la Celda AC8 (Row 7, Col 28 -> Indice AC)
-  let costoMarginalVal = 49.5;
-  if (sheetProg['AC8'] && sheetProg['AC8'].v !== undefined) {
-    const valAc8 = toFloat(sheetProg['AC8'].v);
-    if (valAc8 > 0) costoMarginalVal = valAc8;
-  } else if (jsonProg.length > 7 && jsonProg[7] && jsonProg[7][28] !== undefined) {
-    const valAc8 = toFloat(jsonProg[7][28]);
-    if (valAc8 > 0) costoMarginalVal = valAc8;
-  }
-
-  // 5. CÁLCULO Y CONSOLIDACIÓN VERTICAL DE MATRIZ HORARIA DE DESPACHO (Horas 1 a 24 -> Cols E a AB -> Indices 4 a 27)
-  const perfilBase24h = Array(24).fill(0);
-  const perfilFuegos24h = Array(24).fill(0);
-
-  for (let i = 0; i < 24; i++) {
-    const colIdx = 4 + i; // Indice 4 es la Columna E (Hora 1)
-    
-    filasBaseIndices.forEach(rIdx => {
-      const row = jsonProg[rIdx];
-      if (row && row[colIdx] !== undefined) {
-        perfilBase24h[i] += toFloat(row[colIdx]);
+    if (esBase || esFuego) {
+      leyendoBloque = true;
+      
+      // Sumar 24 Horas (Columnas E a AB -> Índices 4 a 27)
+      for (let i = 0; i < 24; i++) {
+        const val = toFloat(row[i + 4]);
+        if (esBase) perfilBase24h[i] += val;
+        if (esFuego) perfilFuegos24h[i] += val;
       }
-    });
 
-    filasFuegosIndices.forEach(rIdx => {
-      const row = jsonProg[rIdx];
-      if (row && row[colIdx] !== undefined) {
-        perfilFuegos24h[i] += toFloat(row[colIdx]);
-      }
-    });
+      // Sumar Total Diario (Columna AC -> Índice 28)
+      const totalColAC = toFloat(row[28]);
+      if (esBase) potEsperaTotal += totalColAC;
+      if (esFuego) fuegosSuplemenTotal += totalColAC;
+
+    } else if (leyendoBloque) {
+      // Si estábamos leyendo a Nueva Renca y pasamos a otra central (ej. fila 1590: CMPCCORDILLERA) -> APAGAR ESCÁNER
+      console.log(`🛑 Bloque aislado con éxito. Escáner apagado en fila ${r} al detectar: ${nombreCentral}`);
+      break; // Esto destruye el bucle y evita que lea los límites técnicos de abajo
+    }
   }
 
-  const mwHoras = new Array(24).fill(0);
-  const mwHorasFuegos = new Array(24).fill(0);
-  for (let i = 0; i < 24; i++) {
-    mwHoras[i] = Number((perfilBase24h[i] + perfilFuegos24h[i]).toFixed(1));
-    mwHorasFuegos[i] = Number(perfilFuegos24h[i].toFixed(1));
-  }
+  // Costo Marginal (AC8)
+  let costoMarginalVal = toFloat(wbPrograma.Sheets[sheetNamePrg]['AC8']?.v) || 49.5;
 
-  // 6. Calcular Sistema Promedio utilizando la hoja TCO si está disponible
+  const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
+  const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
+
+  // TCO (Sistema Promedio)
   let sistemaPromVal = 57.3;
-  let seCalculoTco = false;
-
   if (wbTco) {
-    const sheetNamesTco = wbTco.SheetNames;
-    let sheetNameTco = sheetNamesTco.find(s => s.toUpperCase().includes('TCO') || s.toUpperCase().includes('POLITICA'));
+    const sheetNameTco = wbTco.SheetNames.find(s => s.toUpperCase().includes('TCO') || s.toUpperCase().includes('POLITICA'));
     if (sheetNameTco) {
-      const sheetTco = wbTco.Sheets[sheetNameTco];
-      const jsonTco = XLSX.utils.sheet_to_json(sheetTco, { header: 1 });
-
+      const jsonTco = XLSX.utils.sheet_to_json(wbTco.Sheets[sheetNameTco], { header: 1 });
       const configsB1 = [], configsB2 = [], configsB3 = [];
-      filasBaseIndices.forEach((rIdx) => {
-        const row = jsonProg[rIdx];
-        if (!row) return;
-        const configNombre = String(row[2] || row[1] || row[0] || '').trim();
+      
+      jsonProg.forEach(row => {
+        if (!Array.isArray(row) || row.length < 4) return;
+        const nombreCentral = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+        if (!nombreCentral.startsWith('NUEVARENCA_TG1+TV1_')) return;
 
-        // Bloque 1 (Horas 1-8 -> Cols E a L -> Indices 4 a 11)
-        const sumB1 = row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0);
-        if (sumB1 > 0) configsB1.push(configNombre.toUpperCase());
-
-        // Bloque 2 (Horas 9-18 -> Cols M a V -> Indices 12 a 21)
-        const sumB2 = row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0);
-        if (sumB2 > 0) configsB2.push(configNombre.toUpperCase());
-
-        // Bloque 3 (Horas 19-24 -> Cols W a AB -> Indices 22 a 27)
-        const sumB3 = row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0);
-        if (sumB3 > 0) configsB3.push(configNombre.toUpperCase());
+        if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(nombreCentral);
+        if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(nombreCentral);
+        if (row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0) > 0) configsB3.push(nombreCentral);
       });
 
-      const obtenerCmgPromBloque = (colCentral, colCmg, configsActivas) => {
-        if (configsActivas.length === 0) return null;
-        const cmgs = [];
-        for (const cfg of configsActivas) {
-          for (let r = 0; r < jsonTco.length; r++) {
-            const row = jsonTco[r];
-            if (!Array.isArray(row)) continue;
-            const centVal = String(row[colCentral] || '').trim().toUpperCase();
-            if (centVal && (centVal === cfg || centVal.includes(cfg))) {
-              const cmg = toFloat(row[colCmg]);
-              if (cmg > 0) cmgs.push(cmg);
-              break;
-            }
-          }
-        }
-        return cmgs.length > 0 ? (cmgs.reduce((a, b) => a + b, 0) / cmgs.length) : null;
+      const obtenerProm = (colCent, colCmg, cfgs) => {
+        if (!cfgs.length) return null;
+        const cmgs = jsonTco.filter(r => cfgs.some(c => String(r[colCent]||'').toUpperCase().includes(c)))
+                            .map(r => toFloat(r[colCmg])).filter(v => v > 0);
+        return cmgs.length ? cmgs.reduce((a, b) => a + b, 0) / cmgs.length : null;
       };
 
-      const b1Avg = obtenerCmgPromBloque(2, 3, configsB1);   // Col C (Indice 2), Col D (Indice 3)
-      const b2Avg = obtenerCmgPromBloque(6, 7, configsB2);   // Col G (Indice 6), Col H (Indice 7)
-      const b3Avg = obtenerCmgPromBloque(10, 11, configsB3); // Col K (Indice 10), Col L (Indice 11)
-
-      const bloquesValidos = [b1Avg, b2Avg, b3Avg].filter(v => v !== null && v > 0);
-      if (bloquesValidos.length > 0) {
-        sistemaPromVal = Number((bloquesValidos.reduce((a, b) => a + b, 0) / bloquesValidos.length).toFixed(1));
-        seCalculoTco = true;
-      }
+      const validos = [obtenerProm(2,3,configsB1), obtenerProm(6,7,configsB2), obtenerProm(10,11,configsB3)].filter(v => v !== null);
+      if (validos.length) sistemaPromVal = Number((validos.reduce((a, b) => a + b, 0) / validos.length).toFixed(1));
     }
   }
 
-  // Fallback si no se calculó desde TCO
-  if (!seCalculoTco) {
-    sistemaPromVal = 57.3;
-  }
-
-  // 7. CONTEO DE HORAS Y CONSTRUCCIÓN DE METRICAS OPERACIONALES EXACTAS
-  let hrsCB = 0;
-  let hrsMT = 0;
-  let hrsFS = 0;
+  // Métricas de Horas
+  let hrsCB = 0, hrsMT = 0, hrsFS = 0;
   const horas = [];
-
   for (let h = 1; h <= 24; h++) {
     const pot = mwHoras[h - 1];
     const potFA = mwHorasFuegos[h - 1];
     const ssaa = Number((pot * 0.033).toFixed(1));
-    const neta = Number(Math.max(0, pot - ssaa).toFixed(1));
 
-    if (potFA > 0) {
-      hrsFS++;
-    }
+    if (potFA > 0) hrsFS++;
+    if (pot >= 330) hrsCB++;
+    else if (pot >= 158 && pot <= 162) hrsMT++;
 
-    if (pot >= 330) {
-      hrsCB++;
-    } else if (pot >= 158 && pot <= 162) { // Conteo exacto de 160 MW (tolerancia 158 a 162 MW)
-      hrsMT++;
-    }
-
-    horas.push({
-      hora: h,
-      potencia_mw: pot,
-      generacion_mwh: pot,
-      ssaa_mwh: ssaa,
-      generacion_neta: neta
-    });
+    horas.push({ hora: h, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) });
   }
 
-  const potEsperaMW = Math.round(potEsperaTotal || mwHoras.reduce((a, b) => a + b, 0));
-  const fuegosSuplemenMW = Math.round(fuegosSuplemenTotal);
+  potEsperaTotal = Math.round(potEsperaTotal);
+  console.log(`✅ Resultado Final: ${potEsperaTotal} MW`);
 
   return {
     status: 'ok',
     nombreArchivo: file.name,
     nombreExcel,
-    despachoCNR: potEsperaMW > 0 ? 'En servicio' : 'Fuera de servicio',
-    sistemaProm: String(sistemaPromVal || '57.3'),
-    potEspera: String(potEsperaMW),
-    fuegosSuplemen: String(fuegosSuplemenMW),
+    despachoCNR: potEsperaTotal > 0 ? 'En servicio' : 'Fuera de servicio',
+    sistemaProm: String(sistemaPromVal),
+    potEspera: String(potEsperaTotal),
+    fuegosSuplemen: String(Math.round(fuegosSuplemenTotal)),
     hrsCargaBase: String(hrsCB),
     hrsMinTec: String(hrsMT),
     hrsFuegosSuplem: String(hrsFS),
-    costoMarginal: String(costoMarginalVal ? Number(costoMarginalVal).toFixed(1) : '49.5'),
+    costoMarginal: String(costoMarginalVal.toFixed(1)),
     horas
   };
 }
