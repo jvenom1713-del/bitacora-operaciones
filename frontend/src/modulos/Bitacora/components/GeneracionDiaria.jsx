@@ -29,11 +29,22 @@ export default function GeneracionDiaria({
       }
     };
 
+    const actualizarCeldasConDatos = (e) => {
+      if (e && e.detail && Array.isArray(e.detail) && e.detail.length === 24) {
+        console.log("Celdas inyectadas directamente desde ZIP/Excel cliente");
+        if (typeof onActualizarRegistros === 'function') {
+          onActualizarRegistros(e.detail);
+        }
+      }
+    };
+
     window.addEventListener('FORZAR_CARGA_CELDAS_CEN', actualizarCeldas);
+    window.addEventListener('FORZAR_CARGA_CELDAS_CEN_DATA', actualizarCeldasConDatos);
     window.addEventListener('registros_actualizados', actualizarCeldas);
 
     return () => {
       window.removeEventListener('FORZAR_CARGA_CELDAS_CEN', actualizarCeldas);
+      window.removeEventListener('FORZAR_CARGA_CELDAS_CEN_DATA', actualizarCeldasConDatos);
       window.removeEventListener('registros_actualizados', actualizarCeldas);
     };
   }, [fecha, onActualizarRegistros]);

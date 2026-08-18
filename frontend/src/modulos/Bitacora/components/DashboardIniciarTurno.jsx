@@ -4,6 +4,7 @@ import VistaPermisosCaliente from './VistaPermisosCaliente';
 import CambioPersonalModal from './CambioPersonalModal';
 import GeneracionDiaria from './GeneracionDiaria';
 import { fetchGeneracionCoordinador, getFechaLocalChile, getFechaObjetivoCoordinador } from '../../../shared/services/coordinadorService';
+import { procesarArchivoCenCliente } from '../../../shared/services/cenZipParser';
 import ErrorBoundary from '../../../shared/components/ErrorBoundary';
 import { getApiUrl, safeFetchJson, formatearEventosParaBitacora, isBorrador, isEnviado, isAprobada, formatearFechaHoraLegible, obtenerNombreJefeActual } from '../../../shared/apiConfig';
 import { supabase } from '../../../shared/supabaseClient';
@@ -1153,6 +1154,48 @@ ${extraHtml}
   // Consulta por fecha del Coordinador aplicandole la regla de las 20:00 hrs
   const [fechaCenConsulta, setFechaCenConsulta] = useState(() => getFechaObjetivoCoordinador());
   const [cargandoCen, setCargandoCen] = useState(false);
+  const [mensajeCenExito, setMensajeCenExito] = useState('');
+  const fileInputZipRef = useRef(null);
+
+  const handleAbrirSelectorZipCen = () => {
+    if (fileInputZipRef.current) {
+      fileInputZipRef.current.click();
+    }
+  };
+
+  const handleSeleccionarArchivoZipCen = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    setCargandoCen(true);
+    setMensajeCenExito('');
+    try {
+      const res = await procesarArchivoCenCliente(file);
+      if (res && res.status === 'ok') {
+        actualizarParametrosGeneracion('sistemaProm', res.sistemaProm || '55.8');
+        actualizarParametrosGeneracion('potEspera', res.potEspera || '4046');
+        actualizarParametrosGeneracion('costoMarginal', res.costoMarginal || '50.6');
+        actualizarParametrosGeneracion('hrsCargaBase', res.hrsCargaBase || '1');
+        actualizarParametrosGeneracion('hrsMinTec', res.hrsMinTec || '22');
+
+        if (Array.isArray(res.horas) && res.horas.length === 24) {
+          window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN_DATA', { detail: res.horas }));
+        }
+
+        window.dispatchEvent(new Event('registros_actualizados'));
+        window.dispatchEvent(new Event('parametros_actualizados'));
+
+        setMensajeCenExito(`✅ Datos procesados y cargados automáticamente desde ${res.nombreArchivo}`);
+        setTimeout(() => setMensajeCenExito(''), 8000);
+      }
+    } catch (err) {
+      console.error("Error al procesar archivo CEN:", err);
+      alert(`Error al procesar archivo CEN: ${err.message || 'Formato no soportado'}`);
+    } finally {
+      setCargandoCen(false);
+      if (e.target) e.target.value = '';
+    }
+  };
 
   const handleConsultarCoordinadorFecha = async (fechaParam) => {
     const targetDate = fechaParam || fechaCenConsulta || getFechaObjetivoCoordinador();
@@ -1871,8 +1914,8 @@ ${extraHtml}
         modoNocturno ? 'bg-[#06152a] border-blue-900/60 text-slate-300' : 'bg-slate-100/90 border-slate-300/80 shadow-md text-slate-700'
       }`}>
         <button
-          title={cargandoCen ? "Actualizando datos del Coordinador..." : "Refrescar datos del Coordinador"}
-          onClick={() => handleConsultarCoordinadorFecha(getFechaObjetivoCoordinador())}
+          title={cargandoCen ? "Descomprimiendo y procesando informe CEN ZIP..." : "📦 Cargar Informe CEN (ZIP / Excel)"}
+          onClick={handleAbrirSelectorZipCen}
           disabled={cargandoCen}
           className={`p-3.5 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-sm relative ${
             cargandoCen 
@@ -3160,7 +3203,20 @@ ${extraHtml}
                 modoNocturno ? 'bg-[#0d2a4d] border-blue-800 text-white' : 'bg-blue-950 border-blue-900 text-white'
               }`}>
                 <span className="font-extrabold text-sm sm:text-base uppercase tracking-wider">GENERACIÓN DIARIA</span>
+                <button
+                  onClick={handleAbrirSelectorZipCen}
+                  disabled={cargandoCen}
+                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Upload className={`w-3.5 h-3.5 ${cargandoCen ? 'animate-spin' : ''}`} />
+                  <span>{cargandoCen ? 'Procesando ZIP...' : '📦 Cargar Programa CEN (ZIP/Excel)'}</span>
+                </button>
               </div>
+              {mensajeCenExito && (
+                <div className="bg-emerald-900/90 text-emerald-200 text-xs font-bold px-4 py-2 text-center border-b border-emerald-700 animate-fade-in">
+                  {mensajeCenExito}
+                </div>
+              )}
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 w-full gap-2.5 p-3 text-center font-mono">
                 
                 <div className={`border rounded-lg min-h-[90px] py-4 px-3 flex flex-col justify-between items-center shadow-sm ${
@@ -4080,6 +4136,14 @@ ${extraHtml}
         </ErrorBoundary>
       )}
 
+      {/* Input oculto para carga de archivo ZIP / Excel del CEN */}
+      <input
+        type="file"
+        ref={fileInputZipRef}
+        accept=".zip,.xlsx,.xlsm"
+        onChange={handleSeleccionarArchivoZipCen}
+        className="hidden"
+      />
     </div>
   );
 }
