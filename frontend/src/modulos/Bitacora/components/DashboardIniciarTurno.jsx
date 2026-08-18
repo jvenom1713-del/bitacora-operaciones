@@ -1229,11 +1229,11 @@ ${extraHtml}
 
       // 3. Aplicar parámetros de generación actualizados
       if (resumenObtenido && resumenObtenido.sistema_prom_mw) {
-        actualizarParametrosGeneracion('sistemaProm', String(resumenObtenido.sistema_prom_mw || '55.8'));
-        actualizarParametrosGeneracion('costoMarginal', String(resumenObtenido.costo_marginal_usd_mw || '50.6'));
-        actualizarParametrosGeneracion('potEspera', String(resumenObtenido.potencia_esperada_mw || '4046'));
+        actualizarParametrosGeneracion('sistemaProm', String(resumenObtenido.sistema_prom_mw || '57.3'));
+        actualizarParametrosGeneracion('costoMarginal', String(resumenObtenido.costo_marginal_usd_mw || '49.5'));
+        actualizarParametrosGeneracion('potEspera', String(resumenObtenido.potencia_esperada_mw || '5063'));
         actualizarParametrosGeneracion('hrsCargaBase', String(resumenObtenido.hrs_carga_base || '1'));
-        actualizarParametrosGeneracion('hrsMinTec', String(resumenObtenido.hrs_minimo_tecnico || '22'));
+        actualizarParametrosGeneracion('hrsMinTec', String(resumenObtenido.hrs_minimo_tecnico || '15'));
       } else if (Array.isArray(datosHorarios) && datosHorarios.length > 0) {
         const sumaMW = datosHorarios.reduce((acc, curr) => acc + (curr.potencia_mw || 0), 0);
         let hrsCB = 0;
@@ -1243,10 +1243,10 @@ ${extraHtml}
           else if (d.potencia_mw >= 140) hrsMT++;
         });
         const promMW = (sumaMW / 24).toFixed(1);
-        actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '55.8');
-        actualizarParametrosGeneracion('potEspera', String(Math.round(sumaMW) || 4046));
+        actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '57.3');
+        actualizarParametrosGeneracion('potEspera', String(Math.round(sumaMW) || 5063));
         actualizarParametrosGeneracion('hrsCargaBase', String(hrsCB || 1));
-        actualizarParametrosGeneracion('hrsMinTec', String(hrsMT || 22));
+        actualizarParametrosGeneracion('hrsMinTec', String(hrsMT || 15));
       }
 
       // 4. Emitir eventos de actualización global para redibujar 24 horas y casillas
@@ -1275,41 +1275,41 @@ ${extraHtml}
       const saved = localStorage.getItem('bitacora_parametros');
       const parsed = saved ? JSON.parse(saved) : null;
       if (parsed) {
-        if (!parsed.potEspera) parsed.potEspera = '4046';
-        if (!parsed.costoMarginal) parsed.costoMarginal = '50.6';
-        if (!parsed.sistemaProm) parsed.sistemaProm = '55.8';
-        if (parsed.hrsMinTec === undefined || parsed.hrsMinTec === null) parsed.hrsMinTec = '22';
-        if (parsed.hrsCargaBase === undefined || parsed.hrsCargaBase === null) parsed.hrsCargaBase = '1';
+        if (!parsed.potEspera || parsed.potEspera === '4046' || parsed.potEspera === '6109') parsed.potEspera = '5063';
+        if (!parsed.costoMarginal) parsed.costoMarginal = '49.5';
+        if (!parsed.sistemaProm) parsed.sistemaProm = '57.3';
+        if (parsed.hrsMinTec === undefined || parsed.hrsMinTec === null || parsed.hrsMinTec === '22' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '15';
+        if (parsed.hrsCargaBase === undefined || parsed.hrsCargaBase === null || parsed.hrsCargaBase === '2') parsed.hrsCargaBase = '1';
         return parsed;
       }
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '55.8',
-        potEspera: '4046',
+        sistemaProm: '57.3',
+        potEspera: '5063',
         fuegosSuplemen: '0',
         hrsCargaBase: '1',
-        hrsMinTec: '22',
+        hrsMinTec: '15',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '50.6'
+        costoMarginal: '49.5'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '55.8',
-        potEspera: '4046',
+        sistemaProm: '57.3',
+        potEspera: '5063',
         fuegosSuplemen: '0',
         hrsCargaBase: '1',
-        hrsMinTec: '22',
+        hrsMinTec: '15',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '50.6'
+        costoMarginal: '49.5'
       };
     }
   });
@@ -1475,7 +1475,7 @@ ${extraHtml}
         return {
           despachoCNR: sumaMW > 0 ? 'En servicio' : 'Fuera de servicio',
           sistemaProm: sisPromOficial,
-          potEspera: String(Math.round(sumaMW || 4046)),
+          potEspera: String(Math.round(sumaMW || 5063)),
           fuegosSuplemen: String(fuegosSuplemenVal),
           hrsCargaBase: hrsCBFinal,
           hrsMinTec: hrsMTFinal,
@@ -1491,11 +1491,11 @@ ${extraHtml}
 
     return {
       despachoCNR: 'En servicio',
-      sistemaProm: '55.8',
-      potEspera: '4046',
+      sistemaProm: '57.3',
+      potEspera: '5063',
       fuegosSuplemen: '0',
       hrsCargaBase: '1',
-      hrsMinTec: '22',
+      hrsMinTec: '15',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
