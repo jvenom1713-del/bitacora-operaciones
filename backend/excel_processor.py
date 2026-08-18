@@ -6,16 +6,30 @@ from typing import Dict, Any, Optional
 def obtener_filas_nueva_renca(sheet_prog) -> list:
     """
     Busca dinámicamente todas las filas correspondientes a NUEVARENCA en la hoja PROGRAMA.
+    Aplica deduplicación para priorizar la fila total de Ciclo Combinado (CC) y omitir
+    sub-desgloses de turbinas individuales (TG1/TV1).
     """
-    filas = []
+    filas_todas = []
+    nombres = []
     for r in range(1, sheet_prog.max_row + 1):
         c2 = str(sheet_prog.cell(row=r, column=2).value or '')
         c3 = str(sheet_prog.cell(row=r, column=3).value or '')
         c4 = str(sheet_prog.cell(row=r, column=4).value or '')
         etiqueta_completa = (c2 + ' ' + c3 + ' ' + c4).upper()
-        if 'NUEVARENCA' in etiqueta_completa or 'NUEVA_RENCA' in etiqueta_completa:
-            filas.append(r)
-    return filas
+        if 'NUEVARENCA' in etiqueta_completa or 'NUEVA_RENCA' in etiqueta_completa or 'CCNUEVARENCA' in etiqueta_completa or 'CC_NUEVA_RENCA' in etiqueta_completa:
+            filas_todas.append(r)
+            nombres.append(etiqueta_completa)
+
+    if len(filas_todas) > 1:
+        filas_totales = []
+        for idx, r in enumerate(filas_todas):
+            lbl = nombres[idx]
+            if 'CC' in lbl or 'COMBINADO' in lbl or 'TG1+TV1' in lbl or 'TOTAL' in lbl or ('TG1' not in lbl and 'TV1' not in lbl):
+                filas_totales.append(r)
+        if filas_totales:
+            return filas_totales
+
+    return filas_todas
 
 
 def calcular_sistema_prom_desde_tco(wb_prg, wb_po) -> float:

@@ -84,8 +84,8 @@ export async function procesarArchivoCenCliente(file) {
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
   // 3. Buscar filas de Nueva Renca (Cols B, C, D -> Indices 1, 2, 3)
-  const filasNR = [];
-  const nombresNR = [];
+  const todasFilasNR = [];
+  const todosNombresNR = [];
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
     if (!Array.isArray(row) || row.length < 3) continue;
@@ -97,10 +97,51 @@ export async function procesarArchivoCenCliente(file) {
     ).toUpperCase().replace(/\s+/g, '');
 
     if (labelText.includes('NUEVARENCA') || labelText.includes('NUEVA_RENCA') || labelText.includes('CCNUEVARENCA') || labelText.includes('CC_NUEVA_RENCA')) {
-      filasNR.push(r);
+      todasFilasNR.push(r);
       const nombreConfig = String(row[2] || row[1] || '').trim();
-      nombresNR.push(nombreConfig);
+      todosNombresNR.push(nombreConfig);
     }
+  }
+
+  // Deduplicación inteligente:
+  // Si existen filas que representen el Ciclo Combinado total (CC, COMBINADO, TG1+TV1, TOTAL o sin desgloses puros de TG1/TV1),
+  // se seleccionan únicamente las filas totales para NO sumar desgloses de turbinas individuales.
+  let filasNR = [];
+  let nombresNR = [];
+
+  if (todasFilasNR.length > 1) {
+    const filasTotales = [];
+    const nombresTotales = [];
+
+    todasFilasNR.forEach((rIdx, idx) => {
+      const nombreUpper = todosNombresNR[idx].toUpperCase();
+      const row = jsonProg[rIdx];
+      const rowStr = (String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase();
+
+      const esFilaTotal = (
+        rowStr.includes('CC') || 
+        rowStr.includes('COMBINADO') || 
+        rowStr.includes('TG1+TV1') || 
+        rowStr.includes('TOTAL') ||
+        (!nombreUpper.includes('TG1') && !nombreUpper.includes('TV1') && (nombreUpper.includes('NUEVA') || nombreUpper.includes('RENCA')))
+      );
+
+      if (esFilaTotal) {
+        filasTotales.push(rIdx);
+        nombresTotales.push(todosNombresNR[idx]);
+      }
+    });
+
+    if (filasTotales.length > 0) {
+      filasNR = filasTotales;
+      nombresNR = nombresTotales;
+    } else {
+      filasNR = todasFilasNR;
+      nombresNR = todosNombresNR;
+    }
+  } else {
+    filasNR = todasFilasNR;
+    nombresNR = todosNombresNR;
   }
 
   // 4. Extraer Costo Marginal de la Celda AC8 (Row 7, Col 28 -> Indice AC)
