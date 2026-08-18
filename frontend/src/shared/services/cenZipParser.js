@@ -80,9 +80,21 @@ export async function procesarArchivoCenCliente(file) {
 
     if (esBaseValida || esFuegoValido) {
       if (nemotecnicosLeidos.has(nombreExacto)) continue;
+
+      // Calcular suma real de generación de las 24 horas (Cols E a AB -> Índices 4 a 27)
+      let suma24hFila = 0.0;
+      for (let i = 0; i < 24; i++) {
+        suma24hFila += toFloat(row[i + 4]);
+      }
+
+      // Si la fila no generó potencia en ninguna de las 24 horas (ej. Diesel inactivo), SE IGNORA
+      if (suma24hFila <= 0) {
+        continue;
+      }
+
       nemotecnicosLeidos.add(nombreExacto);
 
-      const totalDia = toFloat(row[28]);
+      const totalDia = toFloat(row[28]) || suma24hFila;
       if (esFuegoValido) {
         fuegosSuplemenTotal += totalDia;
       } else {
