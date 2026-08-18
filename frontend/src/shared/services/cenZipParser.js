@@ -83,44 +83,26 @@ export async function procesarArchivoCenCliente(file) {
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. FILTRADO ESTRICTO POR PREFIJO (Aislar bloque principal NUEVARENCA_TG1+TV1_)
+  // 3. FILTRADO ESTRICTO POR PREFIJO (Aislar bloque principal)
   let filasBaseIndices = [];
   let filasFuegosIndices = [];
 
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
-    if (!Array.isArray(row) || row.length < 2) continue;
+    if (!Array.isArray(row) || row.length < 4) continue;
 
-    const c0 = String(row[0] || '').trim().toUpperCase();
-    const c1 = String(row[1] || '').trim().toUpperCase();
-    const c2 = String(row[2] || '').trim().toUpperCase();
-    const c3 = String(row[3] || '').trim().toUpperCase();
-    const cells = [c0, c1, c2, c3];
+    // Unir las primeras 4 celdas en un solo string para evadir espacios invisibles
+    const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase();
 
-    // Buscar si alguna celda comienza exactamente con el prefijo del bloque principal
-    const cellNemoBase = cells.find(c => c.startsWith('NUEVARENCA_TG1+TV1_') || c.startsWith('TG1+TV1_'));
-    const cellNemoFuegos = cells.find(c => c.includes('+FA1_') || c.includes('+FA1'));
+    // Buscar el prefijo exacto con includes.
+    // EL GUIÓN BAJO (_) AL FINAL ES VITAL para capturar los gases (GN_A) pero ignorar la fila de resumen total.
+    const esBase = textoCeldas.includes('NUEVARENCA_TG1+TV1_') || textoCeldas.includes('TG1+TV1_');
+    const esFuego = textoCeldas.includes('+FA1_') || textoCeldas.includes('+FA1');
 
-    if (cellNemoFuegos) {
+    if (esFuego) {
       filasFuegosIndices.push(r);
-    } else if (cellNemoBase) {
+    } else if (esBase) {
       filasBaseIndices.push(r);
-    }
-  }
-
-  // Fallback de seguridad por nemotécnico si el prefijo exacto difiere ligeramente
-  if (filasBaseIndices.length === 0) {
-    for (let r = 0; r < jsonProg.length; r++) {
-      const row = jsonProg[r];
-      if (!Array.isArray(row) || row.length < 2) continue;
-      const str = (String(row[0] || '') + ' ' + String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase();
-      if (str.includes('NUEVARENCA') && str.includes('TG1+TV1')) {
-        if (str.includes('+FA1_') || str.includes('FUEGOS')) {
-          filasFuegosIndices.push(r);
-        } else {
-          filasBaseIndices.push(r);
-        }
-      }
     }
   }
 
