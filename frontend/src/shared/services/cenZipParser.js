@@ -119,11 +119,11 @@ export async function procesarArchivoCenCliente(file) {
       const rowStr = (String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase();
 
       const esFilaTotal = (
+        rowStr.includes('TG1+TV1') ||
         rowStr.includes('CC') || 
         rowStr.includes('COMBINADO') || 
-        rowStr.includes('TG1+TV1') || 
         rowStr.includes('TOTAL') ||
-        (!nombreUpper.includes('TG1') && !nombreUpper.includes('TV1') && (nombreUpper.includes('NUEVA') || nombreUpper.includes('RENCA')))
+        (rowStr.includes('NUEVA') && !rowStr.includes('TG1_') && !rowStr.includes('TV1_') && !rowStr.includes('TG1 ') && !rowStr.includes('TV1 '))
       );
 
       if (esFilaTotal) {

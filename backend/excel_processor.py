@@ -24,7 +24,7 @@ def obtener_filas_nueva_renca(sheet_prog) -> list:
         filas_totales = []
         for idx, r in enumerate(filas_todas):
             lbl = nombres[idx]
-            if 'CC' in lbl or 'COMBINADO' in lbl or 'TG1+TV1' in lbl or 'TOTAL' in lbl or ('TG1' not in lbl and 'TV1' not in lbl):
+            if 'TG1+TV1' in lbl or 'CC' in lbl or 'COMBINADO' in lbl or 'TOTAL' in lbl or ('NUEVA' in lbl and 'TG1_' not in lbl and 'TV1_' not in lbl and 'TG1 ' not in lbl and 'TV1 ' not in lbl):
                 filas_totales.append(r)
         if filas_totales:
             return filas_totales
