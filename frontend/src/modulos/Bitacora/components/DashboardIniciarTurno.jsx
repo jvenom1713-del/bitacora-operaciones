@@ -3221,18 +3221,10 @@ ${extraHtml}
             <div className={`rounded-xl overflow-hidden border shadow-md w-full min-w-[1100px] ${
               modoNocturno ? 'border-blue-900/70 bg-[#0a1b33]' : 'border-slate-400 bg-white'
             }`}>
-              <div className={`px-4 py-2.5 flex items-center justify-between border-b ${
+              <div className={`px-4 py-2.5 flex items-center justify-center border-b ${
                 modoNocturno ? 'bg-[#0d2a4d] border-blue-800 text-white' : 'bg-blue-950 border-blue-900 text-white'
               }`}>
                 <span className="font-extrabold text-sm sm:text-base uppercase tracking-wider">GENERACIÓN DIARIA</span>
-                <button
-                  onClick={handleAbrirSelectorZipCen}
-                  disabled={cargandoCen}
-                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <Upload className={`w-3.5 h-3.5 ${cargandoCen ? 'animate-spin' : ''}`} />
-                  <span>{cargandoCen ? 'Procesando ZIP...' : '📦 Cargar Programa CEN (ZIP/Excel)'}</span>
-                </button>
               </div>
               {mensajeCenExito && (
                 <div className="bg-emerald-900/90 text-emerald-200 text-xs font-bold px-4 py-2 text-center border-b border-emerald-700 animate-fade-in">

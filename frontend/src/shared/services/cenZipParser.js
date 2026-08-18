@@ -96,7 +96,7 @@ export async function procesarArchivoCenCliente(file) {
       String(row[3] || '')
     ).toUpperCase().replace(/\s+/g, '');
 
-    if (labelText.includes('NUEVARENCA') || labelText.includes('NUEVA_RENCA') || labelText.includes('CNR') || labelText.includes('RENCA')) {
+    if (labelText.includes('NUEVARENCA') || labelText.includes('NUEVA_RENCA') || labelText.includes('CCNUEVARENCA') || labelText.includes('CC_NUEVA_RENCA')) {
       filasNR.push(r);
       const nombreConfig = String(row[2] || row[1] || '').trim();
       nombresNR.push(nombreConfig);
