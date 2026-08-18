@@ -83,14 +83,7 @@ export async function procesarArchivoCenCliente(file) {
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. USO ESTRICTO DE "LISTA BLANCA" (EXACT MATCH) PARA NEMOTÉCNICOS BASE
-  const nemotecnicosBaseValidos = [
-    'NUEVARENCA_TG1+TV1_GN_A',
-    'NUEVARENCA_TG1+TV1_GNL_A',
-    'NUEVARENCA_TG1+TV1_GN',
-    'NUEVARENCA_TG1+TV1_GNL'
-  ];
-
+  // 3. FILTRADO ESTRICTO POR PREFIJO (Aislar bloque principal NUEVARENCA_TG1+TV1_)
   let filasBaseIndices = [];
   let filasFuegosIndices = [];
 
@@ -102,31 +95,29 @@ export async function procesarArchivoCenCliente(file) {
     const c1 = String(row[1] || '').trim().toUpperCase();
     const c2 = String(row[2] || '').trim().toUpperCase();
     const c3 = String(row[3] || '').trim().toUpperCase();
+    const cells = [c0, c1, c2, c3];
 
-    // Strict match exacto sobre la celda del nemotécnico
-    const esMatchBase = nemotecnicosBaseValidos.some(nemo => 
-      c0 === nemo || c1 === nemo || c2 === nemo || c3 === nemo
-    );
+    // Buscar si alguna celda comienza exactamente con el prefijo del bloque principal
+    const cellNemoBase = cells.find(c => c.startsWith('NUEVARENCA_TG1+TV1_') || c.startsWith('TG1+TV1_'));
+    const cellNemoFuegos = cells.find(c => c.includes('+FA1_') || c.includes('+FA1'));
 
-    if (esMatchBase) {
-      filasBaseIndices.push(r);
-    }
-
-    // Identificar filas de Fuegos Suplementarios (+FA1_)
-    const esMatchFuegos = c0.includes('+FA1_') || c1.includes('+FA1_') || c2.includes('+FA1_') || c3.includes('+FA1_');
-    if (esMatchFuegos) {
+    if (cellNemoFuegos) {
       filasFuegosIndices.push(r);
+    } else if (cellNemoBase) {
+      filasBaseIndices.push(r);
     }
   }
 
-  // Fallback de seguridad si no hay coincidencia exacta
+  // Fallback de seguridad por nemotécnico si el prefijo exacto difiere ligeramente
   if (filasBaseIndices.length === 0) {
     for (let r = 0; r < jsonProg.length; r++) {
       const row = jsonProg[r];
       if (!Array.isArray(row) || row.length < 2) continue;
       const str = (String(row[0] || '') + ' ' + String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase();
-      if (str.includes('NUEVARENCA_TG1+TV1_GN') || str.includes('NUEVARENCA_TG1+TV1')) {
-        if (!str.includes('+FA1_') && !str.includes('FUEGOS')) {
+      if (str.includes('NUEVARENCA') && str.includes('TG1+TV1')) {
+        if (str.includes('+FA1_') || str.includes('FUEGOS')) {
+          filasFuegosIndices.push(r);
+        } else {
           filasBaseIndices.push(r);
         }
       }
@@ -161,34 +152,33 @@ export async function procesarArchivoCenCliente(file) {
     if (valAc8 > 0) costoMarginalVal = valAc8;
   }
 
-  // 5. CÁLCULO DE MATRIZ HORARIA DE DESPACHO (Horas 1 a 24 -> Cols E a AB -> Indices 4 a 27)
+  // 5. CÁLCULO Y CONSOLIDACIÓN VERTICAL DE MATRIZ HORARIA DE DESPACHO (Horas 1 a 24 -> Cols E a AB -> Indices 4 a 27)
+  const perfilBase24h = Array(24).fill(0);
+  const perfilFuegos24h = Array(24).fill(0);
+
+  for (let i = 0; i < 24; i++) {
+    const colIdx = 4 + i; // Indice 4 es la Columna E (Hora 1)
+    
+    filasBaseIndices.forEach(rIdx => {
+      const row = jsonProg[rIdx];
+      if (row && row[colIdx] !== undefined) {
+        perfilBase24h[i] += toFloat(row[colIdx]);
+      }
+    });
+
+    filasFuegosIndices.forEach(rIdx => {
+      const row = jsonProg[rIdx];
+      if (row && row[colIdx] !== undefined) {
+        perfilFuegos24h[i] += toFloat(row[colIdx]);
+      }
+    });
+  }
+
   const mwHoras = new Array(24).fill(0);
   const mwHorasFuegos = new Array(24).fill(0);
-
-  for (let h = 0; h < 24; h++) {
-    const colIdx = 4 + h; // Indice 4 es la Columna E (Hora 1)
-    
-    // Potencia base de la hora h (Máximo entre filas base)
-    let maxMwBase = 0.0;
-    for (const rIdx of filasBaseIndices) {
-      const row = jsonProg[rIdx];
-      if (row && row[colIdx] !== undefined) {
-        const val = toFloat(row[colIdx]);
-        if (val > maxMwBase) maxMwBase = val;
-      }
-    }
-
-    // Potencia de fuegos suplementarios de la hora h
-    let sumMwFA = 0.0;
-    for (const rIdx of filasFuegosIndices) {
-      const row = jsonProg[rIdx];
-      if (row && row[colIdx] !== undefined) {
-        sumMwFA += toFloat(row[colIdx]);
-      }
-    }
-
-    mwHoras[h] = Number((maxMwBase + sumMwFA).toFixed(1));
-    mwHorasFuegos[h] = Number(sumMwFA.toFixed(1));
+  for (let i = 0; i < 24; i++) {
+    mwHoras[i] = Number((perfilBase24h[i] + perfilFuegos24h[i]).toFixed(1));
+    mwHorasFuegos[i] = Number(perfilFuegos24h[i].toFixed(1));
   }
 
   // 6. Calcular Sistema Promedio utilizando la hoja TCO si está disponible
