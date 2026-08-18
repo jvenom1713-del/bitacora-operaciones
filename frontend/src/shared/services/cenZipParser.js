@@ -41,7 +41,16 @@ export async function procesarArchivoCenCliente(file) {
 
   const sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
   const sheetPrg = wbPrograma.Sheets[sheetNamePrg];
-  const jsonProg = XLSX.utils.sheet_to_json(sheetPrg, { header: 1 });
+  let jsonProg = XLSX.utils.sheet_to_json(sheetPrg, { header: 1 });
+
+  // 1. GUILLOTINA: Cortar el documento antes de las tablas inferiores (Límites, Reservas, Mínimo Técnico)
+  const indiceCorte = jsonProg.findIndex(row => {
+    const str = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'')).toUpperCase();
+    return str.includes('LÍMITE') || str.includes('LIMITE') || str.includes('RESERVA') || str.includes('MÍNIMO TÉCNICO') || str.includes('MINIMO TECNICO');
+  });
+  if (indiceCorte > 0) {
+    jsonProg = jsonProg.slice(0, indiceCorte);
+  }
 
   // 2. VARIABLES DE SUMA
   let potEsperaTotal = 0.0;
@@ -49,41 +58,40 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 3. LA SOLUCIÓN DIRECTA: Memoria de nombres leídos para no repetir
+  // 3. FILTRADO CON MEMORIA Y SUFIJO DE COMBUSTIBLE VALIDO
   const nemotecnicosLeidos = new Set();
 
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
     if (!Array.isArray(row) || row.length < 4) continue;
 
+    const nombreExacto = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
     const textoFila = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
 
-    // Si la fila pertenece a la central Nueva Renca Ciclo Combinado
-    if (textoFila.includes('NUEVARENCA_TG1+TV1_') || textoFila.includes('NUEVARENCA_TG1+TV1+FA1_')) {
-      
-      // Obtenemos el nombre exacto del combustible (ej: NUEVARENCA_TG1+TV1_GN_A)
-      const nombreExacto = String(row[2] || row[1] || row[0] || '').trim();
+    const esBaseValida = textoFila.includes('NUEVARENCA_TG1+TV1_') && (
+      nombreExacto.includes('_GN_') || 
+      nombreExacto.includes('_GNL_') || 
+      nombreExacto.includes('_DIESEL_') || 
+      nombreExacto.includes('_GAS_') ||
+      nombreExacto.endsWith('_A') ||
+      nombreExacto.endsWith('_B')
+    );
+    const esFuegoValido = textoFila.includes('NUEVARENCA_TG1+TV1+FA1_');
 
-      // Si ya habíamos sumado esta fila antes, la ignoramos completamente
-      if (nemotecnicosLeidos.has(nombreExacto)) {
-        continue; 
-      }
-      nemotecnicosLeidos.add(nombreExacto); // La registramos para no volver a sumarla si aparece más abajo
+    if (esBaseValida || esFuegoValido) {
+      if (nemotecnicosLeidos.has(nombreExacto)) continue;
+      nemotecnicosLeidos.add(nombreExacto);
 
-      const esFuego = nombreExacto.includes('+FA1_');
-
-      // 4. Sumar el Total Exacto Diario desde la Columna AC (Índice 28)
       const totalDia = toFloat(row[28]);
-      if (esFuego) {
+      if (esFuegoValido) {
         fuegosSuplemenTotal += totalDia;
       } else {
         potEsperaTotal += totalDia;
       }
 
-      // 5. Sumar las 24 horas (Columnas E a AB -> Índices 4 a 27)
       for (let i = 0; i < 24; i++) {
         const val = toFloat(row[i + 4]);
-        if (esFuego) {
+        if (esFuegoValido) {
           perfilFuegos24h[i] += val;
         } else {
           perfilBase24h[i] += val;
