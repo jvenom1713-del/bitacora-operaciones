@@ -96,7 +96,7 @@ export async function procesarArchivoCenCliente(file) {
       String(row[3] || '')
     ).toUpperCase().replace(/\s+/g, '');
 
-    if (labelText.includes('NUEVARENCA') || labelText.includes('CNR') || labelText.includes('RENCA')) {
+    if (labelText.includes('NUEVARENCA') || labelText.includes('NUEVA_RENCA') || labelText.includes('CNR') || labelText.includes('RENCA')) {
       filasNR.push(r);
       const nombreConfig = String(row[2] || row[1] || '').trim();
       nombresNR.push(nombreConfig);
@@ -214,7 +214,7 @@ export async function procesarArchivoCenCliente(file) {
 
     if (pot >= 330) {
       hrsCB++;
-    } else if (pot >= 160) { // Umbral técnico exacto: 160 MW
+    } else if (pot >= 140) { // Umbral mínimo técnico >= 140 MW
       hrsMT++;
     }
 

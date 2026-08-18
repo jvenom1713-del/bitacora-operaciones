@@ -1179,6 +1179,10 @@ ${extraHtml}
         actualizarParametrosGeneracion('hrsMinTec', res.hrsMinTec || '22');
 
         if (Array.isArray(res.horas) && res.horas.length === 24) {
+          setRegistrosHorarios(res.horas);
+          try {
+            localStorage.setItem('bitacora_registros_horarios', JSON.stringify(res.horas));
+          } catch (_) {}
           window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN_DATA', { detail: res.horas }));
         }
 
@@ -1632,9 +1636,32 @@ ${extraHtml}
           body: formData
         });
         if (res.ok) {
-          dataExcel = await res.json();
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            dataExcel = await res.json();
+          }
         }
       } catch (_) {}
+
+      // Fallback: Si el servidor backend no responde JSON válido, procesar el archivo localmente en el navegador
+      if (!dataExcel || dataExcel.status === 'error' || !dataExcel.horas) {
+        try {
+          const parsedClient = await procesarArchivoCenCliente(file);
+          if (parsedClient && parsedClient.status === 'ok') {
+            dataExcel = parsedClient;
+          }
+        } catch (clientErr) {
+          console.warn('Fallback cliente de Excel/ZIP:', clientErr);
+        }
+      }
+
+      if (dataExcel && Array.isArray(dataExcel.horas) && dataExcel.horas.length === 24) {
+        setRegistrosHorarios(dataExcel.horas);
+        try {
+          localStorage.setItem('bitacora_registros_horarios', JSON.stringify(dataExcel.horas));
+          window.dispatchEvent(new Event('registros_actualizados'));
+        } catch (_) {}
+      }
 
       const datosCalculados = calcularMatrizDinamica(dataExcel ? { ...dataExcel, esDeServidor: true } : {});
       aplicarDatos(datosCalculados);

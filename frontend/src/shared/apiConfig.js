@@ -11,6 +11,11 @@ export function getApiUrl(path) {
       return `http://${host}:5000${cleanPath}`;
     }
   }
+  const envApiUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_API_URL : null;
+  if (envApiUrl) {
+    const cleanBase = envApiUrl.endsWith('/') ? envApiUrl.slice(0, -1) : envApiUrl;
+    return `${cleanBase}${cleanPath}`;
+  }
   return cleanPath;
 }
 
@@ -18,11 +23,11 @@ export async function safeFetchJson(url, options = {}) {
   try {
     const res = await fetch(url, options);
     const contentType = res.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
+    if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
-      return { ok: res.ok, status: res.status, data };
+      return { ok: true, status: res.status, data };
     } else {
-      return { ok: res.ok, status: res.status, data: {} };
+      return { ok: false, status: res.status, data: {} };
     }
   } catch (err) {
     return { ok: false, status: 0, data: {}, error: err.message };

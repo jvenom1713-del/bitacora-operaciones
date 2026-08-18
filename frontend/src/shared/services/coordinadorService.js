@@ -89,14 +89,16 @@ export async function fetchGeneracionCoordinador(fecha = getFechaObjetivoCoordin
   try {
     // 1. Intentar consulta al endpoint especifico de programa CEN por unidad y fecha local
     let response = await fetch(getApiUrl(`/api/cen/programa?fecha=${fechaLocal}&unidad=${encodeURIComponent(unidadNemotecnico)}`));
-    
-    if (!response.ok) {
+    const isJson1 = response.ok && (response.headers.get('content-type') || '').includes('application/json');
+
+    if (!isJson1) {
       // Fallback a endpoint dinamico de resumen
       response = await fetch(getApiUrl(`/api/resumen-generacion-diaria?refresh=true&force=true&fecha=${fechaLocal}&unidad=${encodeURIComponent(unidadNemotecnico)}`));
     }
 
-    if (!response.ok) {
-      throw new Error(`HTTP Error ${response.status} al consultar CEN para ${unidadNemotecnico}`);
+    const isJson2 = response.ok && (response.headers.get('content-type') || '').includes('application/json');
+    if (!isJson2) {
+      throw new Error(`Respuesta no es JSON válido para ${unidadNemotecnico}`);
     }
 
     const data = await response.json();
