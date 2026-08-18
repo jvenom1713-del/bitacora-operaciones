@@ -460,12 +460,7 @@ export default function DashboardIniciarTurno({
             operador: usuarioActual?.nombre || 'Operador',
             jefe_turno: obtenerNombreJefeActual(usuarioActual, equipoTurnoState),
             estado: 'enviado',
-            contenido: obsTexto || 'Solicitud de cierre enviada al Jefe de Turno.',
-            sistema_prom: parametros?.sistemaProm || '55.8',
-            pot_espera: parametros?.potEspera || '4046',
-            hrs_carga_base: parametros?.hrsCargaBase || '1',
-            min_tecnico: parametros?.hrsMinTec || parametros?.minTecnico || '22',
-            costo_marginal: parametros?.costoMarginal || '50.6'
+            contenido: obsTexto || 'Solicitud de cierre enviada al Jefe de Turno.'
           }]);
         } catch (_) {}
       }
@@ -907,12 +902,7 @@ ${extraHtml}
             operador: 'Operador',
             jefe_turno: nombreJefeAprobador,
             estado: 'aprobada',
-            contenido: observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.',
-            sistema_prom: parametros?.sistemaProm || '55.8',
-            pot_espera: parametros?.potEspera || '4046',
-            hrs_carga_base: parametros?.hrsCargaBase || '1',
-            min_tecnico: parametros?.hrsMinTec || parametros?.minTecnico || '22',
-            costo_marginal: parametros?.costoMarginal || '50.6'
+            contenido: observacionesJefe || 'Bitácora aprobada y cerrada por el Jefe de Turno.'
           }]);
         } catch (_) {}
       }

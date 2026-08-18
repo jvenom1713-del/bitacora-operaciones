@@ -654,10 +654,18 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                       </div>
                     </div>
 
-                    {/* Vista Previa Limpia del Documento PDF */}
-                    <p className="text-slate-400 text-xs italic bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
-                      El documento PDF incluirá el resumen de generación, fragilidades, instrucciones y permisos registrados durante el turno.
-                    </p>
+                    {/* Contenido/Observaciones Reales de la Bitácora */}
+                    <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800/80 text-xs text-slate-300 space-y-1">
+                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block">Observaciones del Turno:</span>
+                      <p className="line-clamp-3 text-slate-300 font-sans whitespace-pre-line leading-relaxed">
+                        {(() => {
+                          const raw = item.contenido || item.resumen_operativo || item.contenido_texto || '';
+                          const p = parsearSeccionesBitacora(raw);
+                          const textoAMostrar = p.resumen || raw;
+                          return (textoAMostrar && textoAMostrar.trim()) ? textoAMostrar : 'Sin observaciones registradas.';
+                        })()}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Acciones de la Tarjeta */}
