@@ -1871,15 +1871,15 @@ ${extraHtml}
         modoNocturno ? 'bg-[#06152a] border-blue-900/60 text-slate-300' : 'bg-slate-100/90 border-slate-300/80 shadow-md text-slate-700'
       }`}>
         <button
-          title={cargandoExcel ? "Actualizando datos del Coordinador..." : "Refrescar datos del Coordinador"}
-          onClick={handleRefrescarCenManual}
-          disabled={cargandoExcel}
+          title={cargandoCen ? "Actualizando datos del Coordinador..." : "Refrescar datos del Coordinador"}
+          onClick={() => handleConsultarCoordinadorFecha(fechaCenConsulta)}
+          disabled={cargandoCen}
           className={`p-3.5 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-sm relative ${
-            cargandoExcel 
+            cargandoCen 
               ? 'bg-blue-600/20 text-blue-400 cursor-wait' 
               : 'hover:bg-blue-600/30 text-blue-600 dark:text-blue-400'
           }`}>
-          <RefreshCw className={`w-7 h-7 sm:w-8 sm:h-8 ${cargandoExcel ? 'animate-spin text-blue-400' : ''}`} />
+          <RefreshCw className={`w-7 h-7 sm:w-8 sm:h-8 ${cargandoCen ? 'animate-spin text-blue-400' : ''}`} />
         </button>
 
         {/* Botón Bitácora Diaria (Nuevo Documento Word) */}
