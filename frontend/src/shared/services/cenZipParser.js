@@ -19,7 +19,7 @@ export async function procesarArchivoCenCliente(file) {
   let wbTco = null;
   let nombreExcel = file.name;
 
-  // 1. Extraer archivos del ZIP
+  // 1. EXTRAER ARCHIVOS DEL ZIP
   if (file.name.toLowerCase().endsWith('.zip')) {
     const zip = new JSZip();
     const zipContent = await zip.loadAsync(file);
@@ -39,92 +39,81 @@ export async function procesarArchivoCenCliente(file) {
     wbTco = wbPrograma;
   }
 
+  // 2. ABRIR ÚNICAMENTE LA HOJA "PROGRAMA"
   const sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
   const sheetPrg = wbPrograma.Sheets[sheetNamePrg];
-  let jsonProg = XLSX.utils.sheet_to_json(sheetPrg, { header: 1 });
+  const jsonProg = XLSX.utils.sheet_to_json(sheetPrg, { header: 1 });
 
-  // 1. GUILLOTINA MULTICELDA: Cortar el documento antes de cualquier encabezado de tablas inferiores
-  const indiceCorte = jsonProg.findIndex(row => {
-    if (!Array.isArray(row)) return false;
-    const textoFilaCompleta = row.map(c => String(c||'')).join(' ').toUpperCase();
-    return textoFilaCompleta.includes('LÍMITE MÍNIMO') || 
-           textoFilaCompleta.includes('LIMITE MINIMO') || 
-           textoFilaCompleta.includes('MÍNIMO TÉCNICO') || 
-           textoFilaCompleta.includes('MINIMO TECNICO') || 
-           textoFilaCompleta.includes('RESERVA DE') ||
-           textoFilaCompleta.includes('SERVICIOS COMPLEMENTARIOS');
-  });
-  if (indiceCorte > 0) {
-    jsonProg = jsonProg.slice(0, indiceCorte);
-  }
-
-  // 2. VARIABLES DE SUMA
   let potEsperaTotal = 0.0;
   let fuegosSuplemenTotal = 0.0;
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 3. FILTRADO CON REGISTRO INMEDIATO EN MEMORIA
-  const nemotecnicosLeidos = new Set();
-
+  // =====================================================================
+  // 3. LA LÓGICA DEL USUARIO: AISLAR EL BLOQUE EXACTO DE 25 FILAS
+  // =====================================================================
+  
+  let indiceInicio = -1;
+  
+  // Buscar dónde empieza la tabla principal de Nueva Renca
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
-    if (!Array.isArray(row) || row.length < 4) continue;
+    if (!Array.isArray(row) || row.length < 2) continue;
+    const nombre = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+    
+    // El bloque siempre comienza con DIESEL o GN_A
+    if (nombre === 'NUEVARENCA_TG1+TV1_DIESEL' || nombre === 'NUEVARENCA_TG1+TV1_GN_A' || nombre.startsWith('NUEVARENCA_TG1+TV1_')) {
+      indiceInicio = r;
+      break; // ¡Lo encontramos! Detenemos la búsqueda inmediatamente.
+    }
+  }
 
-    const nombreExacto = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
-    const textoFila = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
+  // Guardamos un bloque exclusivo para usarlo en la hoja TCO también
+  let bloqueRenca = [];
 
-    const esBaseValida = textoFila.includes('NUEVARENCA_TG1+TV1_') && (
-      nombreExacto.includes('_GN_') || 
-      nombreExacto.includes('_GNL_') || 
-      nombreExacto.includes('_DIESEL_') || 
-      nombreExacto.includes('_GAS_') ||
-      nombreExacto.endsWith('_A') ||
-      nombreExacto.endsWith('_B')
-    );
-    const esFuegoValido = textoFila.includes('NUEVARENCA_TG1+TV1+FA1_');
+  if (indiceInicio !== -1) {
+    // RECORTAMOS EXACTAMENTE LAS 25 FILAS (Equivalente a Excel de 1565 a 1589)
+    bloqueRenca = jsonProg.slice(indiceInicio, indiceInicio + 25);
 
-    if (esBaseValida || esFuegoValido) {
-      // REGISTRO INMEDIATO EN MEMORIA (Inmune a repeticiones en tablas inferiores)
-      if (nemotecnicosLeidos.has(nombreExacto)) continue;
-      nemotecnicosLeidos.add(nombreExacto);
+    // Iteramos SOLAMENTE en estas 25 filas, ignorando el resto del archivo
+    for (let r = 0; r < bloqueRenca.length; r++) {
+      const row = bloqueRenca[r];
+      const nombreCelda = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+      
+      const esFuego = nombreCelda.includes('+FA1_');
 
-      // Calcular suma real de generación de las 24 horas (Cols E a AB -> Índices 4 a 27)
-      let suma24hFila = 0.0;
-      for (let i = 0; i < 24; i++) {
-        suma24hFila += toFloat(row[i + 4]);
+      // Leer la columna AC (Total Diario)
+      let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
+      let totalDia = toFloat(valAC);
+
+      // Reparar si el Excel trae el número con punto decimal (1.859 -> 1859)
+      if (totalDia > 0 && totalDia < 100) {
+        totalDia = totalDia * 1000;
       }
 
-      // Si la fila no generó potencia en ninguna de las 24 horas (ej. Diesel standby), omitir suma de MW pero MANTENER el bloqueo en Set
-      if (suma24hFila <= 0) {
-        continue;
-      }
-
-      const totalDia = toFloat(row[28]) || suma24hFila;
-      if (esFuegoValido) {
+      if (esFuego) {
         fuegosSuplemenTotal += totalDia;
       } else {
         potEsperaTotal += totalDia;
       }
 
+      // Sumar las 24 horas (Columnas E a AB -> Índices 4 a 27)
       for (let i = 0; i < 24; i++) {
         const val = toFloat(row[i + 4]);
-        if (esFuegoValido) {
-          perfilFuegos24h[i] += val;
-        } else {
-          perfilBase24h[i] += val;
-        }
+        if (esFuego) perfilFuegos24h[i] += val;
+        else perfilBase24h[i] += val;
       }
     }
   }
+  // =====================================================================
 
-  // 6. Costo Marginal AC8
+  // 4. COSTO MARGINAL
   let costoMarginalVal = toFloat(sheetPrg['AC8']?.v) || 49.5;
 
   const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
   const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
 
-  // 7. Sistema Promedio (TCO)
+  // 5. SISTEMA PROMEDIO (TCO) - Solo busca los precios de las 25 filas que aislamos
   let sistemaPromVal = 57.3;
   let seCalculoTco = false;
   if (wbTco) {
@@ -133,12 +122,11 @@ export async function procesarArchivoCenCliente(file) {
       const jsonTco = XLSX.utils.sheet_to_json(wbTco.Sheets[sheetNameTco], { header: 1 });
       const configsB1 = [], configsB2 = [], configsB3 = [];
       
-      nemotecnicosLeidos.forEach(nombre => {
-        const row = jsonProg.find(r => String(r[2] || r[1] || r[0] || '').trim() === nombre);
-        if (!row) return;
-        if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(nombre.toUpperCase());
-        if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(nombre.toUpperCase());
-        if (row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0) > 0) configsB3.push(nombre.toUpperCase());
+      bloqueRenca.forEach(row => {
+        const nombreCelda = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+        if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(nombreCelda);
+        if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(nombreCelda);
+        if (row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0) > 0) configsB3.push(nombreCelda);
       });
 
       const obtenerProm = (colCent, colCmg, cfgs) => {
@@ -157,7 +145,7 @@ export async function procesarArchivoCenCliente(file) {
   }
   if (!seCalculoTco) sistemaPromVal = 57.3;
 
-  // 8. Cálculo de horas
+  // 6. CÁLCULO DE HORAS DE OPERACIÓN
   let hrsCB = 0, hrsMT = 0, hrsFS = 0;
   const horas = [];
   for (let h = 1; h <= 24; h++) {
@@ -172,16 +160,15 @@ export async function procesarArchivoCenCliente(file) {
     horas.push({ hora: h, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) });
   }
 
-  // Se redondea directamente el valor leído de la columna AC o la suma del perfil de 24h
-  const potEsperaMW = Math.round(potEsperaTotal > 0 ? potEsperaTotal : perfilBase24h.reduce((a, b) => a + b, 0));
+  potEsperaTotal = Math.round(potEsperaTotal);
 
   return {
     status: 'ok',
     nombreArchivo: file.name,
     nombreExcel,
-    despachoCNR: potEsperaMW > 0 ? 'En servicio' : 'Fuera de servicio',
+    despachoCNR: potEsperaTotal > 0 ? 'En servicio' : 'Fuera de servicio',
     sistemaProm: String(sistemaPromVal),
-    potEspera: String(potEsperaMW),
+    potEspera: String(potEsperaTotal),
     fuegosSuplemen: String(Math.round(fuegosSuplemenTotal)),
     hrsCargaBase: String(hrsCB),
     hrsMinTec: String(hrsMT),
