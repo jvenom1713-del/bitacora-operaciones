@@ -83,7 +83,7 @@ export async function procesarArchivoCenCliente(file) {
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. FILTRADO ESTRICTO POR BLOQUE CONTIGUO (Evitar duplicidad con tablas inferiores del CEN)
+  // 3. FILTRADO ESTRICTO POR BLOQUE CONTIGUO A PRUEBA DE FILAS VACÍAS
   let filasBaseIndices = [];
   let filasFuegosIndices = [];
   let bloqueEncontrado = false;
@@ -91,8 +91,16 @@ export async function procesarArchivoCenCliente(file) {
 
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
-    if (!Array.isArray(row) || row.length < 4) continue;
+    
+    // Si la fila está vacía, es muy corta, o es un título separador:
+    if (!Array.isArray(row) || row.length < 4) {
+      if (bloqueEncontrado) {
+        bloqueTerminado = true; // CIERRA EL CANDADO AL DETECTAR FILA VACÍA
+      }
+      continue; // Salta a la siguiente
+    }
 
+    // Unir celdas y limpiar espacios para evadir fallos de formato
     const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
 
     const esBase = textoCeldas.includes('NUEVARENCA_TG1+TV1_');
@@ -100,18 +108,16 @@ export async function procesarArchivoCenCliente(file) {
 
     if (esBase || esFuego) {
       if (bloqueTerminado) {
-        // Si ya leímos el bloque de Despacho y encontramos Nueva Renca de nuevo (ej. en la tabla de Límites o Reservas más abajo), LO IGNORAMOS.
-        continue; 
+        continue; // Si el candado se cerró antes, ignora esta repetición
       }
       bloqueEncontrado = true;
-
       if (esFuego) {
         filasFuegosIndices.push(r);
       } else if (esBase) {
         filasBaseIndices.push(r);
       }
     } else {
-      // Si la fila actual no es Nueva Renca, pero ya habíamos empezado a leer su bloque, significa que el bloque de Despacho terminó.
+      // Si la fila tiene datos pero no es Nueva Renca, cierra el candado
       if (bloqueEncontrado) {
         bloqueTerminado = true;
       }
