@@ -159,14 +159,17 @@ export async function procesarArchivoCenCliente(file) {
   if (filasNR.length > 0) {
     for (let h = 0; h < 24; h++) {
       const colIndex = 4 + h; // Indice 4 es la Columna E (Hora 1)
-      let sumaHora = 0;
+      const valoresFilaHora = [];
       for (const rIdx of filasNR) {
         const row = jsonProg[rIdx];
         if (row && row[colIndex] !== undefined) {
-          sumaHora += toFloat(row[colIndex]);
+          const val = toFloat(row[colIndex]);
+          if (val >= 0) valoresFilaHora.push(val);
         }
       }
-      mwHoras[h] = Number(sumaHora.toFixed(1));
+      // Regla física infalible: tomar la potencia máxima despachada en la hora h entre las filas de la central
+      const maxMwHora = valoresFilaHora.length > 0 ? Math.max(...valoresFilaHora) : 0;
+      mwHoras[h] = Number(maxMwHora.toFixed(1));
     }
   } else {
     // Fallback de contingencia si no se encuentran filas por etiqueta

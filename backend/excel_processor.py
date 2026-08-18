@@ -150,7 +150,9 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
     mw_totales_dia = 0.0
     for col in range(5, 29): # Horas 1 a 24 (Columnas E a AB)
         h = col - 4
-        gen_total_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_nr)
+        # Tomar el máximo de potencia física entre las filas de la central en la hora h
+        vals_h = [to_float(sheet.cell(row=r, column=col).value) for r in filas_nr]
+        gen_total_hora = max(vals_h) if vals_h else 0.0
         gen_fa_hora = sum(to_float(sheet.cell(row=r, column=col).value) for r in filas_fa)
 
         mw_totales_dia += gen_total_hora
