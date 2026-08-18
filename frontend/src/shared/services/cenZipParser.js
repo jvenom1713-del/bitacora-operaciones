@@ -51,7 +51,7 @@ export async function procesarArchivoCenCliente(file) {
 
     let tcoFileName = excelFiles.find(name => {
       const u = name.toUpperCase();
-      return u.includes('TCO') || u.includes('POLITICA');
+      return u.includes('PO') || u.includes('TCO') || u.includes('POLITICA');
     });
 
     nombreExcel = prgFileName;
@@ -91,6 +91,7 @@ export async function procesarArchivoCenCliente(file) {
     if (!Array.isArray(row) || row.length < 3) continue;
 
     const rowStr = (
+      String(row[0] || '') + ' ' +
       String(row[1] || '') + ' ' +
       String(row[2] || '') + ' ' +
       String(row[3] || '')
@@ -98,7 +99,7 @@ export async function procesarArchivoCenCliente(file) {
 
     if (rowStr.includes('NUEVARENCA') || rowStr.includes('NUEVA_RENCA') || rowStr.includes('CCNUEVARENCA') || rowStr.includes('CC_NUEVA_RENCA')) {
       todasFilasNR.push(r);
-      const nombreConfig = String(row[2] || row[1] || '').trim();
+      const nombreConfig = String(row[2] || row[1] || row[0] || '').trim();
       todosNombresNR.push(nombreConfig);
     }
   }
@@ -107,14 +108,20 @@ export async function procesarArchivoCenCliente(file) {
   let nombresNR = [];
 
   if (todasFilasNR.length > 0) {
-    // Prioridad 1: Nemotécnico Oficial Excluyente (TG1+TV1_GN_A o TG1+TV1_GN)
+    // Prioridad 1: Nemotécnico Oficial Excluyente (NUEVARENCA_TG1+TV1_GN_A o TG1+TV1_GN)
     const prio1Filas = [];
     const prio1Nombres = [];
 
     todasFilasNR.forEach((rIdx, idx) => {
       const row = jsonProg[rIdx];
-      const rowStr = (String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase().replace(/\s+/g, '');
-      if (rowStr.includes('TG1+TV1_GN_A') || rowStr.includes('TG1+TV1_GN') || rowStr.includes('NUEVARENCA_TG1+TV1')) {
+      const rowStr = (
+        String(row[0] || '') + ' ' +
+        String(row[1] || '') + ' ' +
+        String(row[2] || '') + ' ' +
+        String(row[3] || '')
+      ).toUpperCase().replace(/\s+/g, '');
+
+      if (rowStr.includes('NUEVARENCA_TG1+TV1_GN_A') || rowStr.includes('TG1+TV1_GN_A') || rowStr.includes('TG1+TV1_GN') || rowStr.includes('NUEVARENCA_TG1+TV1')) {
         prio1Filas.push(rIdx);
         prio1Nombres.push(todosNombresNR[idx]);
       }
@@ -130,7 +137,13 @@ export async function procesarArchivoCenCliente(file) {
 
       todasFilasNR.forEach((rIdx, idx) => {
         const row = jsonProg[rIdx];
-        const rowStr = (String(row[1] || '') + ' ' + String(row[2] || '') + ' ' + String(row[3] || '')).toUpperCase().replace(/\s+/g, '');
+        const rowStr = (
+          String(row[0] || '') + ' ' +
+          String(row[1] || '') + ' ' +
+          String(row[2] || '') + ' ' +
+          String(row[3] || '')
+        ).toUpperCase().replace(/\s+/g, '');
+
         if (rowStr.includes('TG1+TV1') || rowStr.includes('CCNUEVA') || rowStr.includes('CC_NUEVA') || rowStr.includes('COMBINADO')) {
           prio2Filas.push(rIdx);
           prio2Nombres.push(todosNombresNR[idx]);
@@ -170,7 +183,7 @@ export async function procesarArchivoCenCliente(file) {
           if (val >= 0) valoresFilaHora.push(val);
         }
       }
-      // Regla física infalible: tomar la potencia máxima despachada en la hora h entre las filas de la central
+      // Regla física: tomar la potencia máxima despachada en la hora h entre las filas seleccionadas
       const maxMwHora = valoresFilaHora.length > 0 ? Math.max(...valoresFilaHora) : 0;
       mwHoras[h] = Number(maxMwHora.toFixed(1));
     }
@@ -249,9 +262,11 @@ export async function procesarArchivoCenCliente(file) {
     sistemaPromVal = Number(promGeneracion.toFixed(1));
   }
 
-  // 7. Construir arreglo de 24 horas y métricas de Carga Base / Mínimo Técnico
+  // 7. Construir arreglo de 24 horas y métricas operacionales exactas
   let hrsCB = 0;
   let hrsMT = 0;
+  let hrsFS = 0;
+  let fuegosSuplemenMW = 0.0;
   const horas = [];
 
   for (let h = 1; h <= 24; h++) {
@@ -259,9 +274,12 @@ export async function procesarArchivoCenCliente(file) {
     const ssaa = Number((pot * 0.033).toFixed(1));
     const neta = Number(Math.max(0, pot - ssaa).toFixed(1));
 
-    if (pot >= 330) {
+    if (pot > 370) {
+      hrsFS++;
+      fuegosSuplemenMW += (pot - 370);
+    } else if (pot >= 330) {
       hrsCB++;
-    } else if (pot >= 160) { // Umbral mínimo técnico exacto: >= 160 MW
+    } else if (pot >= 158 && pot < 330) { // Mínimo Técnico exacto 160 MW (con tolerancia 158-162 MW)
       hrsMT++;
     }
 
@@ -281,11 +299,14 @@ export async function procesarArchivoCenCliente(file) {
     status: 'ok',
     nombreArchivo: file.name,
     nombreExcel,
+    despachoCNR: potEsperaMW > 0 ? 'En servicio' : 'Fuera de servicio',
     sistemaProm: String(sistemaPromVal || '55.8'),
-    potEspera: potEsperaMW > 0 ? String(potEsperaMW) : '4046',
-    costoMarginal: String(costoMarginalVal ? Number(costoMarginalVal).toFixed(1) : '50.6'),
+    potEspera: String(potEsperaMW),
+    fuegosSuplemen: String(Math.round(fuegosSuplemenMW)),
     hrsCargaBase: String(hrsCB),
     hrsMinTec: String(hrsMT),
+    hrsFuegosSuplem: String(hrsFS),
+    costoMarginal: String(costoMarginalVal ? Number(costoMarginalVal).toFixed(1) : '50.6'),
     horas
   };
 }
