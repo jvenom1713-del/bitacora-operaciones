@@ -91,13 +91,12 @@ export async function procesarArchivoCenCliente(file) {
     const row = jsonProg[r];
     if (!Array.isArray(row) || row.length < 4) continue;
 
-    // Unir las primeras 4 celdas en un solo string para evadir espacios invisibles
-    const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase();
+    // Unir las primeras 4 celdas, eliminar espacios para evitar fallos de formato, todo a mayúsculas
+    const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
 
-    // Buscar el prefijo exacto con includes.
-    // EL GUIÓN BAJO (_) AL FINAL ES VITAL para capturar los gases (GN_A) pero ignorar la fila de resumen total.
-    const esBase = textoCeldas.includes('NUEVARENCA_TG1+TV1_') || textoCeldas.includes('TG1+TV1_');
-    const esFuego = textoCeldas.includes('+FA1_') || textoCeldas.includes('+FA1');
+    // Candado estricto: EXCLUSIVO para Nueva Renca (evita sumar Nehuenco, San Isidro, etc.)
+    const esBase = textoCeldas.includes('NUEVARENCA_TG1+TV1_');
+    const esFuego = textoCeldas.includes('NUEVARENCA_TG1+TV1+FA1_');
 
     if (esFuego) {
       filasFuegosIndices.push(r);
