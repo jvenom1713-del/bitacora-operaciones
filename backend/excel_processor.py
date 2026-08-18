@@ -5,9 +5,10 @@ from typing import Dict, Any, Optional
 
 def obtener_filas_nueva_renca(sheet_prog) -> list:
     """
-    Busca dinámicamente todas las filas correspondientes a NUEVARENCA en la hoja PROGRAMA.
-    Aplica deduplicación para priorizar la fila total de Ciclo Combinado (CC) y omitir
-    sub-desgloses de turbinas individuales (TG1/TV1).
+    Busca dinámicamente las filas de Nueva Renca por escala de prioridades según el nemotécnico oficial.
+    Prioridad 1: NUEVARENCA_TG1+TV1_GN_A / TG1+TV1_GN
+    Prioridad 2: TG1+TV1 / CC / COMBINADO
+    Prioridad 3: General NUEVARENCA
     """
     filas_todas = []
     nombres = []
@@ -15,19 +16,19 @@ def obtener_filas_nueva_renca(sheet_prog) -> list:
         c2 = str(sheet_prog.cell(row=r, column=2).value or '')
         c3 = str(sheet_prog.cell(row=r, column=3).value or '')
         c4 = str(sheet_prog.cell(row=r, column=4).value or '')
-        etiqueta_completa = (c2 + ' ' + c3 + ' ' + c4).upper()
+        etiqueta_completa = (c2 + ' ' + c3 + ' ' + c4).upper().replace(' ', '')
         if 'NUEVARENCA' in etiqueta_completa or 'NUEVA_RENCA' in etiqueta_completa or 'CCNUEVARENCA' in etiqueta_completa or 'CC_NUEVA_RENCA' in etiqueta_completa:
             filas_todas.append(r)
             nombres.append(etiqueta_completa)
 
-    if len(filas_todas) > 1:
-        filas_totales = []
-        for idx, r in enumerate(filas_todas):
-            lbl = nombres[idx]
-            if 'TG1+TV1' in lbl or 'CC' in lbl or 'COMBINADO' in lbl or 'TOTAL' in lbl or ('NUEVA' in lbl and 'TG1_' not in lbl and 'TV1_' not in lbl and 'TG1 ' not in lbl and 'TV1 ' not in lbl):
-                filas_totales.append(r)
-        if filas_totales:
-            return filas_totales
+    if filas_todas:
+        prio1 = [r for idx, r in enumerate(filas_todas) if 'TG1+TV1_GN_A' in nombres[idx] or 'TG1+TV1_GN' in nombres[idx] or 'NUEVARENCA_TG1+TV1' in nombres[idx]]
+        if prio1:
+            return prio1
+
+        prio2 = [r for idx, r in enumerate(filas_todas) if 'TG1+TV1' in nombres[idx] or 'CCNUEVA' in nombres[idx] or 'CC_NUEVA' in nombres[idx] or 'COMBINADO' in nombres[idx]]
+        if prio2:
+            return prio2
 
     return filas_todas
 
