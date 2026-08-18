@@ -1872,7 +1872,7 @@ ${extraHtml}
       }`}>
         <button
           title={cargandoCen ? "Actualizando datos del Coordinador..." : "Refrescar datos del Coordinador"}
-          onClick={() => handleConsultarCoordinadorFecha(fechaCenConsulta)}
+          onClick={() => handleConsultarCoordinadorFecha(getFechaObjetivoCoordinador())}
           disabled={cargandoCen}
           className={`p-3.5 rounded-xl transition-all transform hover:scale-110 active:scale-95 shadow-sm relative ${
             cargandoCen 
