@@ -1172,18 +1172,25 @@ ${extraHtml}
     try {
       const res = await procesarArchivoCenCliente(file);
       if (res && res.status === 'ok') {
-        actualizarParametrosGeneracion('sistemaProm', res.sistemaProm || '55.8');
-        actualizarParametrosGeneracion('potEspera', res.potEspera || '4046');
-        actualizarParametrosGeneracion('costoMarginal', res.costoMarginal || '50.6');
-        actualizarParametrosGeneracion('hrsCargaBase', res.hrsCargaBase || '1');
-        actualizarParametrosGeneracion('hrsMinTec', res.hrsMinTec || '22');
-
         if (Array.isArray(res.horas) && res.horas.length === 24) {
           setRegistrosHorarios(res.horas);
           try {
             localStorage.setItem('bitacora_registros_horarios', JSON.stringify(res.horas));
           } catch (_) {}
           window.dispatchEvent(new CustomEvent('FORZAR_CARGA_CELDAS_CEN_DATA', { detail: res.horas }));
+        }
+
+        const datosCalculados = calcularMatrizDinamica(res);
+        aplicarDatos(datosCalculados);
+
+        if (onCambiarPersonal) {
+          onCambiarPersonal({
+            ...safeEquipoTurno,
+            generacionPromedio: datosCalculados.sistemaProm,
+            sistemaProm: datosCalculados.sistemaProm,
+            costoMarginal: datosCalculados.costoMarginal,
+            potEspera: datosCalculados.potEspera
+          });
         }
 
         window.dispatchEvent(new Event('registros_actualizados'));
@@ -1313,27 +1320,6 @@ ${extraHtml}
   const actualizarParametrosGeneracion = (clave, nuevoValor) => {
     setParametros(prev => {
       const actualizados = { ...prev, [clave]: nuevoValor };
-
-      // Recálculo automático de la Potencia Esperada (MWh acumulado) si cambia sistemaProm u horas
-      if (clave === 'sistemaProm' || clave === 'hrsCargaBase' || clave === 'hrsMinTec') {
-        const promMW = parseFloat(actualizados.sistemaProm || 0);
-        const hrsCB = parseFloat(actualizados.hrsCargaBase || 0);
-        const hrsMT = parseFloat(actualizados.hrsMinTec || 0);
-        const hrsTot = (hrsCB + hrsMT) > 0 ? (hrsCB + hrsMT) : 24;
-
-        if (promMW > 0 && (actualizados.potEspera === '0' || actualizados.potEspera === '' || actualizados.potEspera === '1310' || clave === 'sistemaProm')) {
-          actualizados.potEspera = String(Math.round(promMW * hrsTot));
-        }
-      } else if (clave === 'potEspera') {
-        const potEspMW = parseFloat(nuevoValor || 0);
-        const hrsCB = parseFloat(actualizados.hrsCargaBase || 0);
-        const hrsMT = parseFloat(actualizados.hrsMinTec || 0);
-        const hrsTot = (hrsCB + hrsMT) > 0 ? (hrsCB + hrsMT) : 24;
-
-        if (potEspMW > 0) {
-          actualizados.sistemaProm = (potEspMW / hrsTot).toFixed(1);
-        }
-      }
 
       try {
         localStorage.setItem('bitacora_parametros', JSON.stringify(actualizados));
