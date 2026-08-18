@@ -83,25 +83,38 @@ export async function procesarArchivoCenCliente(file) {
   const sheetProg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetProg, { header: 1 });
 
-  // 3. FILTRADO ESTRICTO POR PREFIJO (Aislar bloque principal)
+  // 3. FILTRADO ESTRICTO POR BLOQUE CONTIGUO (Evitar duplicidad con tablas inferiores del CEN)
   let filasBaseIndices = [];
   let filasFuegosIndices = [];
+  let bloqueEncontrado = false;
+  let bloqueTerminado = false;
 
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
     if (!Array.isArray(row) || row.length < 4) continue;
 
-    // Unir las primeras 4 celdas, eliminar espacios para evitar fallos de formato, todo a mayúsculas
     const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
 
-    // Candado estricto: EXCLUSIVO para Nueva Renca (evita sumar Nehuenco, San Isidro, etc.)
     const esBase = textoCeldas.includes('NUEVARENCA_TG1+TV1_');
     const esFuego = textoCeldas.includes('NUEVARENCA_TG1+TV1+FA1_');
 
-    if (esFuego) {
-      filasFuegosIndices.push(r);
-    } else if (esBase) {
-      filasBaseIndices.push(r);
+    if (esBase || esFuego) {
+      if (bloqueTerminado) {
+        // Si ya leímos el bloque de Despacho y encontramos Nueva Renca de nuevo (ej. en la tabla de Límites o Reservas más abajo), LO IGNORAMOS.
+        continue; 
+      }
+      bloqueEncontrado = true;
+
+      if (esFuego) {
+        filasFuegosIndices.push(r);
+      } else if (esBase) {
+        filasBaseIndices.push(r);
+      }
+    } else {
+      // Si la fila actual no es Nueva Renca, pero ya habíamos empezado a leer su bloque, significa que el bloque de Despacho terminó.
+      if (bloqueEncontrado) {
+        bloqueTerminado = true;
+      }
     }
   }
 
