@@ -39,7 +39,7 @@ export async function procesarArchivoCenCliente(file) {
     wbTco = wbPrograma;
   }
 
-  // 2. ABRIR ÚNICAMENTE LA HOJA "PROGRAMA"
+  // 2. ABRIR HOJA PROGRAMA
   const sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
   const sheetPrg = wbPrograma.Sheets[sheetNamePrg];
   const jsonProg = XLSX.utils.sheet_to_json(sheetPrg, { header: 1 });
@@ -50,54 +50,49 @@ export async function procesarArchivoCenCliente(file) {
   const perfilFuegos24h = Array(24).fill(0);
 
   // =====================================================================
-  // 3. LA LÓGICA DEL USUARIO: AISLAR EL BLOQUE EXACTO DE 25 FILAS
+  // 3. ENCONTRAR EL INICIO DEL BLOQUE DE 25 FILAS A PRUEBA DE FALLOS
   // =====================================================================
-  
   let indiceInicio = -1;
   
-  // Buscar dónde empieza la tabla principal de Nueva Renca
   for (let r = 0; r < jsonProg.length; r++) {
     const row = jsonProg[r];
-    if (!Array.isArray(row) || row.length < 2) continue;
-    const nombre = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+    if (!Array.isArray(row) || row.length < 4) continue;
     
-    // El bloque siempre comienza con DIESEL o GN_A
-    if (nombre === 'NUEVARENCA_TG1+TV1_DIESEL' || nombre === 'NUEVARENCA_TG1+TV1_GN_A' || nombre.startsWith('NUEVARENCA_TG1+TV1_')) {
+    // Fusionamos las celdas y borramos todos los espacios para que sea imposible que un error de tipeo lo oculte
+    const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
+    
+    // Apenas encontremos la primera variante del Ciclo Combinado (que tenga el guión bajo de gas), capturamos la fila
+    if (textoCeldas.includes('NUEVARENCA_TG1+TV1_')) {
       indiceInicio = r;
-      break; // ¡Lo encontramos! Detenemos la búsqueda inmediatamente.
+      break; 
     }
   }
 
-  // Guardamos un bloque exclusivo para usarlo en la hoja TCO también
   let bloqueRenca = [];
 
   if (indiceInicio !== -1) {
-    // RECORTAMOS EXACTAMENTE LAS 25 FILAS (Equivalente a Excel de 1565 a 1589)
+    // Extraemos EXACTAMENTE el bloque (esa fila + las 24 de abajo)
     bloqueRenca = jsonProg.slice(indiceInicio, indiceInicio + 25);
 
-    // Iteramos SOLAMENTE en estas 25 filas, ignorando el resto del archivo
     for (let r = 0; r < bloqueRenca.length; r++) {
       const row = bloqueRenca[r];
-      const nombreCelda = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+      if (!Array.isArray(row)) continue;
+
+      const textoCeldas = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'') + String(row[3]||'')).toUpperCase().replace(/\s+/g, '');
       
-      const esFuego = nombreCelda.includes('+FA1_');
+      // Asegurar que la fila pertenece a la central
+      if (!textoCeldas.includes('NUEVARENCA_TG1+TV1')) continue;
 
-      // Leer la columna AC (Total Diario)
-      let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
-      let totalDia = toFloat(valAC);
+      const esFuego = textoCeldas.includes('+FA1_');
 
-      // Reparar si el Excel trae el número con punto decimal (1.859 -> 1859)
-      if (totalDia > 0 && totalDia < 100) {
-        totalDia = totalDia * 1000;
-      }
+      // Columna AC (Índice 28)
+      let totalDia = toFloat(row[28]);
+      if (totalDia > 0 && totalDia < 100) totalDia = totalDia * 1000;
 
-      if (esFuego) {
-        fuegosSuplemenTotal += totalDia;
-      } else {
-        potEsperaTotal += totalDia;
-      }
+      if (esFuego) fuegosSuplemenTotal += totalDia;
+      else potEsperaTotal += totalDia;
 
-      // Sumar las 24 horas (Columnas E a AB -> Índices 4 a 27)
+      // Sumar 24 horas (Columnas E a AB -> Índices 4 a 27)
       for (let i = 0; i < 24; i++) {
         const val = toFloat(row[i + 4]);
         if (esFuego) perfilFuegos24h[i] += val;
@@ -105,15 +100,22 @@ export async function procesarArchivoCenCliente(file) {
       }
     }
   }
-  // =====================================================================
 
-  // 4. COSTO MARGINAL
+  // 4. COSTO MARGINAL AC8
   let costoMarginalVal = toFloat(sheetPrg['AC8']?.v) || 49.5;
 
   const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
   const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
 
-  // 5. SISTEMA PROMEDIO (TCO) - Solo busca los precios de las 25 filas que aislamos
+  // SALVACAÍDAS MATEMÁTICO: Si la columna AC estaba vacía en el Excel y dio 0, sumamos las 24 horas manualmente.
+  if (potEsperaTotal === 0) {
+    potEsperaTotal = mwHoras.reduce((a, b) => a + b, 0);
+  }
+  if (fuegosSuplemenTotal === 0) {
+    fuegosSuplemenTotal = mwHorasFuegos.reduce((a, b) => a + b, 0);
+  }
+
+  // 5. SISTEMA PROMEDIO (TCO)
   let sistemaPromVal = 57.3;
   let seCalculoTco = false;
   if (wbTco) {
@@ -124,6 +126,8 @@ export async function procesarArchivoCenCliente(file) {
       
       bloqueRenca.forEach(row => {
         const nombreCelda = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
+        if (!nombreCelda.includes('NUEVARENCA')) return;
+
         if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(nombreCelda);
         if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(nombreCelda);
         if (row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0) > 0) configsB3.push(nombreCelda);
