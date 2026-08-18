@@ -43,10 +43,16 @@ export async function procesarArchivoCenCliente(file) {
   const sheetPrg = wbPrograma.Sheets[sheetNamePrg];
   let jsonProg = XLSX.utils.sheet_to_json(sheetPrg, { header: 1 });
 
-  // 1. GUILLOTINA: Cortar el documento antes de las tablas inferiores (Límites, Reservas, Mínimo Técnico)
+  // 1. GUILLOTINA MULTICELDA: Cortar el documento antes de cualquier encabezado de tablas inferiores
   const indiceCorte = jsonProg.findIndex(row => {
-    const str = (String(row[0]||'') + String(row[1]||'') + String(row[2]||'')).toUpperCase();
-    return str.includes('LÍMITE') || str.includes('LIMITE') || str.includes('RESERVA') || str.includes('MÍNIMO TÉCNICO') || str.includes('MINIMO TECNICO');
+    if (!Array.isArray(row)) return false;
+    const textoFilaCompleta = row.map(c => String(c||'')).join(' ').toUpperCase();
+    return textoFilaCompleta.includes('LÍMITE MÍNIMO') || 
+           textoFilaCompleta.includes('LIMITE MINIMO') || 
+           textoFilaCompleta.includes('MÍNIMO TÉCNICO') || 
+           textoFilaCompleta.includes('MINIMO TECNICO') || 
+           textoFilaCompleta.includes('RESERVA DE') ||
+           textoFilaCompleta.includes('SERVICIOS COMPLEMENTARIOS');
   });
   if (indiceCorte > 0) {
     jsonProg = jsonProg.slice(0, indiceCorte);
@@ -58,7 +64,7 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 3. FILTRADO CON MEMORIA Y SUFIJO DE COMBUSTIBLE VALIDO
+  // 3. FILTRADO CON REGISTRO INMEDIATO EN MEMORIA
   const nemotecnicosLeidos = new Set();
 
   for (let r = 0; r < jsonProg.length; r++) {
@@ -79,7 +85,9 @@ export async function procesarArchivoCenCliente(file) {
     const esFuegoValido = textoFila.includes('NUEVARENCA_TG1+TV1+FA1_');
 
     if (esBaseValida || esFuegoValido) {
+      // REGISTRO INMEDIATO EN MEMORIA (Inmune a repeticiones en tablas inferiores)
       if (nemotecnicosLeidos.has(nombreExacto)) continue;
+      nemotecnicosLeidos.add(nombreExacto);
 
       // Calcular suma real de generación de las 24 horas (Cols E a AB -> Índices 4 a 27)
       let suma24hFila = 0.0;
@@ -87,12 +95,10 @@ export async function procesarArchivoCenCliente(file) {
         suma24hFila += toFloat(row[i + 4]);
       }
 
-      // Si la fila no generó potencia en ninguna de las 24 horas (ej. Diesel inactivo), SE IGNORA
+      // Si la fila no generó potencia en ninguna de las 24 horas (ej. Diesel standby), omitir suma de MW pero MANTENER el bloqueo en Set
       if (suma24hFila <= 0) {
         continue;
       }
-
-      nemotecnicosLeidos.add(nombreExacto);
 
       const totalDia = toFloat(row[28]) || suma24hFila;
       if (esFuegoValido) {
