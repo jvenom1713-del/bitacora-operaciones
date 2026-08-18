@@ -39,6 +39,23 @@ const resolverFolioCorrelativo = (item) => {
   return String(item.id || 1).padStart(4, '0');
 };
 
+export function limpiarEtiquetasHtml(htmlStr) {
+  if (!htmlStr || typeof htmlStr !== 'string') return '';
+  return htmlStr
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&gt;/gi, '>')
+    .replace(/&lt;/gi, '<')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
 const parsearSeccionesBitacora = (rawText) => {
   if (!rawText || typeof rawText !== 'string') {
     return { resumen: '', fragilidades: '', instrucciones: '', senales: '', permisos: '' };
@@ -75,7 +92,13 @@ const parsearSeccionesBitacora = (rawText) => {
   let permisosMatch = str.match(/5\.\s*PERMISOS DE TRABAJO EN CALIENTE ABIERTOS:\s*([\s\S]*?)$/i);
   let permisos = permisosMatch ? permisosMatch[1].trim() : '';
 
-  return { resumen, fragilidades, instrucciones, senales, permisos };
+  return {
+    resumen: limpiarEtiquetasHtml(resumen),
+    fragilidades: limpiarEtiquetasHtml(fragilidades),
+    instrucciones: limpiarEtiquetasHtml(instrucciones),
+    senales: limpiarEtiquetasHtml(senales),
+    permisos: limpiarEtiquetasHtml(permisos)
+  };
 };
 
 const formatearSenalesHtmlCajitas = (senalesText) => {
@@ -224,13 +247,13 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
     const parsed = parsearSeccionesBitacora(rawContenido);
 
     const resumen = (item.resumen_operativo && !item.resumen_operativo.includes('1. RESUMEN'))
-      ? item.resumen_operativo
-      : (parsed.resumen || 'Sin observaciones registradas.');
+      ? limpiarEtiquetasHtml(item.resumen_operativo)
+      : (limpiarEtiquetasHtml(parsed.resumen) || 'Sin observaciones registradas.');
 
     // Extraer textos de secciones desde campos específicos o del contenido desglosado
-    const fragText = item.fragilidades_texto || item.bop_texto || parsed.fragilidades || '';
-    const instrText = item.instrucciones_texto || item.observaciones_jefe || parsed.instrucciones || '';
-    const senalesText = item.senales_forzadas_texto || parsed.senales || '';
+    const fragText = limpiarEtiquetasHtml(item.fragilidades_texto || item.bop_texto || parsed.fragilidades || '');
+    const instrText = limpiarEtiquetasHtml(item.instrucciones_texto || item.observaciones_jefe || parsed.instrucciones || '');
+    const senalesText = limpiarEtiquetasHtml(item.senales_forzadas_texto || parsed.senales || '');
 
     // Leer KPIs reales del item o parámetros guardados, usando fallbacks operativos de planta
     const sisPromVal = (item.sistema_prom && item.sistema_prom !== '--' && item.sistema_prom !== '0')
@@ -682,7 +705,7 @@ export default function VistaConsultaBitacora({ onVolverMenu, modoNocturno, usua
                         {(() => {
                           const raw = item.contenido || item.resumen_operativo || item.contenido_texto || '';
                           const p = parsearSeccionesBitacora(raw);
-                          const textoAMostrar = p.resumen || raw;
+                          const textoAMostrar = limpiarEtiquetasHtml(p.resumen || raw);
                           return (textoAMostrar && textoAMostrar.trim()) ? textoAMostrar : 'Sin observaciones registradas.';
                         })()}
                       </p>
