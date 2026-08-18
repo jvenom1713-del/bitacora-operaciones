@@ -82,7 +82,10 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
             elif isinstance(item, str):
                 nombres_archivos.append(item)
     
-    zips_disponibles = [n for n in nombres_archivos if 'PROGRAMA' in n.upper() and n.endswith('.zip')]
+    zips_disponibles = [
+        n for n in nombres_archivos 
+        if any(kw in n.upper() for kw in ['PROGRAMA', 'PCP', 'PRG', 'TCO']) and n.endswith('.zip')
+    ]
     zips_disponibles.sort(reverse=True)
 
     fechas_a_probar = []
@@ -90,10 +93,16 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
         fechas_a_probar = [fecha, fecha + timedelta(days=1)] + [fecha - timedelta(days=d) for d in range(1, max_dias_atras + 1)]
     else:
         hoy = datetime.now()
-        fechas_a_probar = [hoy + timedelta(days=1), hoy] + [hoy - timedelta(days=d) for d in range(1, max_dias_atras + 1)]
+        # Regla de las 20:00 hrs: Después de las 20:00 hrs el programa oficial publicado por el CEN corresponde al DÍA SIGUIENTE (mañana)
+        if hoy.hour >= 20:
+            manana = hoy + timedelta(days=1)
+            fechas_a_probar = [manana, hoy] + [hoy - timedelta(days=d) for d in range(1, max_dias_atras + 1)]
+        else:
+            fechas_a_probar = [hoy, hoy + timedelta(days=1)] + [hoy - timedelta(days=d) for d in range(1, max_dias_atras + 1)]
 
     candidatos_zip = []
     version_suffixes = ['', '_v1', '_v2', '_v3', '_v4', '_v5', '_v6', '_v7', '_v8', '_v9', '_v10', '_def', '_final']
+    prefix_patterns = ['PROGRAMA', 'PCP', 'PCP_', 'PRG']
 
     for f in fechas_a_probar:
         fecha8 = f.strftime('%Y%m%d')
@@ -101,8 +110,9 @@ def descargar_excel_programa(fecha: Optional[datetime] = None, max_dias_atras: i
         if coincidencias:
             candidatos_zip.extend(coincidencias)
         else:
-            for suff in version_suffixes:
-                candidatos_zip.append((f"PROGRAMA{fecha8}{suff}.zip", f.strftime('%Y-%m-%d')))
+            for pref in prefix_patterns:
+                for suff in version_suffixes:
+                    candidatos_zip.append((f"{pref}{fecha8}{suff}.zip", f.strftime('%Y-%m-%d')))
 
     for z in zips_disponibles:
         if not any(z == (c[0] if isinstance(c, tuple) else c) for c in candidatos_zip):

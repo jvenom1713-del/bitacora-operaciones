@@ -13,12 +13,32 @@ export function getFechaLocalChile() {
 }
 
 /**
+ * Obtiene la fecha objetivo predeterminada para consultar al Coordinador Eléctrico Nacional.
+ * Regla de las 20:00 hrs: Después de las 20:00 hrs Chile, el programa oficial del CEN es para el DÍA SIGUIENTE.
+ */
+export function getFechaObjetivoCoordinador() {
+  try {
+    const ahora = new Date();
+    const horaChileStr = ahora.toLocaleTimeString('en-US', { timeZone: 'America/Santiago', hour12: false });
+    const horaChile = parseInt(horaChileStr.split(':')[0], 10);
+
+    if (horaChile >= 20) {
+      const manana = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
+      return manana.toLocaleDateString('sv-SE', { timeZone: 'America/Santiago' });
+    }
+    return ahora.toLocaleDateString('sv-SE', { timeZone: 'America/Santiago' });
+  } catch (_) {
+    return new Date().toISOString().split('T')[0];
+  }
+}
+
+/**
  * Servicio modular para obtener la telemetría y datos de generación del Coordinador/Backend
- * @param {string} fecha - Fecha en formato YYYY-MM-DD (default Chile local)
+ * @param {string} fecha - Fecha en formato YYYY-MM-DD (default Chile local aplicando regla 20:00 hrs)
  * @param {string} unidadId - Nemotécnico exacto (default 'NUEVARENCA_TG1+TV1_GN_A')
  */
-export async function fetchGeneracionCoordinador(fecha = getFechaLocalChile(), unidadId = 'NUEVARENCA_TG1+TV1_GN_A') {
-  const fechaLocal = fecha || getFechaLocalChile();
+export async function fetchGeneracionCoordinador(fecha = getFechaObjetivoCoordinador(), unidadId = 'NUEVARENCA_TG1+TV1_GN_A') {
+  const fechaLocal = fecha || getFechaObjetivoCoordinador();
   const unidadNemotecnico = unidadId || 'NUEVARENCA_TG1+TV1_GN_A';
 
   try {
