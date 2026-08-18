@@ -386,12 +386,12 @@ export default function VistaConsultaHojaTurno({
             const valPot = data.pot_espera;
             const valCmg = data.costo_marginal;
             const actualizados = {
-              sistemaProm: (!valProm || valProm === '0') ? '55.8' : String(valProm),
-              costoMarginal: (!valCmg || valCmg === '0') ? '50.6' : String(valCmg),
-              potEspera: (!valPot || valPot === '0') ? '4046' : String(valPot),
+              sistemaProm: (!valProm || valProm === '0') ? '57.3' : String(valProm),
+              costoMarginal: (!valCmg || valCmg === '0') ? '49.5' : String(valCmg),
+              potEspera: (!valPot || valPot === '0') ? '5063' : String(valPot),
               fuegosSuplemen: String(data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrs_carga_base || '1'),
-              hrsMinTec: String(data.hrs_min_tec ?? '22')
+              hrsMinTec: String(data.hrs_min_tec ?? '15')
             };
             setDatosGenLocal(actualizados);
             return;
@@ -408,12 +408,12 @@ export default function VistaConsultaHojaTurno({
             const valPot = data.potEspera || data.pot_espera;
             const valCmg = data.costoMarginal || data.costo_marginal;
             const actualizados = {
-              sistemaProm: (!valProm || valProm === '0') ? '55.8' : String(valProm),
-              costoMarginal: (!valCmg || valCmg === '0') ? '50.6' : String(valCmg),
-              potEspera: (!valPot || valPot === '0') ? '4046' : String(valPot),
+              sistemaProm: (!valProm || valProm === '0') ? '57.3' : String(valProm),
+              costoMarginal: (!valCmg || valCmg === '0') ? '49.5' : String(valCmg),
+              potEspera: (!valPot || valPot === '0') ? '5063' : String(valPot),
               fuegosSuplemen: String(data.fuegosSuplemen || data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '1'),
-              hrsMinTec: String(data.hrsMinTec || data.hrs_min_tec || '22')
+              hrsMinTec: String(data.hrsMinTec || data.hrs_min_tec || '15')
             };
             setDatosGenLocal(actualizados);
           }

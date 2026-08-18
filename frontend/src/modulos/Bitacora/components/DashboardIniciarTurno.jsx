@@ -1390,8 +1390,8 @@ ${extraHtml}
       const actualizados = {
         ...prev,
         despachoCNR: data.despachoCNR || prev?.despachoCNR || 'En servicio',
-        sistemaProm: data.sistemaProm || prev?.sistemaProm || '55.8',
-        potEspera: data.potEspera || prev?.potEspera || '4046',
+        sistemaProm: data.sistemaProm || prev?.sistemaProm || '57.3',
+        potEspera: data.potEspera || prev?.potEspera || '5063',
         fuegosSuplemen: data.fuegosSuplemen ?? prev?.fuegosSuplemen ?? '0',
         hrsCargaBase: data.hrsCargaBase ?? prev?.hrsCargaBase ?? '0',
         hrsMinTec: data.hrsMinTec ?? prev?.hrsMinTec ?? '0',
@@ -1400,7 +1400,7 @@ ${extraHtml}
         m3FA: data.m3FA ?? prev?.m3FA ?? '0',
         m3Diesel: data.m3Diesel ?? prev?.m3Diesel ?? '0',
         kgGasGLP: data.kgGasGLP ?? prev?.kgGasGLP ?? '0',
-        costoMarginal: data.costoMarginal || prev?.costoMarginal || '50.6'
+        costoMarginal: data.costoMarginal || prev?.costoMarginal || '49.5'
       };
       try {
         localStorage.setItem('bitacora_parametros', JSON.stringify(actualizados));
@@ -1420,17 +1420,17 @@ ${extraHtml}
     const tieneDatosServidorOExcel = datosEntrada?.fuente || datosEntrada?.creado_el || datosEntrada?.status === 'ok' || datosEntrada?.esDeServidor;
 
     if (tieneDatosServidorOExcel && sisPromVal !== undefined && sisPromVal !== null && sisPromVal !== '--') {
-      const sisProm = Number(sisPromVal) || 55.8;
+      const sisProm = Number(sisPromVal) || 57.3;
       let potEspNum = Number(potEspVal);
-      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === '--' || potEspNum === 0) {
-        potEspNum = 4046;
+      if (isNaN(potEspNum) || potEspVal === undefined || potEspVal === null || potEspVal === '--') {
+        potEspNum = 5063;
       }
 
-      const sisPromStr = sisProm === 0 ? '55.8' : sisProm.toFixed(1);
+      const sisPromStr = sisProm === 0 ? '57.3' : sisProm.toFixed(1);
       const hrsMTStr = (hrsMTVal !== undefined && hrsMTVal !== null && hrsMTVal !== '') ? String(hrsMTVal) : '0';
 
       return {
-        despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (sisProm > 0 ? 'En servicio' : 'Fuera de servicio'),
+        despachoCNR: datosEntrada.despachoCNR || datosEntrada.despacho_cnr || (potEspNum > 0 ? 'En servicio' : 'Fuera de servicio'),
         sistemaProm: sisPromStr,
         potEspera: String(Math.round(potEspNum)),
         fuegosSuplemen: String(datosEntrada.fuegosSuplemen || datosEntrada.mw_fuegos_suplementarios || '0'),

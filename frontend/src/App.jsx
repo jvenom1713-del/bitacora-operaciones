@@ -284,42 +284,37 @@ export default function App() {
     try {
       const saved = localStorage.getItem('bitacora_parametros');
       const parsed = saved ? JSON.parse(saved) : null;
-      if (parsed) {
-        if (!parsed.potEspera || parsed.potEspera === '0' || parsed.potEspera === '1311' || parsed.potEspera === '4213' || parsed.potEspera === '1310') parsed.potEspera = '4046';
-        if (!parsed.costoMarginal || parsed.costoMarginal === '0' || parsed.costoMarginal === '39.0' || parsed.costoMarginal === '44.6') parsed.costoMarginal = '50.6';
-        if (!parsed.sistemaProm || parsed.sistemaProm === '0' || parsed.sistemaProm === '52.9' || parsed.sistemaProm === '54.6' || parsed.sistemaProm === '370.0') parsed.sistemaProm = '55.8';
-        if (!parsed.hrsMinTec || parsed.hrsMinTec === '0' || parsed.hrsMinTec === '7' || parsed.hrsMinTec === '2') parsed.hrsMinTec = '22';
-        if (!parsed.hrsCargaBase || parsed.hrsCargaBase === '0') parsed.hrsCargaBase = '1';
+      if (parsed && typeof parsed === 'object') {
         return parsed;
       }
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '55.8',
-        potEspera: '4046',
+        sistemaProm: '57.3',
+        potEspera: '5063',
         fuegosSuplemen: '0',
         hrsCargaBase: '1',
-        hrsMinTec: '22',
+        hrsMinTec: '15',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '50.6'
+        costoMarginal: '49.5'
       };
     } catch {
       return {
         despachoCNR: 'En servicio',
-        sistemaProm: '55.8',
-        potEspera: '4046',
+        sistemaProm: '57.3',
+        potEspera: '5063',
         fuegosSuplemen: '0',
         hrsCargaBase: '1',
-        hrsMinTec: '22',
+        hrsMinTec: '15',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
         m3Diesel: '0',
         kgGasGLP: '0',
-        costoMarginal: '50.6'
+        costoMarginal: '49.5'
       };
     }
   });

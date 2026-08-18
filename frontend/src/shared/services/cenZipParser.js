@@ -146,16 +146,16 @@ export async function procesarArchivoCenCliente(file) {
     horas.push({ hora: h, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) });
   }
 
-  // Se redondea directamente el valor leído de la columna AC (Evitando que calcule mal por decimales en las horas)
-  potEsperaTotal = Math.round(potEsperaTotal);
+  // Se redondea directamente el valor leído de la columna AC o la suma del perfil de 24h
+  const potEsperaMW = Math.round(potEsperaTotal > 0 ? potEsperaTotal : perfilBase24h.reduce((a, b) => a + b, 0));
 
   return {
     status: 'ok',
     nombreArchivo: file.name,
     nombreExcel,
-    despachoCNR: potEsperaTotal > 0 ? 'En servicio' : 'Fuera de servicio',
+    despachoCNR: potEsperaMW > 0 ? 'En servicio' : 'Fuera de servicio',
     sistemaProm: String(sistemaPromVal),
-    potEspera: String(potEsperaTotal),
+    potEspera: String(potEsperaMW),
     fuegosSuplemen: String(Math.round(fuegosSuplemenTotal)),
     hrsCargaBase: String(hrsCB),
     hrsMinTec: String(hrsMT),
