@@ -372,7 +372,7 @@ export default function App() {
               costoMarginal: String(valCmg || '50.6'),
               fuegosSuplemen: String(data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrs_carga_base || '1'),
-              hrsMinTec: String(data.hrs_min_tec || '15'),
+              hrsMinTec: String(data.hrs_min_tec ?? '0'),
               hrsFuegosSuplem: String(data.hrs_fuegos_suplem || '0')
             };
           }
@@ -397,7 +397,7 @@ export default function App() {
                   costoMarginal: String(valCmg || '50.6'),
                   fuegosSuplemen: String(data.fuegosSuplemen || '0'),
                   hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '1'),
-                  hrsMinTec: String(data.hrsMinTec || data.hrs_minimo_tecnico || '15'),
+                  hrsMinTec: String(data.hrsMinTec ?? data.hrs_minimo_tecnico ?? '0'),
                   hrsFuegosSuplem: String(data.hrsFuegosSuplem || data.hrs_fuegos_suplementarios || '0')
                 };
               }

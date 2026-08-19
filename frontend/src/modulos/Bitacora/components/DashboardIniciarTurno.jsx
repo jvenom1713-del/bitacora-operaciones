@@ -1232,21 +1232,21 @@ ${extraHtml}
         actualizarParametrosGeneracion('sistemaProm', String(resumenObtenido.sistema_prom_mw || '57.3'));
         actualizarParametrosGeneracion('costoMarginal', String(resumenObtenido.costo_marginal_usd_mw || '49.5'));
         actualizarParametrosGeneracion('potEspera', String(resumenObtenido.potencia_esperada_mw || '5063'));
-        actualizarParametrosGeneracion('hrsCargaBase', String(resumenObtenido.hrs_carga_base || '1'));
-        actualizarParametrosGeneracion('hrsMinTec', String(resumenObtenido.hrs_minimo_tecnico || '15'));
+        actualizarParametrosGeneracion('hrsCargaBase', String(resumenObtenido.hrs_carga_base ?? '1'));
+        actualizarParametrosGeneracion('hrsMinTec', String(resumenObtenido.hrs_minimo_tecnico ?? '0'));
       } else if (Array.isArray(datosHorarios) && datosHorarios.length > 0) {
         const sumaMW = datosHorarios.reduce((acc, curr) => acc + (curr.potencia_mw || 0), 0);
         let hrsCB = 0;
         let hrsMT = 0;
         datosHorarios.forEach(d => {
           if (d.potencia_mw >= 330) hrsCB++;
-          else if (Math.floor(d.potencia_mw) === 160 || Math.round(d.potencia_mw) === 160) hrsMT++;
+          else if (Math.round(d.potencia_mw) === 160 || (d.potencia_mw >= 158 && d.potencia_mw <= 162)) hrsMT++;
         });
         const promMW = (sumaMW / 24).toFixed(1);
         actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '57.3');
         actualizarParametrosGeneracion('potEspera', String(Math.round(sumaMW) || 5063));
-        actualizarParametrosGeneracion('hrsCargaBase', String(hrsCB || 1));
-        actualizarParametrosGeneracion('hrsMinTec', String(hrsMT || 15));
+        actualizarParametrosGeneracion('hrsCargaBase', String(hrsCB ?? 1));
+        actualizarParametrosGeneracion('hrsMinTec', String(hrsMT ?? 0));
       }
 
       // 4. Emitir eventos de actualización global para redibujar 24 horas y casillas
@@ -1399,7 +1399,7 @@ ${extraHtml}
         potEspera: data.potEspera || prev?.potEspera || '5063',
         fuegosSuplemen: data.fuegosSuplemen ?? prev?.fuegosSuplemen ?? '0',
         hrsCargaBase: (valCB === '2' || valCB === '0') ? '1' : valCB,
-        hrsMinTec: data.hrsMinTec ?? prev?.hrsMinTec ?? '15',
+        hrsMinTec: data.hrsMinTec ?? prev?.hrsMinTec ?? '0',
         hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev?.hrsFuegosSuplem ?? '0',
         milesM3Gas: data.milesM3Gas ?? prev?.milesM3Gas ?? '0',
         m3FA: data.m3FA ?? prev?.m3FA ?? '0',
@@ -1460,7 +1460,7 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (Math.floor(mw) === 160 || Math.round(mw) === 160) hrsMT++;
+          else if (Math.round(mw) === 160 || (mw >= 158 && mw <= 162)) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '--')
