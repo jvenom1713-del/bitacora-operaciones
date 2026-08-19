@@ -140,7 +140,7 @@ export async function procesarArchivoCenCliente(file) {
     const potFA = mwHorasFuegos[i];
     const ssaa = Number((pot * 0.033).toFixed(1));
     if (potFA > 0) hrsFS++;
-    if (pot >= 320) hrsCB++;
+    if (pot >= 330) hrsCB++;
     else if (pot >= 158 && pot <= 162) hrsMT++;
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
   });
