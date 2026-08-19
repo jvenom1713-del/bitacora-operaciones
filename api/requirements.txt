@@ -1,0 +1,7 @@
+flask
+openpyxl
+apscheduler
+requests
+fastapi
+uvicorn
+pydantic

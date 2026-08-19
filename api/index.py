@@ -1,18 +1,23 @@
 import sys
 import os
 
-# Configuración del PATH para importar los módulos del backend
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-backend_dir = os.path.join(base_dir, 'backend')
+# Determinar directorio donde se encuentra este script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+backend_dir = os.path.join(parent_dir, 'backend')
 
-if not os.path.exists(backend_dir):
-    # Fallback si se ejecuta desde frontend/api
-    backend_dir = os.path.join(os.path.dirname(base_dir), 'backend')
+# Asegurar que todas las rutas posibles del backend estén registradas en sys.path
+for p in [current_dir, backend_dir, parent_dir]:
+    if p and os.path.exists(p) and p not in sys.path:
+        sys.path.insert(0, p)
 
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
-from server import app as flask_app
+try:
+    from server import app as flask_app
+except ImportError:
+    try:
+        from backend.server import app as flask_app
+    except ImportError as err:
+        raise RuntimeError(f"Error importando server: {err}. sys.path: {sys.path}") from err
 
 class VercelPathFixMiddleware:
     """
