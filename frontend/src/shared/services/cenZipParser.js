@@ -41,7 +41,6 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // SETS PARA RASTREAR QUÉ GAS OPERÓ EN QUÉ BLOQUE
   const gasesB1 = new Set();
   const gasesB2 = new Set();
   const gasesB3 = new Set();
@@ -77,7 +76,6 @@ export async function procesarArchivoCenCliente(file) {
         if (esFuego) perfilFuegos24h[i] += val;
         else perfilBase24h[i] += val;
 
-        // RASTREO DINÁMICO DE GASES
         if (val > 0) {
           if (i < 8) gasesB1.add(textoNorm);
           else if (i < 18) gasesB2.add(textoNorm);
@@ -87,8 +85,12 @@ export async function procesarArchivoCenCliente(file) {
     }
   }
 
-  potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
+  // 🔴 CORRECCIÓN: SUMA TOTAL GENERACIÓN
+  const sumaBase = perfilBase24h.reduce((a, b) => a + b, 0);
   fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
+  
+  // Potencia Esperada ahora es el Gran Total (Base + Fuegos)
+  potEsperaTotal = sumaBase + fuegosSuplemenTotal;
 
   const celdaCosto = sheetPrg['AC8'];
   const costoMarginalVal = celdaCosto ? toFloat(celdaCosto.v) : 50.6;
@@ -96,15 +98,13 @@ export async function procesarArchivoCenCliente(file) {
   const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
   const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
 
-  // CÁLCULO DINÁMICO DE SISTEMA PROMEDIO (TCO)
-  let sistemaPromVal = 57.3; // Fallback
+  let sistemaPromVal = 57.3;
   if (wbTco) {
       const sheetNameTco = wbTco.SheetNames.find(s => s.trim().toUpperCase() === 'TCO' || s.trim().toUpperCase() === 'POLITICA');
       if (sheetNameTco) {
           const sheetTco = wbTco.Sheets[sheetNameTco];
           const dictB1 = {}, dictB2 = {}, dictB3 = {};
 
-          // Extraer diccionarios de precios de TCO (B1: C-D, B2: G-H, B3: K-L)
           for (let r = 8; r <= 1500; r++) {
               const n1 = sheetTco['C'+r]; const v1 = sheetTco['D'+r];
               if (n1 && v1) dictB1[String(n1.v).trim().toUpperCase().replace(/\s+/g, '')] = toFloat(v1.v);
@@ -116,7 +116,6 @@ export async function procesarArchivoCenCliente(file) {
               if (n3 && v3) dictB3[String(n3.v).trim().toUpperCase().replace(/\s+/g, '')] = toFloat(v3.v);
           }
 
-          // Función para promediar los gases activos en su bloque respectivo
           const calcAvg = (activeSet, dict) => {
               let sum = 0, count = 0;
               activeSet.forEach(gas => {
@@ -157,8 +156,8 @@ export async function procesarArchivoCenCliente(file) {
 
   potEsperaTotal = Math.round(potEsperaTotal);
 
-  console.log(`\n✅ [VERSIÓN DEFINITIVA V8 - TCO DINÁMICO] Archivo: ${file.name}`);
-  console.log(`- Promedio Calculado TCO: ${sistemaPromVal}`);
+  console.log(`\n✅ [VERSIÓN DEFINITIVA V9 - POTENCIA ESPERADA TOTAL] Archivo: ${file.name}`);
+  console.log(`- Potencia Base: ${sumaBase} | Fuegos: ${fuegosSuplemenTotal} | Total Esperado: ${potEsperaTotal}`);
 
   return {
     status: 'ok',
