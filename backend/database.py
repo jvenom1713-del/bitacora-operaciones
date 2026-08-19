@@ -5,9 +5,25 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "bitacora.db
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "schema.sql")
 SEED_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "seed.sql")
 
+def get_actual_db_path():
+    if os.environ.get("VERCEL"):
+        tmp_db = "/tmp/bitacora.db"
+        if not os.path.exists(tmp_db) and os.path.exists(DB_PATH):
+            try:
+                import shutil
+                shutil.copy2(DB_PATH, tmp_db)
+            except Exception as e:
+                print(f"[Vercel DB Copy Error] {e}")
+        return tmp_db if os.path.exists(tmp_db) else DB_PATH
+    return DB_PATH
+
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=30.0, isolation_level=None)
-    conn.execute("PRAGMA journal_mode=WAL;")
+    target_path = get_actual_db_path()
+    conn = sqlite3.connect(target_path, timeout=30.0, isolation_level=None)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+    except Exception:
+        pass
     conn.execute("PRAGMA busy_timeout=30000;")
     conn.row_factory = sqlite3.Row
     return conn
