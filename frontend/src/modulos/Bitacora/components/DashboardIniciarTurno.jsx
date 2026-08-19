@@ -3244,7 +3244,7 @@ ${extraHtml}
                   <span className={`block text-xs sm:text-sm font-black uppercase tracking-wider ${modoNocturno ? 'text-blue-300' : 'text-blue-950'}`}>DESPACHO CNR</span>
                   <select
                     value={parametros.despachoCNR}
-                    onChange={(e) => setParametros({ ...parametros, despachoCNR: e.target.value })}
+                    onChange={(e) => actualizarParametrosGeneracion('despachoCNR', e.target.value)}
                     className={`border rounded-lg text-xs sm:text-xs font-black py-1.5 px-1 w-full text-center cursor-pointer shadow-sm focus:outline-none transition-all ${
                       modoNocturno 
                         ? (parametros.despachoCNR === 'En servicio' ? 'bg-[#081527] text-emerald-400 border-emerald-500/60' 
