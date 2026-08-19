@@ -1240,7 +1240,7 @@ ${extraHtml}
         let hrsMT = 0;
         datosHorarios.forEach(d => {
           if (d.potencia_mw >= 330) hrsCB++;
-          else if (d.potencia_mw >= 160 && d.potencia_mw < 330) hrsMT++;
+          else if (Math.floor(d.potencia_mw) === 160 || Math.round(d.potencia_mw) === 160) hrsMT++;
         });
         const promMW = (sumaMW / 24).toFixed(1);
         actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '57.3');
@@ -1460,7 +1460,7 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (mw >= 160) hrsMT++;
+          else if (Math.floor(mw) === 160 || Math.round(mw) === 160) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '--')
