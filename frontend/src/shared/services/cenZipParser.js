@@ -41,9 +41,9 @@ export async function procesarArchivoCenCliente(file) {
   let filaInicio = -1;
   for (let r = 0; r < jsonProg.length; r++) {
     const fila = jsonProg[r];
-    if (!Array.isArray(fila) || fila.length < 3) continue;
-    const nemotecnico = String(fila[2] || '').trim().toUpperCase();
-    if (nemotecnico === 'NUEVARENCA_TG1+TV1_DIESEL' || nemotecnico === 'NUEVARENCA_TG1+TV1_GN_A') {
+    if (!Array.isArray(fila)) continue;
+    const textoFila = fila.slice(0, 5).join('').toUpperCase().replace(/\s+/g, '');
+    if (textoFila.includes('NUEVARENCA_TG1+TV1_DIESEL') || textoFila.includes('NUEVARENCA_TG1+TV1_GN_A')) {
       filaInicio = r;
       break;
     }
@@ -52,10 +52,10 @@ export async function procesarArchivoCenCliente(file) {
   if (filaInicio !== -1) {
     const bloque = jsonProg.slice(filaInicio, filaInicio + 25);
     bloque.forEach(row => {
-      const nemotecnico = String(row[2] || '').trim().toUpperCase();
-      if (!nemotecnico.startsWith('NUEVARENCA_TG1+TV1')) return;
+      const textoFila = row.slice(0, 5).join('').toUpperCase().replace(/\s+/g, '');
+      if (!textoFila.includes('NUEVARENCA_TG1+TV1')) return;
 
-      const esFuego = nemotecnico.includes('+FA1_');
+      const esFuego = textoFila.includes('+FA1_');
       let totalDia = toFloat(row[28]);
       if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
 
@@ -84,24 +84,18 @@ export async function procesarArchivoCenCliente(file) {
   const horas = mwHoras.map((pot, i) => {
     const potFA = mwHorasFuegos[i];
     if (potFA > 0) hrsFS++;
-    
-    // REGLAS CON TOLERANCIA
     if (pot >= 330) {
       hrsCB++;
     } else if (pot >= 159 && pot <= 161) {
       hrsMT++;
     }
-    
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: Number((pot * 0.033).toFixed(1)), generacion_neta: Number(Math.max(0, pot - (pot * 0.033)).toFixed(1)) };
   });
 
   potEsperaTotal = Math.round(potEsperaTotal);
 
-  // AUDITORÍA EN CONSOLA (Para comprobar que los datos no se congelen)
-  console.log(`\n📊 [AUDITORÍA LECTURA ZIP: ${file.name}]`);
-  console.log(`- Arreglo 24h:`, mwHoras);
-  console.log(`- HRS Carga Base calculadas por parser: ${hrsCB}`);
-  console.log(`- HRS Mínimo Técnico calculadas por parser: ${hrsMT}`);
+  console.log(`\n✅ [VERSIÓN DEFINITIVA V3] Archivo: ${file.name}`);
+  console.log(`- Fila Encontrada: ${filaInicio} | Horas leídas:`, mwHoras);
 
   return {
     status: 'ok',
