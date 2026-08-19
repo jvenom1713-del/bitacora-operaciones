@@ -95,9 +95,10 @@ export default function GeneracionDiaria({
         sumaPotencia += pot;
       }
 
+      // REGLAS ABSOLUTAS: 160 EXACTO
       if (pot >= 330) {
         hrsCB++;
-      } else if (pot > 0 && pot < 330) {
+      } else if (pot === 160) {
         hrsMT++;
       }
     });

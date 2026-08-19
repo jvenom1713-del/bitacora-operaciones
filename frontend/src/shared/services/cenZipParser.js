@@ -164,19 +164,22 @@ export async function procesarArchivoCenCliente(file) {
       : 57.3;
   }
 
-  // Horas dinámicas del programa
+  // 6. CÁLCULO DE HORAS DE OPERACIÓN
   let hrsCB = 0, hrsMT = 0, hrsFS = 0;
-  const horas = mwHoras.map((pot, i) => {
-    const potFA = mwHorasFuegos[i];
+  const horas = [];
+  for (let h = 1; h <= 24; h++) {
+    const pot = mwHoras[h - 1];
+    const potFA = mwHorasFuegos[h - 1];
     const ssaa = Number((pot * 0.033).toFixed(1));
+
     if (potFA > 0) hrsFS++;
-    if (pot >= 330) {
-      hrsCB++;
-    } else if (pot > 0 && pot < 330) {
-      hrsMT++;
-    }
-    return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
-  });
+    if (pot >= 330) hrsCB++;
+    else if (pot === 160) hrsMT++; // REGLA ESTRICTA DE 160 MW CERRADOS
+
+    horas.push({ hora: h, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) });
+  }
+
+  potEsperaTotal = Math.round(potEsperaTotal);
 
   return {
     status: 'ok',
