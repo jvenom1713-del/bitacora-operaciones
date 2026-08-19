@@ -30,7 +30,13 @@ export async function procesarArchivoCenCliente(file) {
     wbTco = wbPrograma;
   }
 
-  const sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
+  // 🔴 CANDADO ESTRICTO DE PESTAÑA: Busca exactamente "PROGRAMA"
+  let sheetNamePrg = wbPrograma.SheetNames.find(s => s.trim().toUpperCase() === 'PROGRAMA');
+  if (!sheetNamePrg) {
+    // Fallback solo si no existe la exacta
+    sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
+  }
+  
   const jsonProg = XLSX.utils.sheet_to_json(wbPrograma.Sheets[sheetNamePrg], { header: 1 });
 
   let potEsperaTotal = 0.0;
@@ -38,7 +44,6 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 1. RADAR INDESTRUCTIBLE: Localiza la fila de inicio (1565 aprox)
   let filaInicio = -1;
   for (let r = 0; r < jsonProg.length; r++) {
     const fila = jsonProg[r];
@@ -50,7 +55,6 @@ export async function procesarArchivoCenCliente(file) {
     }
   }
   
-  // 2. EXTRACCIÓN DEL BLOQUE EXACTO DE 25 FILAS
   if (filaInicio !== -1) {
     const bloque = jsonProg.slice(filaInicio, filaInicio + 25);
     bloque.forEach(row => {
@@ -76,7 +80,7 @@ export async function procesarArchivoCenCliente(file) {
   const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
   const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
 
-  // 3. SALVAVIDAS MATEMÁTICO: Si la columna AC vino vacía o en 0, suma las 24 horas
+  // Salvavidas Matemático
   if (potEsperaTotal === 0) {
     potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
   }
@@ -84,14 +88,12 @@ export async function procesarArchivoCenCliente(file) {
     fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
   }
 
-  // TCO / Sistema Promedio
   let sistemaPromVal = 57.3;
   if (wbTco) {
-      const sheetNameTco = wbTco.SheetNames.find(s => s.toUpperCase().includes('TCO'));
+      const sheetNameTco = wbTco.SheetNames.find(s => s.trim().toUpperCase() === 'TCO' || s.trim().toUpperCase() === 'POLITICA');
       if (sheetNameTco) sistemaPromVal = 57.3; 
   }
 
-  // 4. CÁLCULO DE HORAS (Tolerancia 159 a 161 MW)
   let hrsCB = 0, hrsMT = 0, hrsFS = 0;
   const horas = mwHoras.map((pot, i) => {
     const potFA = mwHorasFuegos[i];
@@ -101,21 +103,14 @@ export async function procesarArchivoCenCliente(file) {
     } else if (pot >= 159 && pot <= 161) {
       hrsMT++;
     }
-    return { 
-      hora: i + 1, 
-      potencia_mw: pot, 
-      generacion_mwh: pot, 
-      ssaa_mwh: Number((pot * 0.033).toFixed(1)), 
-      generacion_neta: Number(Math.max(0, pot - (pot * 0.033)).toFixed(1)) 
-    };
+    return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: Number((pot * 0.033).toFixed(1)), generacion_neta: Number(Math.max(0, pot - (pot * 0.033)).toFixed(1)) };
   });
 
   potEsperaTotal = Math.round(potEsperaTotal);
 
-  console.log(`\n✅ [VERSIÓN DEFINITIVA V4 - SALVAVIDAS ACTIVO] Archivo: ${file.name}`);
-  console.log(`- Fila inicio detectada: ${filaInicio}`);
-  console.log(`- Arreglo 24h:`, mwHoras);
-  console.log(`- Potencia Espera: ${potEsperaTotal} MW | Hrs CB: ${hrsCB} | Hrs MT: ${hrsMT}`);
+  console.log(`\n✅ [VERSIÓN DEFINITIVA V5 - CANDADO DE PESTAÑA] Archivo: ${file.name}`);
+  console.log(`- 📑 Pestaña leída: ${sheetNamePrg}`);
+  console.log(`- Potencia Espera extraída: ${potEsperaTotal} MW | Hrs CB: ${hrsCB} | Hrs MT: ${hrsMT}`);
 
   return {
     status: 'ok',
