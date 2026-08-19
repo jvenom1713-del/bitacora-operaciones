@@ -31,13 +31,29 @@ export async function procesarArchivoCenCliente(file) {
     wbTco = wbPrograma;
   }
 
-  const sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
+  const sheetNamePrg = wbPrograma.SheetNames.find(s => {
+    const name = s.toUpperCase();
+    return name.includes('PROGRAMA') || name.includes('ESPECIAL') || name.includes('PRG') || name.includes('REP');
+  }) || wbPrograma.SheetNames[0];
+
   const jsonProg = XLSX.utils.sheet_to_json(wbPrograma.Sheets[sheetNamePrg], { header: 1 });
 
   let potEsperaTotal = 0.0;
   let fuegosSuplemenTotal = 0.0;
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
+
+  // Catálogo Oficial de las 25 Configuraciones de Nueva Renca del CEN
+  const CONFIGS_OFICIALES_RENCA = [
+    'NUEVARENCA_TG1+TV1_DIESEL',
+    'NUEVARENCA_TG1+TV1_GN_A', 'NUEVARENCA_TG1+TV1_GN_B', 'NUEVARENCA_TG1+TV1_GN_C', 'NUEVARENCA_TG1+TV1_GN_D',
+    'NUEVARENCA_TG1+TV1_GNL_A', 'NUEVARENCA_TG1+TV1_GNL_B', 'NUEVARENCA_TG1+TV1_GNL_C', 'NUEVARENCA_TG1+TV1_GNL_D',
+    'NUEVARENCA_TG1+TV1_GNL_E', 'NUEVARENCA_TG1+TV1_GNL_F', 'NUEVARENCA_TG1+TV1_GNL_INFLEX', 'NUEVARENCA_TG1+TV1_GNL_P',
+    'NUEVARENCA_TG1+TV1+FA1_GLP',
+    'NUEVARENCA_TG1+TV1+FA1_GN_A', 'NUEVARENCA_TG1+TV1+FA1_GN_B', 'NUEVARENCA_TG1+TV1+FA1_GN_C', 'NUEVARENCA_TG1+TV1+FA1_GN_D',
+    'NUEVARENCA_TG1+TV1+FA1_GNL_A', 'NUEVARENCA_TG1+TV1+FA1_GNL_B', 'NUEVARENCA_TG1+TV1+FA1_GNL_C', 'NUEVARENCA_TG1+TV1+FA1_GNL_D',
+    'NUEVARENCA_TG1+TV1+FA1_GNL_E', 'NUEVARENCA_TG1+TV1+FA1_GNL_INFLEX', 'NUEVARENCA_TG1+TV1+FA1_GNL_P'
+  ];
 
   // 2. BUSCADOR PROFUNDO MULTICELDA OMNIDIRECCIONAL: Ubica todas las filas de la central Renca
   let bloque = jsonProg.filter(row => {
