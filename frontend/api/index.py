@@ -1,13 +1,11 @@
 import sys
 import os
 
-# Configuración del PATH para importar los módulos del backend
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-backend_dir = os.path.join(base_dir, 'backend')
+backend_dir = os.path.join(os.path.dirname(base_dir), 'backend')
 
 if not os.path.exists(backend_dir):
-    # Fallback si se ejecuta desde frontend/api
-    backend_dir = os.path.join(os.path.dirname(base_dir), 'backend')
+    backend_dir = os.path.join(base_dir, 'backend')
 
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
@@ -15,11 +13,6 @@ if backend_dir not in sys.path:
 from server import app as flask_app
 
 class VercelPathFixMiddleware:
-    """
-    Middleware WSGI para Vercel:
-    Asegura que el PATH_INFO de Flask reciba la ruta original completa de la petición
-    (ej: /api/turnos/activo, /api/resumen-dia, etc.) en lugar de la ruta reescrita /api/index.py.
-    """
     def __init__(self, app):
         self.app = app
 
