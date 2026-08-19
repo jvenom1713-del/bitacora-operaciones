@@ -174,7 +174,7 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
         if gen_mw_round >= 330:
             hrs_carga_base += 1
-        elif gen_mw_round == 160 or (158.0 <= gen_total_hora <= 162.0): # Mínimo Técnico estricto a 160 MW
+        elif gen_mw_round == 160 or (158.0 <= gen_total_hora < 330.0) or (160 <= gen_mw_round < 330): # Mínimo Técnico estricto a 160 MW (rango 160-329 MW)
             hrs_minimo_tecnico += 1
 
         if gen_fa_hora > 32.0:

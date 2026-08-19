@@ -1236,11 +1236,12 @@ ${extraHtml}
         actualizarParametrosGeneracion('hrsMinTec', String(resumenObtenido.hrs_minimo_tecnico ?? '0'));
       } else if (Array.isArray(datosHorarios) && datosHorarios.length > 0) {
         const sumaMW = datosHorarios.reduce((acc, curr) => acc + (curr.potencia_mw || 0), 0);
+        const mwLista = datosHorarios.map(d => d.potencia_mw || 0);
         let hrsCB = 0;
         let hrsMT = 0;
-        datosHorarios.forEach(d => {
-          if (d.potencia_mw >= 330) hrsCB++;
-          else if (Math.round(d.potencia_mw) === 160 || (d.potencia_mw >= 158 && d.potencia_mw <= 162)) hrsMT++;
+        mwLista.forEach(mw => {
+          if (mw >= 330) hrsCB++;
+          else if (Math.round(mw) === 160 || (mw >= 158 && mw < 330)) hrsMT++;
         });
         const promMW = (sumaMW / 24).toFixed(1);
         actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '57.3');
@@ -1460,7 +1461,7 @@ ${extraHtml}
 
         mwLista.forEach(mw => {
           if (mw >= 330) hrsCB++;
-          else if (Math.round(mw) === 160 || (mw >= 158 && mw <= 162)) hrsMT++;
+          else if (Math.round(mw) === 160 || (mw >= 158 && mw < 330)) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '--')
@@ -3382,7 +3383,19 @@ ${extraHtml}
                   </span>
                   <select
                     value={estadoPlanta.estadoOperacion}
-                    onChange={(e) => setEstadoPlanta({ ...estadoPlanta, estadoOperacion: e.target.value })}
+                    onChange={(e) => {
+                      const nuevoEstado = e.target.value;
+                      const esMinTec = nuevoEstado === 'Mínimo técnico' || nuevoEstado === 'Mínimo técnico con CPF';
+                      const nuevoGenMWH = esMinTec ? '160' : estadoPlanta.genMWH;
+                      if (esMinTec) {
+                        actualizarParametrosGeneracion('potEspera', '160');
+                      }
+                      setEstadoPlanta({
+                        ...estadoPlanta,
+                        estadoOperacion: nuevoEstado,
+                        genMWH: nuevoGenMWH
+                      });
+                    }}
                     className={`h-10 w-full font-black border rounded-lg px-2 text-xs sm:text-sm text-center focus:outline-none cursor-pointer shadow-sm ${
                       modoNocturno ? 'bg-[#081527] text-amber-400 border-blue-700/80' : 'bg-white text-amber-800 border-slate-400'
                     }`}
@@ -3447,6 +3460,7 @@ ${extraHtml}
                   <input
                     type="text"
                     value={estadoPlanta.genMWH}
+                    disabled={estadoPlanta.estadoOperacion === 'Mínimo técnico' || estadoPlanta.estadoOperacion === 'Mínimo técnico con CPF'}
                     onChange={(e) => {
                       const val = e.target.value;
                       setEstadoPlanta({ ...estadoPlanta, genMWH: val });
@@ -3455,7 +3469,9 @@ ${extraHtml}
                       }
                     }}
                     className={`h-10 w-full font-black border rounded-lg px-2 text-base sm:text-lg text-center focus:outline-none shadow-sm ${
-                      modoNocturno ? 'bg-[#081527] text-emerald-400 border-blue-700/80 focus:border-emerald-500' : 'bg-white text-emerald-800 border-slate-400 focus:border-emerald-700'
+                      (estadoPlanta.estadoOperacion === 'Mínimo técnico' || estadoPlanta.estadoOperacion === 'Mínimo técnico con CPF')
+                        ? 'opacity-90 cursor-not-allowed bg-slate-200 text-purple-700 dark:bg-slate-900 dark:text-purple-300 border-purple-500/80 font-bold'
+                        : (modoNocturno ? 'bg-[#081527] text-emerald-400 border-blue-700/80 focus:border-emerald-500' : 'bg-white text-emerald-800 border-slate-400 focus:border-emerald-700')
                     }`}
                     placeholder="0"
                   />
