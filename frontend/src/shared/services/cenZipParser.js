@@ -81,8 +81,23 @@ export async function procesarArchivoCenCliente(file) {
     perfilFuegos24h[i] = valsFuegos.length > 0 ? Math.max(...valsFuegos) : 0;
   }
 
-  potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
-  fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
+  potEsperaTotal = 0.0;
+  filasBase.forEach(row => {
+    let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
+    let totalDia = toFloat(valAC);
+    if (totalDia <= 0) totalDia = row.slice(4, 28).reduce((a, b) => a + toFloat(b), 0);
+    if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
+    potEsperaTotal += totalDia;
+  });
+
+  fuegosSuplemenTotal = 0.0;
+  filasFuegos.forEach(row => {
+    let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
+    let totalDia = toFloat(valAC);
+    if (totalDia <= 0) totalDia = row.slice(4, 28).reduce((a, b) => a + toFloat(b), 0);
+    if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
+    fuegosSuplemenTotal += totalDia;
+  });
 
   // 3. CÁLCULOS FINALES
   const costoMarginalVal = toFloat(wbPrograma.Sheets[sheetNamePrg]['AC8']?.v) || 49.5;
