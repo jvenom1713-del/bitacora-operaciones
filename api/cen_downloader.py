@@ -1,3 +1,10 @@
+import sys
+import os
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+
 import requests
 import io
 import zipfile
@@ -5,7 +12,14 @@ import base64
 from datetime import datetime, timedelta
 from typing import Optional, Tuple, Dict, Any
 import openpyxl
-from excel_processor import procesar_excel_generacion
+
+try:
+    from excel_processor import procesar_excel_generacion
+except ImportError:
+    try:
+        from .excel_processor import procesar_excel_generacion
+    except ImportError:
+        from api.excel_processor import procesar_excel_generacion
 
 USER_KEY = "f3cdad2758436a0a2c2c1fec92853de7"
 BUCKET = "cen-programa-operaciones-prod"

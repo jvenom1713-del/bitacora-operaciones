@@ -1,7 +1,9 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(__file__))
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
 
 from flask import Flask, request, jsonify, send_from_directory, Response
 import sqlite3
@@ -13,9 +15,29 @@ import base64
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from apscheduler.schedulers.background import BackgroundScheduler
 
-import database
-from excel_processor import procesar_excel_generacion
-from cen_downloader import descargar_y_procesar_coordinador
+try:
+    import database
+except ImportError:
+    try:
+        from . import database
+    except ImportError:
+        import api.database as database
+
+try:
+    from excel_processor import procesar_excel_generacion
+except ImportError:
+    try:
+        from .excel_processor import procesar_excel_generacion
+    except ImportError:
+        from api.excel_processor import procesar_excel_generacion
+
+try:
+    from cen_downloader import descargar_y_procesar_coordinador
+except ImportError:
+    try:
+        from .cen_downloader import descargar_y_procesar_coordinador
+    except ImportError:
+        from api.cen_downloader import descargar_y_procesar_coordinador
 
 app = Flask(__name__)
 
