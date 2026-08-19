@@ -74,27 +74,41 @@ export async function procesarArchivoCenCliente(file) {
     return textoFila.includes('RENCA') && (textoFila.includes('+FA1_') || textoFila.includes('FA1'));
   });
 
+  // Detección dinámica de la columna de inicio de las 24 horas (Índice 3 / Columna D o Índice 4 / Columna E)
+  let startCol = 4;
+  for (const row of bloque) {
+    if (!Array.isArray(row)) continue;
+    const val3 = toFloat(row[3]);
+    const val27 = toFloat(row[27]);
+    if (val3 > 0 && val27 > 0 && (val27 < 100 || toFloat(row[26]) <= 350)) {
+      startCol = 3;
+      break;
+    }
+  }
+
   for (let i = 0; i < 24; i++) {
-    const valsBase = filasBase.map(row => toFloat(row[i + 4]));
-    const valsFuegos = filasFuegos.map(row => toFloat(row[i + 4]));
+    const valsBase = filasBase.map(row => toFloat(row[i + startCol]));
+    const valsFuegos = filasFuegos.map(row => toFloat(row[i + startCol]));
     perfilBase24h[i] = valsBase.length > 0 ? Math.max(...valsBase) : 0;
     perfilFuegos24h[i] = valsFuegos.length > 0 ? Math.max(...valsFuegos) : 0;
   }
 
   potEsperaTotal = 0.0;
   filasBase.forEach(row => {
-    let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
-    let totalDia = toFloat(valAC);
-    if (totalDia <= 0) totalDia = row.slice(4, 28).reduce((a, b) => a + toFloat(b), 0);
+    let colTot = startCol + 24;
+    let valTotal = row[colTot] !== undefined ? row[colTot] : row[28] !== undefined ? row[28] : row[row.length - 1];
+    let totalDia = toFloat(valTotal);
+    if (totalDia <= 0) totalDia = row.slice(startCol, startCol + 24).reduce((a, b) => a + toFloat(b), 0);
     if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
     potEsperaTotal += totalDia;
   });
 
   fuegosSuplemenTotal = 0.0;
   filasFuegos.forEach(row => {
-    let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
-    let totalDia = toFloat(valAC);
-    if (totalDia <= 0) totalDia = row.slice(4, 28).reduce((a, b) => a + toFloat(b), 0);
+    let colTot = startCol + 24;
+    let valTotal = row[colTot] !== undefined ? row[colTot] : row[28] !== undefined ? row[28] : row[row.length - 1];
+    let totalDia = toFloat(valTotal);
+    if (totalDia <= 0) totalDia = row.slice(startCol, startCol + 24).reduce((a, b) => a + toFloat(b), 0);
     if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
     fuegosSuplemenTotal += totalDia;
   });
