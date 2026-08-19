@@ -43,8 +43,15 @@ app = Flask(__name__)
 
 # Configuración de rutas estáticas para dist y pdfs
 FRONTEND_DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
-PDF_STORAGE_DIR = os.path.join(os.path.dirname(__file__), "storage", "pdfs")
-os.makedirs(PDF_STORAGE_DIR, exist_ok=True)
+if os.environ.get("VERCEL"):
+    PDF_STORAGE_DIR = "/tmp/storage/pdfs"
+else:
+    PDF_STORAGE_DIR = os.path.join(os.path.dirname(__file__), "storage", "pdfs")
+
+try:
+    os.makedirs(PDF_STORAGE_DIR, exist_ok=True)
+except Exception as e:
+    print(f"[PDF Storage Warning] {e}")
 
 # Manejo de CORS
 @app.after_request
