@@ -39,25 +39,12 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 2. BUSCADOR PROFUNDO MULTICELDA: Ubica el inicio de la central sin importar desplazamientos o espacios
-  let filaInicio = jsonProg.findIndex(row => {
+  // 2. BUSCADOR PROFUNDO MULTICELDA OMNIDIRECCIONAL: Ubica todas las filas de la central Renca
+  let bloque = jsonProg.filter(row => {
     if (!Array.isArray(row)) return false;
-    const textoFilaCompleta = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
-    return (textoFilaCompleta.includes('NUEVARENCA') || textoFilaCompleta.includes('RENCA')) && 
-           (textoFilaCompleta.includes('TG1+TV1') || textoFilaCompleta.includes('GN') || textoFilaCompleta.includes('DIESEL'));
+    const t = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+    return t.includes('RENCA');
   });
-
-  // Si se encuentra la fila inicial se recorta el bloque de 30 filas; si no, se busca globalmente en la planilla
-  let bloque = [];
-  if (filaInicio !== -1) {
-    bloque = jsonProg.slice(filaInicio, filaInicio + 30);
-  } else {
-    bloque = jsonProg.filter(row => {
-      if (!Array.isArray(row)) return false;
-      const t = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
-      return (t.includes('NUEVARENCA') || t.includes('RENCA')) && (t.includes('TG1+TV1') || t.includes('GN') || t.includes('DIESEL'));
-    });
-  }
 
   bloque.forEach(row => {
     if (!Array.isArray(row)) return;
