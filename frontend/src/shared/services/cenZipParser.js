@@ -39,37 +39,59 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 2. BUSCADOR TÁCTICO: Ubica inicio del bloque y lee 25 filas hacia abajo
+  // 2. BUSCADOR PROFUNDO MULTICELDA: Ubica el inicio de la central sin importar desplazamientos o espacios
   let filaInicio = jsonProg.findIndex(row => {
     if (!Array.isArray(row)) return false;
-    const val = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
-    return val.includes('NUEVARENCA_TG1+TV1');
+    const textoFilaCompleta = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+    return (textoFilaCompleta.includes('NUEVARENCA') || textoFilaCompleta.includes('RENCA')) && 
+           (textoFilaCompleta.includes('TG1+TV1') || textoFilaCompleta.includes('GN') || textoFilaCompleta.includes('DIESEL'));
   });
 
+  // Si se encuentra la fila inicial se recorta el bloque de 30 filas; si no, se busca globalmente en la planilla
+  let bloque = [];
   if (filaInicio !== -1) {
-    const bloque = jsonProg.slice(filaInicio, filaInicio + 25);
-    
-    bloque.forEach(row => {
-      const nemotecnico = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
-      if (!nemotecnico.includes('NUEVARENCA_TG1+TV1')) return;
-
-      const esFuego = nemotecnico.includes('+FA1_');
-      
-      // Columna AC (Índice 28)
-      let totalDia = toFloat(row[28]);
-      if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
-
-      if (esFuego) fuegosSuplemenTotal += totalDia;
-      else potEsperaTotal += totalDia;
-
-      // Columnas E a AB (Índices 4 a 27)
-      for (let i = 0; i < 24; i++) {
-        const val = toFloat(row[i + 4]);
-        if (esFuego) perfilFuegos24h[i] += val;
-        else perfilBase24h[i] += val;
-      }
+    bloque = jsonProg.slice(filaInicio, filaInicio + 30);
+  } else {
+    bloque = jsonProg.filter(row => {
+      if (!Array.isArray(row)) return false;
+      const t = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+      return (t.includes('NUEVARENCA') || t.includes('RENCA')) && (t.includes('TG1+TV1') || t.includes('GN') || t.includes('DIESEL'));
     });
   }
+
+  bloque.forEach(row => {
+    if (!Array.isArray(row)) return;
+    const textoFila = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+    if (!textoFila.includes('RENCA')) return;
+
+    const esFuego = textoFila.includes('+FA1_') || textoFila.includes('FA1');
+
+    // Columna AC (Índice 28) o última columna con datos
+    let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
+    let totalDia = toFloat(valAC);
+
+    // Suma horaria de respaldo por si Columna AC estuviera en 0 o vacía
+    let suma24h = 0.0;
+    for (let i = 0; i < 24; i++) {
+      suma24h += toFloat(row[i + 4]);
+    }
+
+    if (totalDia <= 0) totalDia = suma24h;
+    if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
+
+    if (esFuego) {
+      fuegosSuplemenTotal += totalDia;
+    } else {
+      potEsperaTotal += totalDia;
+    }
+
+    // Columnas E a AB (Índices 4 a 27)
+    for (let i = 0; i < 24; i++) {
+      const val = toFloat(row[i + 4]);
+      if (esFuego) perfilFuegos24h[i] += val;
+      else perfilBase24h[i] += val;
+    }
+  });
 
   // 3. CÁLCULOS FINALES
   const costoMarginalVal = toFloat(wbPrograma.Sheets[sheetNamePrg]['AC8']?.v) || 49.5;
@@ -89,9 +111,9 @@ export async function procesarArchivoCenCliente(file) {
           const jsonTco = XLSX.utils.sheet_to_json(wbTco.Sheets[sheetNameTco], { header: 1 });
           const configsB1 = [], configsB2 = [], configsB3 = [];
           
-          jsonProg.slice(filaInicio !== -1 ? filaInicio : 0, filaInicio !== -1 ? filaInicio + 25 : jsonProg.length).forEach(row => {
+          bloque.forEach(row => {
             const nombreCelda = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
-            if (!nombreCelda.includes('NUEVARENCA')) return;
+            if (!nombreCelda.includes('NUEVARENCA') && !nombreCelda.includes('RENCA')) return;
 
             if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(nombreCelda);
             if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(nombreCelda);
