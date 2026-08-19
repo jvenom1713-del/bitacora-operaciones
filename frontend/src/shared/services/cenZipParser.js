@@ -104,7 +104,7 @@ export async function procesarArchivoCenCliente(file) {
   }
 
   // Sistema Promedio (TCO)
-  let sistemaPromVal = 57.3;
+  let sistemaPromVal = null;
   if (wbTco) {
       const sheetNameTco = wbTco.SheetNames.find(s => s.toUpperCase().includes('TCO') || s.toUpperCase().includes('POLITICA'));
       if (sheetNameTco) {
@@ -112,17 +112,21 @@ export async function procesarArchivoCenCliente(file) {
           const configsB1 = [], configsB2 = [], configsB3 = [];
           
           bloque.forEach(row => {
-            const nombreCelda = String(row[2] || row[1] || row[0] || '').trim().toUpperCase();
-            if (!nombreCelda.includes('NUEVARENCA') && !nombreCelda.includes('RENCA')) return;
+            if (!Array.isArray(row)) return;
+            const textoFilaConfig = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+            if (!textoFilaConfig.includes('RENCA')) return;
 
-            if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(nombreCelda);
-            if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(nombreCelda);
-            if (row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0) > 0) configsB3.push(nombreCelda);
+            const cellNombre = row.find(c => String(c||'').toUpperCase().includes('RENCA')) || '';
+            const cfgNombre = String(cellNombre).trim().toUpperCase();
+
+            if (row.slice(4, 12).reduce((a, b) => a + toFloat(b), 0) > 0) configsB1.push(cfgNombre);
+            if (row.slice(12, 22).reduce((a, b) => a + toFloat(b), 0) > 0) configsB2.push(cfgNombre);
+            if (row.slice(22, 28).reduce((a, b) => a + toFloat(b), 0) > 0) configsB3.push(cfgNombre);
           });
 
           const obtenerProm = (colCent, colCmg, cfgs) => {
             if (!cfgs.length) return null;
-            const cmgs = jsonTco.filter(r => cfgs.some(c => String(r[colCent]||'').toUpperCase().includes(c)))
+            const cmgs = jsonTco.filter(r => cfgs.some(c => String(r[colCent]||'').toUpperCase().includes(c) || c.includes(String(r[colCent]||'').toUpperCase())))
                                 .map(r => toFloat(r[colCmg])).filter(v => v > 0);
             return cmgs.length ? cmgs.reduce((a, b) => a + b, 0) / cmgs.length : null;
           };
@@ -132,6 +136,14 @@ export async function procesarArchivoCenCliente(file) {
               sistemaPromVal = Number((validos.reduce((a, b) => a + b, 0) / validos.length).toFixed(1));
           }
       }
+  }
+
+  // Si no se obtuvo TCO, calcular el promedio dinámico de generación de las horas activas del documento
+  if (!sistemaPromVal || isNaN(sistemaPromVal) || sistemaPromVal === 0) {
+    const horasPositivas = mwHoras.filter(v => v > 0);
+    sistemaPromVal = horasPositivas.length > 0 
+      ? Number((horasPositivas.reduce((a, b) => a + b, 0) / horasPositivas.length).toFixed(1))
+      : 57.3;
   }
 
   // Horas
