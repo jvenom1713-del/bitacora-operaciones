@@ -1239,7 +1239,7 @@ ${extraHtml}
         let hrsCB = 0;
         let hrsMT = 0;
         datosHorarios.forEach(d => {
-          if (d.potencia_mw >= 330) hrsCB++;
+          if (d.potencia_mw >= 320) hrsCB++;
           else if (d.potencia_mw >= 140) hrsMT++;
         });
         const promMW = (sumaMW / 24).toFixed(1);
@@ -1454,8 +1454,8 @@ ${extraHtml}
         let hrsMT = 0;
 
         mwLista.forEach(mw => {
-          if (mw >= 330) hrsCB++;
-          else if (mw >= 160) hrsMT++; // Umbral mínimo técnico exacto: >= 160 MW
+          if (mw >= 320) hrsCB++;
+          else if (mw >= 158) hrsMT++;
         });
 
         const sisPromOficial = (datosEntrada && datosEntrada.sistemaProm && datosEntrada.sistemaProm !== '0' && datosEntrada.sistemaProm !== '--')
