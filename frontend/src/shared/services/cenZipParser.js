@@ -62,39 +62,27 @@ export async function procesarArchivoCenCliente(file) {
     return t.includes('RENCA');
   });
 
-  bloque.forEach(row => {
-    if (!Array.isArray(row)) return;
+  const filasBase = bloque.filter(row => {
+    if (!Array.isArray(row)) return false;
     const textoFila = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
-    if (!textoFila.includes('RENCA')) return;
-
-    const esFuego = textoFila.includes('+FA1_') || textoFila.includes('FA1');
-
-    // Columna AC (Índice 28) o última columna con datos
-    let valAC = row[28] !== undefined ? row[28] : row[row.length - 1];
-    let totalDia = toFloat(valAC);
-
-    // Suma horaria de respaldo por si Columna AC estuviera en 0 o vacía
-    let suma24h = 0.0;
-    for (let i = 0; i < 24; i++) {
-      suma24h += toFloat(row[i + 4]);
-    }
-
-    if (totalDia <= 0) totalDia = suma24h;
-    if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
-
-    if (esFuego) {
-      fuegosSuplemenTotal += totalDia;
-    } else {
-      potEsperaTotal += totalDia;
-    }
-
-    // Columnas E a AB (Índices 4 a 27)
-    for (let i = 0; i < 24; i++) {
-      const val = toFloat(row[i + 4]);
-      if (esFuego) perfilFuegos24h[i] += val;
-      else perfilBase24h[i] += val;
-    }
+    return textoFila.includes('RENCA') && !textoFila.includes('+FA1_') && !textoFila.includes('FA1');
   });
+
+  const filasFuegos = bloque.filter(row => {
+    if (!Array.isArray(row)) return false;
+    const textoFila = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+    return textoFila.includes('RENCA') && (textoFila.includes('+FA1_') || textoFila.includes('FA1'));
+  });
+
+  for (let i = 0; i < 24; i++) {
+    const valsBase = filasBase.map(row => toFloat(row[i + 4]));
+    const valsFuegos = filasFuegos.map(row => toFloat(row[i + 4]));
+    perfilBase24h[i] = valsBase.length > 0 ? Math.max(...valsBase) : 0;
+    perfilFuegos24h[i] = valsFuegos.length > 0 ? Math.max(...valsFuegos) : 0;
+  }
+
+  potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
+  fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
 
   // 3. CÁLCULOS FINALES
   const costoMarginalVal = toFloat(wbPrograma.Sheets[sheetNamePrg]['AC8']?.v) || 49.5;
