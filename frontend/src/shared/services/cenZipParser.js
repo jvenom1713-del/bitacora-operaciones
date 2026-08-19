@@ -81,15 +81,7 @@ export async function procesarArchivoCenCliente(file) {
 
   const extraer24HorasFila = (row) => {
     if (!Array.isArray(row)) return Array(24).fill(0);
-    const val3 = toFloat(row[3]);
-    const val26 = toFloat(row[26]);
-    const val27 = toFloat(row[27]);
-
-    let colStart = 4; // Por defecto Columna E
-    if (val3 > 0 && val26 > 0 && (val27 < 100 || val27 === 0)) {
-      colStart = 3; // Columna D
-    }
-
+    const colStart = 4; // Estricto Columna E (Índice 4 = Columna E = Hora 1)
     const hrs = [];
     for (let i = 0; i < 24; i++) {
       hrs.push(toFloat(row[colStart + i]));
@@ -184,7 +176,7 @@ export async function procesarArchivoCenCliente(file) {
     const ssaa = Number((pot * 0.033).toFixed(1));
     if (potFA > 0) hrsFS++;
     if (pot >= 330) hrsCB++;
-    else if (Math.round(pot) === 160 || (pot >= 158 && pot < 330)) hrsMT++;
+    else if (Math.round(pot) === 160) hrsMT++;
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
   });
 
