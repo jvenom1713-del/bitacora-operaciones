@@ -30,63 +30,64 @@ export async function procesarArchivoCenCliente(file) {
     wbTco = wbPrograma;
   }
 
-  // 🔴 CANDADO ESTRICTO DE PESTAÑA: Busca exactamente "PROGRAMA"
+  // Candado de Pestaña EXACTO
   let sheetNamePrg = wbPrograma.SheetNames.find(s => s.trim().toUpperCase() === 'PROGRAMA');
   if (!sheetNamePrg) {
-    // Fallback solo si no existe la exacta
     sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
   }
-  
-  const jsonProg = XLSX.utils.sheet_to_json(wbPrograma.Sheets[sheetNamePrg], { header: 1 });
+  const sheetPrg = wbPrograma.Sheets[sheetNamePrg];
 
   let potEsperaTotal = 0.0;
   let fuegosSuplemenTotal = 0.0;
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
+  // 1. BÚSQUEDA DE FILA DE INICIO APUNTANDO SOLO A LA COLUMNA C
   let filaInicio = -1;
-  for (let r = 0; r < jsonProg.length; r++) {
-    const fila = jsonProg[r];
-    if (!Array.isArray(fila)) continue;
-    const textoFila = fila.slice(0, 5).join('').toUpperCase().replace(/\s+/g, '');
+  for (let r = 1; r <= 3000; r++) {
+    const cell = sheetPrg['C' + r];
+    if (!cell || !cell.v) continue;
+    
+    const textoFila = String(cell.v).trim().toUpperCase().replace(/\s+/g, '');
     if (textoFila.includes('NUEVARENCA_TG1+TV1_DIESEL') || textoFila.includes('NUEVARENCA_TG1+TV1_GN_A')) {
       filaInicio = r;
       break;
     }
   }
   
+  // 2. LECTURA DIRECTA POR COORDENADAS (E hasta AB)
+  const columnasHoras = ['E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB'];
+
   if (filaInicio !== -1) {
-    const bloque = jsonProg.slice(filaInicio, filaInicio + 25);
-    bloque.forEach(row => {
-      const textoFila = row.slice(0, 5).join('').toUpperCase().replace(/\s+/g, '');
-      if (!textoFila.includes('NUEVARENCA_TG1+TV1')) return;
+    for (let r = filaInicio; r < filaInicio + 25; r++) {
+      const cellC = sheetPrg['C' + r];
+      if (!cellC || !cellC.v) continue;
 
-      const esFuego = textoFila.includes('+FA1_');
-      let totalDia = toFloat(row[28]);
-      if (totalDia > 0 && totalDia < 100) totalDia *= 1000;
+      const texto = String(cellC.v).trim().toUpperCase().replace(/\s+/g, '');
+      if (!texto.includes('NUEVARENCA_TG1+TV1')) continue;
 
-      if (esFuego) fuegosSuplemenTotal += totalDia;
-      else potEsperaTotal += totalDia;
-
+      const esFuego = texto.includes('+FA1_');
+      
       for (let i = 0; i < 24; i++) {
-        const val = toFloat(row[i + 4]); 
+        const celdaHora = sheetPrg[columnasHoras[i] + r];
+        const val = celdaHora ? toFloat(celdaHora.v) : 0.0;
+        
         if (esFuego) perfilFuegos24h[i] += val;
         else perfilBase24h[i] += val;
       }
-    });
+    }
   }
 
-  const costoMarginalVal = toFloat(wbPrograma.Sheets[sheetNamePrg]['AC8']?.v) || 50.6;
+  // 3. SUMA MATEMÁTICA PURA
+  potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
+  fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
+
+  // 4. COSTO MARGINAL DIRECTO A LA CELDA AC8
+  const celdaCosto = sheetPrg['AC8'];
+  const costoMarginalVal = celdaCosto ? toFloat(celdaCosto.v) : 50.6;
+
   const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
   const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
-
-  // Salvavidas Matemático
-  if (potEsperaTotal === 0) {
-    potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
-  }
-  if (fuegosSuplemenTotal === 0) {
-    fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
-  }
 
   let sistemaPromVal = 57.3;
   if (wbTco) {
@@ -108,9 +109,9 @@ export async function procesarArchivoCenCliente(file) {
 
   potEsperaTotal = Math.round(potEsperaTotal);
 
-  console.log(`\n✅ [VERSIÓN DEFINITIVA V5 - CANDADO DE PESTAÑA] Archivo: ${file.name}`);
-  console.log(`- 📑 Pestaña leída: ${sheetNamePrg}`);
-  console.log(`- Potencia Espera extraída: ${potEsperaTotal} MW | Hrs CB: ${hrsCB} | Hrs MT: ${hrsMT}`);
+  console.log(`\n✅ [VERSIÓN DEFINITIVA V7 - COORDENADAS DIRECTAS] Archivo: ${file.name}`);
+  console.log(`- Fila inicio exacta detectada: ${filaInicio}`);
+  console.log(`- Extracción MW: ${potEsperaTotal} MW | Hrs CB: ${hrsCB} | Hrs MT: ${hrsMT}`);
 
   return {
     status: 'ok',
