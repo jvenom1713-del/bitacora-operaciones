@@ -96,13 +96,6 @@ export async function procesarArchivoCenCliente(file) {
     perfilFuegos24h[i] = valsFuegos.length > 0 ? Math.max(...valsFuegos) : 0;
   }
 
-  // Suavizado dinámico de transiciones de contrato de gas (ej: transición GN_A -> GNL_A)
-  for (let i = 1; i < 23; i++) {
-    if (perfilBase24h[i] === 0 && perfilBase24h[i - 1] >= 140 && perfilBase24h[i + 1] >= 140) {
-      perfilBase24h[i] = 160.0;
-    }
-  }
-
   potEsperaTotal = 0.0;
   filasBase.forEach(row => {
     const hrs = extraer24HorasFila(row);
