@@ -55,11 +55,16 @@ export async function procesarArchivoCenCliente(file) {
     'NUEVARENCA_TG1+TV1+FA1_GNL_E', 'NUEVARENCA_TG1+TV1+FA1_GNL_INFLEX', 'NUEVARENCA_TG1+TV1+FA1_GNL_P'
   ];
 
-  // 2. BUSCADOR PROFUNDO MULTICELDA OMNIDIRECCIONAL: Ubica todas las filas de la central Renca
-  let bloque = jsonProg.filter(row => {
+  // 2. BUSCADOR EN RANGO OFICIAL (Filas 1565 a 1589 / Columna C): Ubica las filas de Renca
+  const minIdx = jsonProg.length > 1564 ? 1564 : 0;
+  const maxIdx = Math.min(jsonProg.length, 1589);
+  const rangoPrograma = jsonProg.slice(minIdx, maxIdx);
+
+  let bloque = (rangoPrograma.length > 0 ? rangoPrograma : jsonProg).filter(row => {
     if (!Array.isArray(row)) return false;
-    const t = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
-    return t.includes('RENCA');
+    const colC = String(row[2] || row[1] || row[3] || '').toUpperCase();
+    const textoFila = row.map(c => String(c||'')).join('').toUpperCase().replace(/\s+/g, '');
+    return colC.includes('RENCA') || textoFila.includes('RENCA');
   });
 
   const filasBase = bloque.filter(row => {
@@ -179,7 +184,7 @@ export async function procesarArchivoCenCliente(file) {
     const ssaa = Number((pot * 0.033).toFixed(1));
     if (potFA > 0) hrsFS++;
     if (pot >= 330) hrsCB++;
-    else if (pot >= 140 && pot < 330) hrsMT++;
+    else if (Math.round(pot) === 160 || (pot >= 158 && pot <= 162)) hrsMT++;
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
   });
 

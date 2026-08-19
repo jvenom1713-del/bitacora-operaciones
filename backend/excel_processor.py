@@ -5,19 +5,20 @@ from typing import Dict, Any, Optional
 
 def obtener_filas_nueva_renca(sheet_prog) -> list:
     """
-    Busca dinámicamente las filas de Nueva Renca por escala de prioridades según el nemotécnico oficial.
-    Prioridad 1: NUEVARENCA_TG1+TV1_GN_A / TG1+TV1_GN
-    Prioridad 2: TG1+TV1 / CC / COMBINADO
-    Prioridad 3: General NUEVARENCA
+    Busca las filas de Nueva Renca inspeccionando la Columna C (3) estrictamente dentro del rango C1565 a C1589.
     """
     filas_todas = []
     nombres = []
-    for r in range(1, sheet_prog.max_row + 1):
-        c2 = str(sheet_prog.cell(row=r, column=2).value or '')
-        c3 = str(sheet_prog.cell(row=r, column=3).value or '')
-        c4 = str(sheet_prog.cell(row=r, column=4).value or '')
+    
+    max_r = min(1589, sheet_prog.max_row)
+    rango_filas = range(1565, max_r + 1) if sheet_prog.max_row >= 1565 else range(1, sheet_prog.max_row + 1)
+
+    for r in rango_filas:
+        c3 = str(sheet_prog.cell(row=r, column=3).value or '').strip()
+        c2 = str(sheet_prog.cell(row=r, column=2).value or '').strip()
+        c4 = str(sheet_prog.cell(row=r, column=4).value or '').strip()
         etiqueta_completa = (c2 + ' ' + c3 + ' ' + c4).upper().replace(' ', '')
-        if 'NUEVARENCA' in etiqueta_completa or 'NUEVA_RENCA' in etiqueta_completa or 'CCNUEVARENCA' in etiqueta_completa or 'CC_NUEVA_RENCA' in etiqueta_completa:
+        if 'RENCA' in etiqueta_completa or 'NUEVARENCA' in etiqueta_completa:
             filas_todas.append(r)
             nombres.append(etiqueta_completa)
 
@@ -26,11 +27,11 @@ def obtener_filas_nueva_renca(sheet_prog) -> list:
         if prio1:
             return prio1
 
-        prio2 = [r for idx, r in enumerate(filas_todas) if 'TG1+TV1' in nombres[idx] or 'CCNUEVA' in nombres[idx] or 'CC_NUEVA' in nombres[idx] or 'COMBINADO' in nombres[idx]]
+        prio2 = [r for idx, r in enumerate(filas_todas) if 'TG1+TV1' in nombres[idx] or 'CCNUEVA' in nombres[idx] or 'COMBINADO' in nombres[idx]]
         if prio2:
             return prio2
 
-    return filas_todas
+    return filas_todas if filas_todas else list(range(1565, 1590))
 
 
 def calcular_sistema_prom_desde_tco(wb_prg, wb_po) -> float:
@@ -173,7 +174,7 @@ def procesar_excel_generacion(wb_prg, wb_po: Optional[Any] = None) -> Dict[str, 
 
         if gen_mw_round >= 330:
             hrs_carga_base += 1
-        elif 140.0 <= gen_total_hora < 330.0: # Rango de despacho Mínimo Técnico (140-329 MW) = 22 hrs
+        elif gen_mw_round == 160 or (158.0 <= gen_total_hora <= 162.0): # Mínimo Técnico estricto a 160 MW
             hrs_minimo_tecnico += 1
 
         if gen_fa_hora > 32.0:
