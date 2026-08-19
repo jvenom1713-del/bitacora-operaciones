@@ -170,8 +170,11 @@ export async function procesarArchivoCenCliente(file) {
     const potFA = mwHorasFuegos[i];
     const ssaa = Number((pot * 0.033).toFixed(1));
     if (potFA > 0) hrsFS++;
-    if (pot >= 330) hrsCB++;
-    else if (Math.round(pot) === 160) hrsMT++;
+    if (pot >= 330) {
+      hrsCB++;
+    } else if (pot > 0 && pot < 330) {
+      hrsMT++;
+    }
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
   });
 
