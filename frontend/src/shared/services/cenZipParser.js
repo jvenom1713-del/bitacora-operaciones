@@ -145,6 +145,8 @@ export async function procesarArchivoCenCliente(file) {
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
   });
 
+  if (hrsCB > 1) hrsCB = 1; // Sanitización atómica: Regla estricta >= 330 MW = 1 hora
+
   return {
     status: 'ok',
     nombreArchivo: file.name,

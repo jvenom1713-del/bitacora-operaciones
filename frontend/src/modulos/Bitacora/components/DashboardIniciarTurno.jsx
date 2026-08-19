@@ -1279,7 +1279,7 @@ ${extraHtml}
         if (!parsed.costoMarginal) parsed.costoMarginal = '49.5';
         if (!parsed.sistemaProm) parsed.sistemaProm = '57.3';
         if (parsed.hrsMinTec === undefined || parsed.hrsMinTec === null || parsed.hrsMinTec === '22' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '15';
-        if (parsed.hrsCargaBase === undefined || parsed.hrsCargaBase === null || parsed.hrsCargaBase === '2') parsed.hrsCargaBase = '1';
+        if (!parsed.hrsCargaBase || String(parsed.hrsCargaBase).trim() === '2' || String(parsed.hrsCargaBase).trim() === '0') parsed.hrsCargaBase = '1';
         return parsed;
       }
       return {
@@ -1319,7 +1319,8 @@ ${extraHtml}
 
   const actualizarParametrosGeneracion = (clave, nuevoValor) => {
     setParametros(prev => {
-      const actualizados = { ...prev, [clave]: nuevoValor };
+      const valFinal = (clave === 'hrsCargaBase' && (nuevoValor === '2' || nuevoValor === '0')) ? '1' : nuevoValor;
+      const actualizados = { ...prev, [clave]: valFinal };
 
       try {
         localStorage.setItem('bitacora_parametros', JSON.stringify(actualizados));
@@ -1351,6 +1352,9 @@ ${extraHtml}
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed && typeof setParametros === 'function') {
+            if (String(parsed.hrsCargaBase).trim() === '2' || String(parsed.hrsCargaBase).trim() === '0') {
+              parsed.hrsCargaBase = '1';
+            }
             setParametros(parsed);
           }
         }
@@ -1387,14 +1391,15 @@ ${extraHtml}
   const aplicarDatos = (data) => {
     if (!data) return;
     setParametros(prev => {
+      const valCB = String(data.hrsCargaBase ?? prev?.hrsCargaBase ?? '1').trim();
       const actualizados = {
         ...prev,
         despachoCNR: data.despachoCNR || prev?.despachoCNR || 'En servicio',
         sistemaProm: data.sistemaProm || prev?.sistemaProm || '57.3',
         potEspera: data.potEspera || prev?.potEspera || '5063',
         fuegosSuplemen: data.fuegosSuplemen ?? prev?.fuegosSuplemen ?? '0',
-        hrsCargaBase: data.hrsCargaBase ?? prev?.hrsCargaBase ?? '0',
-        hrsMinTec: data.hrsMinTec ?? prev?.hrsMinTec ?? '0',
+        hrsCargaBase: (valCB === '2' || valCB === '0') ? '1' : valCB,
+        hrsMinTec: data.hrsMinTec ?? prev?.hrsMinTec ?? '15',
         hrsFuegosSuplem: data.hrsFuegosSuplem ?? prev?.hrsFuegosSuplem ?? '0',
         milesM3Gas: data.milesM3Gas ?? prev?.milesM3Gas ?? '0',
         m3FA: data.m3FA ?? prev?.m3FA ?? '0',
