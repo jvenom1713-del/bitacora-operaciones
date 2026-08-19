@@ -1278,7 +1278,7 @@ ${extraHtml}
         if (!parsed.potEspera || parsed.potEspera === '4046' || parsed.potEspera === '6109') parsed.potEspera = '5063';
         if (!parsed.costoMarginal) parsed.costoMarginal = '49.5';
         if (!parsed.sistemaProm) parsed.sistemaProm = '57.3';
-        if (parsed.hrsMinTec === undefined || parsed.hrsMinTec === null || parsed.hrsMinTec === '22' || parsed.hrsMinTec === '7') parsed.hrsMinTec = '15';
+        if (parsed.hrsMinTec === undefined || parsed.hrsMinTec === null) parsed.hrsMinTec = '0';
         if (!parsed.hrsCargaBase || String(parsed.hrsCargaBase).trim() === '2' || String(parsed.hrsCargaBase).trim() === '0') parsed.hrsCargaBase = '1';
         return parsed;
       }
@@ -1288,7 +1288,7 @@ ${extraHtml}
         potEspera: '5063',
         fuegosSuplemen: '0',
         hrsCargaBase: '1',
-        hrsMinTec: '15',
+        hrsMinTec: '0',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
@@ -1303,7 +1303,7 @@ ${extraHtml}
         potEspera: '5063',
         fuegosSuplemen: '0',
         hrsCargaBase: '1',
-        hrsMinTec: '15',
+        hrsMinTec: '0',
         hrsFuegosSuplem: '0',
         milesM3Gas: '0',
         m3FA: '0',
@@ -1500,7 +1500,7 @@ ${extraHtml}
       potEspera: '5063',
       fuegosSuplemen: '0',
       hrsCargaBase: '1',
-      hrsMinTec: '15',
+      hrsMinTec: '0',
       hrsFuegosSuplem: '0',
       milesM3Gas: '0',
       m3FA: '0',
