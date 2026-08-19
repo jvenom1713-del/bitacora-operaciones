@@ -73,7 +73,6 @@ export default function GeneracionDiaria({
     });
   }, [registros]);
 
-  // Recálculo reactivo dinámico mediante useMemo
   const resumenCalculado = useMemo(() => {
     let mwhBrutos = 0;
     let mwhNetos = 0;
@@ -95,10 +94,10 @@ export default function GeneracionDiaria({
         sumaPotencia += pot;
       }
 
-      // REGLAS ABSOLUTAS: 160 EXACTO
+      // REGLAS CON TOLERANCIA SINCRONIZADAS CON EL PARSER
       if (pot >= 330) {
         hrsCB++;
-      } else if (pot === 160) {
+      } else if (pot >= 159 && pot <= 161) {
         hrsMT++;
       }
     });
