@@ -391,7 +391,7 @@ export default function VistaConsultaHojaTurno({
               potEspera: (!valPot || valPot === '0') ? '5063' : String(valPot),
               fuegosSuplemen: String(data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrs_carga_base || '1'),
-              hrsMinTec: String(data.hrs_min_tec ?? '15')
+              hrsMinTec: String(data.hrs_min_tec ?? '0')
             };
             setDatosGenLocal(actualizados);
             return;
@@ -413,7 +413,7 @@ export default function VistaConsultaHojaTurno({
               potEspera: (!valPot || valPot === '0') ? '5063' : String(valPot),
               fuegosSuplemen: String(data.fuegosSuplemen || data.fuegos_suplemen || '0'),
               hrsCargaBase: String(data.hrsCargaBase || data.hrs_carga_base || '1'),
-              hrsMinTec: String(data.hrsMinTec || data.hrs_min_tec || '15')
+              hrsMinTec: String(data.hrsMinTec ?? data.hrs_min_tec ?? '0')
             };
             setDatosGenLocal(actualizados);
           }
@@ -1104,7 +1104,7 @@ ${permisosTxt}
               { label: 'Potencia Esperada', value: `${datosGen?.potEspera || '4046'} MW`, color: 'text-emerald-400' },
               { label: 'Fuegos Suplementarios', value: `${datosGen?.fuegosSuplemen || '0'} MW`, color: 'text-amber-400' },
               { label: 'Horas Carga Base', value: `${datosGen?.hrsCargaBase || '1'} hrs`, color: 'text-slate-100' },
-              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec || '22'} hrs`, color: 'text-purple-300' },
+              { label: 'Mínimo Técnico', value: `${datosGen?.hrsMinTec ?? '0'} hrs`, color: 'text-purple-300' },
             ].map((item, i) => (
               <div key={i} className={`p-2.5 rounded-lg border text-center transition-all ${modoNocturno ? 'bg-slate-950/70 border-slate-800/80' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mb-0.5">{item.label}</span>
@@ -1951,7 +1951,7 @@ ${permisosTxt}
                   </div>
                   <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
                     <span className="text-slate-400 block text-[10px]">Mínimo Técnico</span>
-                    <strong className="text-purple-300 text-sm font-mono font-bold">{datosGen?.hrsMinTec || '22'} hrs</strong>
+                    <strong className="text-purple-300 text-sm font-mono font-bold">{datosGen?.hrsMinTec ?? '0'} hrs</strong>
                   </div>
                 </div>
               </div>
