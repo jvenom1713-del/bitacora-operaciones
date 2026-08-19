@@ -74,17 +74,8 @@ export async function procesarArchivoCenCliente(file) {
     return textoFila.includes('RENCA') && (textoFila.includes('+FA1_') || textoFila.includes('FA1'));
   });
 
-  // Detección dinámica de la columna de inicio de las 24 horas (Índice 3 / Columna D o Índice 4 / Columna E)
-  let startCol = 4;
-  for (const row of bloque) {
-    if (!Array.isArray(row)) continue;
-    const val3 = toFloat(row[3]);
-    const val27 = toFloat(row[27]);
-    if (val3 > 0 && val27 > 0 && (val27 < 100 || toFloat(row[26]) <= 350)) {
-      startCol = 3;
-      break;
-    }
-  }
+  // Columna de inicio fija en Columna E (Índice 4) a Columna AB (Índice 27) para las 24 horas del CEN
+  const startCol = 4;
 
   for (let i = 0; i < 24; i++) {
     const valsBase = filasBase.map(row => toFloat(row[i + startCol]));
@@ -173,7 +164,7 @@ export async function procesarArchivoCenCliente(file) {
     const ssaa = Number((pot * 0.033).toFixed(1));
     if (potFA > 0) hrsFS++;
     if (pot >= 330) hrsCB++;
-    else if (Math.round(pot) === 160 || (pot >= 158 && pot <= 162)) hrsMT++;
+    else if (pot >= 140 && pot < 330) hrsMT++;
     return { hora: i + 1, potencia_mw: pot, generacion_mwh: pot, ssaa_mwh: ssaa, generacion_neta: Number(Math.max(0, pot - ssaa).toFixed(1)) };
   });
 
