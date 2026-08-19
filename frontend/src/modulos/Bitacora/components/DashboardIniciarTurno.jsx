@@ -1240,7 +1240,7 @@ ${extraHtml}
         let hrsMT = 0;
         datosHorarios.forEach(d => {
           if (d.potencia_mw >= 330) hrsCB++;
-          else if (d.potencia_mw >= 140) hrsMT++;
+          else if (d.potencia_mw >= 160 && d.potencia_mw < 330) hrsMT++;
         });
         const promMW = (sumaMW / 24).toFixed(1);
         actualizarParametrosGeneracion('sistemaProm', promMW > 0 ? promMW : '57.3');

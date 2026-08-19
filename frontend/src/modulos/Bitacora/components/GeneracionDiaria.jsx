@@ -97,7 +97,7 @@ export default function GeneracionDiaria({
 
       if (pot >= 330) {
         hrsCB++;
-      } else if (pot > 0 && pot < 330) {
+      } else if (pot >= 160 && pot < 330) {
         hrsMT++;
       }
     });
