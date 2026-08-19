@@ -30,7 +30,6 @@ export async function procesarArchivoCenCliente(file) {
     wbTco = wbPrograma;
   }
 
-  // Candado de Pestaña EXACTO
   let sheetNamePrg = wbPrograma.SheetNames.find(s => s.trim().toUpperCase() === 'PROGRAMA');
   if (!sheetNamePrg) {
     sheetNamePrg = wbPrograma.SheetNames.find(s => s.toUpperCase().includes('PROGRAMA')) || wbPrograma.SheetNames[0];
@@ -42,12 +41,15 @@ export async function procesarArchivoCenCliente(file) {
   const perfilBase24h = Array(24).fill(0);
   const perfilFuegos24h = Array(24).fill(0);
 
-  // 1. BÚSQUEDA DE FILA DE INICIO APUNTANDO SOLO A LA COLUMNA C
+  // SETS PARA RASTREAR QUÉ GAS OPERÓ EN QUÉ BLOQUE
+  const gasesB1 = new Set();
+  const gasesB2 = new Set();
+  const gasesB3 = new Set();
+
   let filaInicio = -1;
   for (let r = 1; r <= 3000; r++) {
     const cell = sheetPrg['C' + r];
     if (!cell || !cell.v) continue;
-    
     const textoFila = String(cell.v).trim().toUpperCase().replace(/\s+/g, '');
     if (textoFila.includes('NUEVARENCA_TG1+TV1_DIESEL') || textoFila.includes('NUEVARENCA_TG1+TV1_GN_A')) {
       filaInicio = r;
@@ -55,7 +57,6 @@ export async function procesarArchivoCenCliente(file) {
     }
   }
   
-  // 2. LECTURA DIRECTA POR COORDENADAS (E hasta AB)
   const columnasHoras = ['E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB'];
 
   if (filaInicio !== -1) {
@@ -63,10 +64,11 @@ export async function procesarArchivoCenCliente(file) {
       const cellC = sheetPrg['C' + r];
       if (!cellC || !cellC.v) continue;
 
-      const texto = String(cellC.v).trim().toUpperCase().replace(/\s+/g, '');
-      if (!texto.includes('NUEVARENCA_TG1+TV1')) continue;
+      const textoOriginal = String(cellC.v);
+      const textoNorm = textoOriginal.trim().toUpperCase().replace(/\s+/g, '');
+      if (!textoNorm.includes('NUEVARENCA_TG1+TV1')) continue;
 
-      const esFuego = texto.includes('+FA1_');
+      const esFuego = textoNorm.includes('+FA1_');
       
       for (let i = 0; i < 24; i++) {
         const celdaHora = sheetPrg[columnasHoras[i] + r];
@@ -74,25 +76,71 @@ export async function procesarArchivoCenCliente(file) {
         
         if (esFuego) perfilFuegos24h[i] += val;
         else perfilBase24h[i] += val;
+
+        // RASTREO DINÁMICO DE GASES
+        if (val > 0) {
+          if (i < 8) gasesB1.add(textoNorm);
+          else if (i < 18) gasesB2.add(textoNorm);
+          else gasesB3.add(textoNorm);
+        }
       }
     }
   }
 
-  // 3. SUMA MATEMÁTICA PURA
   potEsperaTotal = perfilBase24h.reduce((a, b) => a + b, 0);
   fuegosSuplemenTotal = perfilFuegos24h.reduce((a, b) => a + b, 0);
 
-  // 4. COSTO MARGINAL DIRECTO A LA CELDA AC8
   const celdaCosto = sheetPrg['AC8'];
   const costoMarginalVal = celdaCosto ? toFloat(celdaCosto.v) : 50.6;
 
   const mwHoras = perfilBase24h.map((v, i) => Number((v + perfilFuegos24h[i]).toFixed(1)));
   const mwHorasFuegos = perfilFuegos24h.map(v => Number(v.toFixed(1)));
 
-  let sistemaPromVal = 57.3;
+  // CÁLCULO DINÁMICO DE SISTEMA PROMEDIO (TCO)
+  let sistemaPromVal = 57.3; // Fallback
   if (wbTco) {
       const sheetNameTco = wbTco.SheetNames.find(s => s.trim().toUpperCase() === 'TCO' || s.trim().toUpperCase() === 'POLITICA');
-      if (sheetNameTco) sistemaPromVal = 57.3; 
+      if (sheetNameTco) {
+          const sheetTco = wbTco.Sheets[sheetNameTco];
+          const dictB1 = {}, dictB2 = {}, dictB3 = {};
+
+          // Extraer diccionarios de precios de TCO (B1: C-D, B2: G-H, B3: K-L)
+          for (let r = 8; r <= 1500; r++) {
+              const n1 = sheetTco['C'+r]; const v1 = sheetTco['D'+r];
+              if (n1 && v1) dictB1[String(n1.v).trim().toUpperCase().replace(/\s+/g, '')] = toFloat(v1.v);
+
+              const n2 = sheetTco['G'+r]; const v2 = sheetTco['H'+r];
+              if (n2 && v2) dictB2[String(n2.v).trim().toUpperCase().replace(/\s+/g, '')] = toFloat(v2.v);
+
+              const n3 = sheetTco['K'+r]; const v3 = sheetTco['L'+r];
+              if (n3 && v3) dictB3[String(n3.v).trim().toUpperCase().replace(/\s+/g, '')] = toFloat(v3.v);
+          }
+
+          // Función para promediar los gases activos en su bloque respectivo
+          const calcAvg = (activeSet, dict) => {
+              let sum = 0, count = 0;
+              activeSet.forEach(gas => {
+                  if (dict[gas] !== undefined) {
+                      sum += dict[gas];
+                      count++;
+                  }
+              });
+              return count > 0 ? sum / count : null;
+          };
+
+          const avg1 = calcAvg(gasesB1, dictB1);
+          const avg2 = calcAvg(gasesB2, dictB2);
+          const avg3 = calcAvg(gasesB3, dictB3);
+
+          let totalSum = 0, totalCount = 0;
+          if (avg1 !== null) { totalSum += avg1; totalCount++; }
+          if (avg2 !== null) { totalSum += avg2; totalCount++; }
+          if (avg3 !== null) { totalSum += avg3; totalCount++; }
+
+          if (totalCount > 0) {
+              sistemaPromVal = Number((totalSum / totalCount).toFixed(1));
+          }
+      }
   }
 
   let hrsCB = 0, hrsMT = 0, hrsFS = 0;
@@ -109,9 +157,8 @@ export async function procesarArchivoCenCliente(file) {
 
   potEsperaTotal = Math.round(potEsperaTotal);
 
-  console.log(`\n✅ [VERSIÓN DEFINITIVA V7 - COORDENADAS DIRECTAS] Archivo: ${file.name}`);
-  console.log(`- Fila inicio exacta detectada: ${filaInicio}`);
-  console.log(`- Extracción MW: ${potEsperaTotal} MW | Hrs CB: ${hrsCB} | Hrs MT: ${hrsMT}`);
+  console.log(`\n✅ [VERSIÓN DEFINITIVA V8 - TCO DINÁMICO] Archivo: ${file.name}`);
+  console.log(`- Promedio Calculado TCO: ${sistemaPromVal}`);
 
   return {
     status: 'ok',
