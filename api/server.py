@@ -213,14 +213,20 @@ def listar_usuarios():
     conn.close()
     return jsonify([dict(r) for r in rows])
 
-@app.route("/api/permisos/efectivos/<int:usuario_id>", methods=["GET"])
-def obtener_permisos_efectivos(usuario_id):
+@app.route("/api/permisos/efectivos/<usuario_id>", methods=["GET"])
+@app.route("/api/permisos/efectivos/", methods=["GET"])
+def obtener_permisos_efectivos(usuario_id=1):
+    try:
+        real_u_id = int(usuario_id)
+    except (ValueError, TypeError):
+        real_u_id = 1
+
     conn = database.get_db_connection()
     rows = conn.execute("""
         SELECT permiso_codigo 
         FROM v_usuario_permisos_efectivos 
         WHERE usuario_id = ?
-    """, (usuario_id,)).fetchall()
+    """, (real_u_id,)).fetchall()
     
     version_row = conn.execute("SELECT version FROM control_version_permisos WHERE id = 1").fetchone()
     conn.close()
@@ -229,7 +235,7 @@ def obtener_permisos_efectivos(usuario_id):
     version = version_row["version"] if version_row else 1
 
     return jsonify({
-        "usuario_id": usuario_id,
+        "usuario_id": real_u_id,
         "permisos": permisos,
         "version_cache": version
     })
@@ -452,10 +458,21 @@ def abrir_nuevo_turno():
     conn.close()
     return jsonify({"status": "ok", "turno": dict(nuevo_row), "folio": folio, "mensaje": f"Nuevo turno {nuevo_folio} abierto con éxito."})
 
-@app.route("/api/bitacora/eventos/<int:turno_id>", methods=["GET"])
-def listar_eventos_turno(turno_id):
+@app.route("/api/bitacora/eventos/<turno_id>", methods=["GET"])
+@app.route("/api/bitacora/eventos/", methods=["GET"])
+def listar_eventos_turno(turno_id=None):
     conn = database.get_db_connection()
     cursor = conn.cursor()
+
+    if not turno_id or str(turno_id).lower() in ['undefined', 'null', 'none', 'activo', '0']:
+        row_last = cursor.execute("SELECT id FROM turnos ORDER BY id DESC LIMIT 1").fetchone()
+        real_t_id = row_last["id"] if row_last else 1
+    else:
+        try:
+            real_t_id = int(turno_id)
+        except (ValueError, TypeError):
+            real_t_id = 1
+
     total = cursor.execute("SELECT COUNT(*) FROM eventos_bitacora").fetchone()[0]
     folio = f"{total + 1:02d}"
     rows = cursor.execute("""
@@ -465,7 +482,7 @@ def listar_eventos_turno(turno_id):
         JOIN usuarios u ON e.usuario_id = u.id
         WHERE e.turno_id = ?
         ORDER BY e.fecha_hora DESC
-    """, (turno_id,)).fetchall()
+    """, (real_t_id,)).fetchall()
     conn.close()
     resultado = []
     for r in rows:
@@ -693,11 +710,22 @@ def aprobar_turno():
         "folio": folio
     })
 
-@app.route("/api/turnos/consolidado/<int:turno_id>", methods=["GET"])
-def obtener_consolidado_turno(turno_id):
+@app.route("/api/turnos/consolidado/<turno_id>", methods=["GET"])
+@app.route("/api/turnos/consolidado/", methods=["GET"])
+@app.route("/api/turnos/consolidado", methods=["GET"])
+def obtener_consolidado_turno(turno_id=None):
     conn = None
     try:
         conn = database.get_db_connection()
+        if not turno_id or str(turno_id).lower() in ['undefined', 'null', 'none', 'activo', '0']:
+            turno_last = conn.execute("SELECT id FROM turnos ORDER BY id DESC LIMIT 1").fetchone()
+            real_t_id = turno_last["id"] if turno_last else 1
+        else:
+            try:
+                real_t_id = int(turno_id)
+            except (ValueError, TypeError):
+                real_t_id = 1
+
         turno_row = conn.execute("""
             SELECT t.id, t.folio, t.tipo_turno, t.fecha, t.estado, t.fecha_apertura, t.fecha_cierre,
                    u1.nombre as jefe_turno_nombre, u2.nombre as operador_nombre
@@ -705,7 +733,7 @@ def obtener_consolidado_turno(turno_id):
             LEFT JOIN usuarios u1 ON t.jefe_turno_id = u1.id
             LEFT JOIN usuarios u2 ON t.operador_id = u2.id
             WHERE t.id = ?
-        """, (turno_id,)).fetchone()
+        """, (real_t_id,)).fetchone()
 
         try:
             eventos = conn.execute("""
@@ -715,7 +743,7 @@ def obtener_consolidado_turno(turno_id):
                 JOIN usuarios u ON e.usuario_id = u.id
                 WHERE e.turno_id = ?
                 ORDER BY e.fecha_hora DESC
-            """, (turno_id,)).fetchall()
+            """, (real_t_id,)).fetchall()
         except Exception:
             eventos = []
 

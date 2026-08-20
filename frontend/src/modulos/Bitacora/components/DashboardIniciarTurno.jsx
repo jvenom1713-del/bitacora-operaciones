@@ -393,6 +393,9 @@ export default function DashboardIniciarTurno({
   };
 
   const cargarConsolidado = async (turnoId) => {
+    if (!turnoId || turnoId === 'undefined' || turnoId === 'null') {
+      return;
+    }
     try {
       setCargandoConsolidado(true);
       const res = await fetch(getApiUrl(`/api/turnos/consolidado/${turnoId}`));
