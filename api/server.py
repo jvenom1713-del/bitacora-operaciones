@@ -178,13 +178,24 @@ def _tarea_programada_diaria_cen():
         print(f"[APScheduler] Error en tarea diaria: {e}")
 
 def init_app_background():
-    database.init_db()
-    scheduler.add_job(_tarea_programada_diaria_cen, 'cron', hour='7,18', minute=0, id='cen_daily_sync')
-    scheduler.start()
-    print("[Startup] APScheduler iniciado: Sincronización automática diariamente a las 07:00 AM y 18:00 PM.")
+    try:
+        database.init_db()
+    except Exception as e:
+        print(f"[Startup DB Init Warning] {e}")
 
-    hilo_inicial = threading.Thread(target=_tarea_programada_diaria_cen, daemon=True)
-    hilo_inicial.start()
+    if os.environ.get("VERCEL"):
+        print("[Startup] Vercel Serverless: APScheduler deshabilitado.")
+        return
+
+    try:
+        scheduler.add_job(_tarea_programada_diaria_cen, 'cron', hour='7,18', minute=0, id='cen_daily_sync')
+        scheduler.start()
+        print("[Startup] APScheduler iniciado: Sincronización automática diariamente a las 07:00 AM y 18:00 PM.")
+
+        hilo_inicial = threading.Thread(target=_tarea_programada_diaria_cen, daemon=True)
+        hilo_inicial.start()
+    except Exception as e:
+        print(f"[Startup Scheduler Warning] {e}")
 
 
 # ─────────────────────────────────────────────────────────────
