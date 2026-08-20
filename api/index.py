@@ -42,9 +42,9 @@ except Exception as e1:
                         "traceback": traceback.format_exc()
                     }), 500
 
-class VercelPathFixMiddleware:
-    def __init__(self, app):
-        self.app = app
+class PathRewriteMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
         try:
@@ -53,7 +53,7 @@ class VercelPathFixMiddleware:
                 clean_path = request_uri.split('?')[0]
                 if clean_path and clean_path != '/api/index.py':
                     environ['PATH_INFO'] = clean_path
-            return self.app(environ, start_response)
+            return self.wsgi_app(environ, start_response)
         except Exception as ex:
             print(f"[WSGI Middleware Error] {ex}")
             traceback.print_exc()
@@ -66,4 +66,8 @@ class VercelPathFixMiddleware:
                 "traceback": traceback.format_exc()
             }).encode('utf-8')]
 
-app = VercelPathFixMiddleware(flask_app)
+# Envolver la propiedad wsgi_app interna de Flask en lugar de la instancia Flask principal
+flask_app.wsgi_app = PathRewriteMiddleware(flask_app.wsgi_app)
+
+# Exponer 'app' como la instancia nativa de Flask que Vercel Python runtime espera
+app = flask_app

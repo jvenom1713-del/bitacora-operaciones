@@ -39,7 +39,36 @@ except ImportError:
     except ImportError:
         from api.cen_downloader import descargar_y_procesar_coordinador
 
+import json
+import traceback
+from datetime import datetime, date
+
 app = Flask(__name__)
+
+# Serializador JSON seguro para fechas, horas y bytes
+try:
+    class CustomJSONProvider(app.json_provider_class):
+        def default(self, o):
+            if isinstance(o, (datetime, date)):
+                return o.isoformat()
+            if isinstance(o, bytes):
+                return o.decode('utf-8', errors='ignore')
+            return super().default(o)
+    app.json = CustomJSONProvider(app)
+except Exception as _e_json:
+    print(f"[JSON Provider Warning] {_e_json}")
+
+# Manejador global de excepciones para diagnosticar errores 500
+@app.errorhandler(Exception)
+def handle_global_exception(e):
+    print(f"[API Global Exception] {e}")
+    traceback.print_exc()
+    return jsonify({
+        "status": "error",
+        "detail": "Excepción no controlada en el servidor Python",
+        "message": str(e),
+        "traceback": traceback.format_exc()
+    }), 500
 
 # Configuración de rutas estáticas para dist y pdfs
 FRONTEND_DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
