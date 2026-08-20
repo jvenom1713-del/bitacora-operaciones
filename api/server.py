@@ -10,10 +10,7 @@ import sqlite3
 import datetime
 import io
 import threading
-import openpyxl
 import base64
-from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-from apscheduler.schedulers.background import BackgroundScheduler
 
 try:
     import database
@@ -219,8 +216,6 @@ def guardar_resumen_en_db(resumen: dict):
 # 2. PLANIFICADOR DE TAREAS EN SEGUNDO PLANO (APSCHEDULER)
 # ─────────────────────────────────────────────────────────────
 
-scheduler = BackgroundScheduler(daemon=True)
-
 def _tarea_programada_diaria_cen():
     print("[APScheduler] Tarea programada diaria: descargando datos del CEN...")
     try:
@@ -242,6 +237,8 @@ def init_app_background():
         return
 
     try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+        scheduler = BackgroundScheduler(daemon=True)
         scheduler.add_job(_tarea_programada_diaria_cen, 'cron', hour='7,18', minute=0, id='cen_daily_sync')
         scheduler.start()
         print("[Startup] APScheduler iniciado: Sincronización automática diariamente a las 07:00 AM y 18:00 PM.")
@@ -1233,6 +1230,9 @@ def exportar_bitacora_turno_excel(turno_id):
     """, (real_turno_id,)).fetchall()
     conn.close()
 
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Bitácora y Relevantes"
@@ -1353,6 +1353,9 @@ def exportar_relevantes_excel():
     santa_lidia_dia2 = data.get("santa_lidia_dia2", "")
 
     try:
+        import openpyxl
+        from openpyxl.styles import Font
+
         excel_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "relevantes.xlsx"))
         wb = openpyxl.load_workbook(excel_path) if os.path.exists(excel_path) else openpyxl.Workbook()
         if "Sheet" in wb.sheetnames and len(wb.sheetnames) > 1:

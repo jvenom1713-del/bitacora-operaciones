@@ -4,27 +4,17 @@ import traceback
 import json
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-backend_dir = os.path.join(parent_dir, 'backend')
-
-for p in [current_dir, backend_dir, parent_dir]:
-    if p and os.path.exists(p) and p not in sys.path:
-        sys.path.insert(0, p)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
 try:
-    import database
-    database.init_db()
+    from server import app
 except Exception as e:
-    print(f"[Index Init DB Warning] {e}")
-
-try:
-    from server import app as flask_app
-except Exception as e1:
     from flask import Flask, jsonify
-    flask_app = Flask(__name__)
-    err_msg = f"Error cargando server module: {e1}"
-    @flask_app.route('/', defaults={'path': ''})
-    @flask_app.route('/<path:path>')
+    app = Flask(__name__)
+    err_msg = f"Fatal initialization error: {e}"
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
     def catch_all_error(path):
         return jsonify({
             "status": "error",
@@ -32,8 +22,8 @@ except Exception as e1:
             "trace": traceback.format_exc()
         }), 500
 
-@flask_app.errorhandler(Exception)
-def handle_exception(e):
+@app.errorhandler(Exception)
+def handle_global_exception(e):
     from flask import jsonify
     return jsonify({
         "status": "error",
@@ -54,8 +44,6 @@ class PathRewriteMiddleware:
                     environ['PATH_INFO'] = clean_path
             return self.wsgi_app(environ, start_response)
         except Exception as ex:
-            print(f"[WSGI Middleware Error] {ex}")
-            traceback.print_exc()
             start_response('500 Internal Server Error', [('Content-Type', 'application/json')])
             return [json.dumps({
                 "status": "error",
@@ -63,5 +51,4 @@ class PathRewriteMiddleware:
                 "trace": traceback.format_exc()
             }).encode('utf-8')]
 
-flask_app.wsgi_app = PathRewriteMiddleware(flask_app.wsgi_app)
-app = flask_app
+app.wsgi_app = PathRewriteMiddleware(app.wsgi_app)
