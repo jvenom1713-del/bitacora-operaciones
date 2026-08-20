@@ -1,7 +1,8 @@
-flask
-openpyxl
-apscheduler
-requests
-fastapi
-uvicorn
-pydantic
+flask>=3.0.0
+openpyxl>=3.1.2
+et-xmlfile>=1.1.0
+apscheduler>=3.10.0
+requests>=2.31.0
+fastapi>=0.100.0
+uvicorn>=0.20.0
+pydantic>=2.0.0

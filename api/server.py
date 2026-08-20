@@ -1230,8 +1230,15 @@ def exportar_bitacora_turno_excel(turno_id):
     """, (real_turno_id,)).fetchall()
     conn.close()
 
-    import openpyxl
-    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    except ImportError as err_openpyxl:
+        return jsonify({
+            "status": "error",
+            "detail": "La librería 'openpyxl' no está disponible en la función Serverless.",
+            "message": str(err_openpyxl)
+        }), 500
 
     wb = openpyxl.Workbook()
     ws = wb.active
