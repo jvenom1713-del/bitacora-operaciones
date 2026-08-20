@@ -58,16 +58,39 @@ try:
 except Exception as _e_json:
     print(f"[JSON Provider Warning] {_e_json}")
 
-# Manejador global de excepciones para diagnosticar errores 500
+# Manejador global de excepciones para garantizar respuesta JSON
+@app.errorhandler(404)
+def handle_404(e):
+    return jsonify({
+        "status": "error",
+        "message": "Ruta no encontrada",
+        "detail": str(e)
+    }), 404
+
+@app.errorhandler(405)
+def handle_405(e):
+    return jsonify({
+        "status": "error",
+        "message": "Método HTTP no permitido",
+        "detail": str(e)
+    }), 405
+
+@app.errorhandler(500)
+def handle_500(e):
+    return jsonify({
+        "status": "error",
+        "message": str(e),
+        "trace": traceback.format_exc()
+    }), 500
+
 @app.errorhandler(Exception)
 def handle_global_exception(e):
     print(f"[API Global Exception] {e}")
     traceback.print_exc()
     return jsonify({
         "status": "error",
-        "detail": "Excepción no controlada en el servidor Python",
         "message": str(e),
-        "traceback": traceback.format_exc()
+        "trace": traceback.format_exc()
     }), 500
 
 # Configuración de rutas estáticas para dist y pdfs
@@ -82,12 +105,14 @@ try:
 except Exception as e:
     print(f"[PDF Storage Warning] {e}")
 
-# Manejo de CORS
+# Manejo de CORS y garantizador de Content-Type JSON
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    if response.status_code >= 400:
+        response.headers['Content-Type'] = 'application/json'
     return response
 
 # ─────────────────────────────────────────────────────────────
